@@ -11,7 +11,6 @@ package org.jugglinglab.core
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
-import org.jugglinglab.util.jlGetScreenFps
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlToStringRounded
 
@@ -123,7 +122,7 @@ data class AnimationPrefs(
         // default values of all AnimationPrefs items
         const val WIDTH_DEF: Int = 400
         const val HEIGHT_DEF: Int = 450
-        val FPS_DEF: Double = jlGetScreenFps()
+        const val FPS_DEF: Double = 33.3
         const val SLOWDOWN_DEF: Double = 2.0
         const val BORDERPIXELS_DEF: Int = 0
         const val SHOWGROUND_DEF: Int = GROUND_AUTO

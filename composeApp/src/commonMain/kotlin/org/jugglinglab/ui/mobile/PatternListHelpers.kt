@@ -9,11 +9,15 @@
 package org.jugglinglab.ui.mobile
 
 import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.util.jlShareFile
 import org.jugglinglab.util.jlShareUrl
+import org.jugglinglab.util.jlSanitizeFilename
 import org.jugglinglab.util.buildShareUrl
+import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.JuggleExceptionUser
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -24,7 +28,7 @@ fun CoroutineScope.exportListHelper(
     list: JmlPatternList,
     path: Path?,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     launch(Dispatchers.Default) {
         onBusyChange(true)
@@ -36,12 +40,19 @@ fun CoroutineScope.exportListHelper(
             list.writeJml(sb)
             jlShareFile(
                 content = sb.toString(),
-                filename = "$listHeading.jml",
+                filename = jlSanitizeFilename("$listHeading.jml"),
                 mimeType = "application/xml",
                 subject = getString(Res.string.gui_mobile_share_subject, listHeading)
             )
         } catch (e: Exception) {
-            onError(getString(Res.string.error_mobile_exporting, e.message ?: ""))
+            onError(
+                JuggleExceptionInternal(
+                    getString(
+                        Res.string.error_mobile_exporting,
+                        e.message ?: ""
+                    )
+                )
+            )
         } finally {
             onBusyChange(false)
         }
@@ -52,7 +63,7 @@ fun CoroutineScope.sharePatternHelper(
     list: JmlPatternList,
     record: PatternRecord,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     launch(Dispatchers.Default) {
         onBusyChange(true)
@@ -60,11 +71,11 @@ fun CoroutineScope.sharePatternHelper(
             val index = list.model.indexOf(record)
             if (index >= 0) {
                 val pattern = list.getPatternForLine(index)
-                val prefs = list.getAnimationPrefsForLine(index) ?: org.jugglinglab.core.AnimationPrefs()
+                val prefs = list.getAnimationPrefsForLine(index) ?: AnimationPrefs()
                 if (pattern != null) {
                     val url = buildShareUrl(pattern = pattern, prefs = prefs)
                     if (url.encodeToByteArray().size > 2000) {
-                        onError(getString(Res.string.error_mobile_pattern_too_long))
+                        onError(JuggleExceptionUser(getString(Res.string.error_mobile_pattern_too_long)))
                     } else {
                         val title = pattern.title?.takeIf { it.isNotBlank() }
                             ?: getString(Res.string.gui_pattern).lowercase()
@@ -75,7 +86,14 @@ fun CoroutineScope.sharePatternHelper(
                 }
             }
         } catch (e: Exception) {
-            onError(getString(Res.string.error_mobile_sharing, e.message ?: ""))
+            onError(
+                JuggleExceptionInternal(
+                    getString(
+                        Res.string.error_mobile_sharing,
+                        e.message ?: ""
+                    )
+                )
+            )
         } finally {
             onBusyChange(false)
         }
@@ -86,7 +104,7 @@ fun CoroutineScope.exportPatternHelper(
     list: JmlPatternList,
     record: PatternRecord,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     launch(Dispatchers.Default) {
         onBusyChange(true)
@@ -99,14 +117,21 @@ fun CoroutineScope.exportPatternHelper(
                         ?: getString(Res.string.gui_pattern).lowercase()
                     jlShareFile(
                         content = pattern.toString(),
-                        filename = "$title.jml",
+                        filename = jlSanitizeFilename("$title.jml"),
                         mimeType = "application/xml",
                         subject = getString(Res.string.gui_mobile_share_subject, title)
                     )
                 }
             }
         } catch (e: Exception) {
-            onError(getString(Res.string.error_mobile_exporting, e.message ?: ""))
+            onError(
+                JuggleExceptionInternal(
+                    getString(
+                        Res.string.error_mobile_exporting,
+                        e.message ?: ""
+                    )
+                )
+            )
         } finally {
             onBusyChange(false)
         }

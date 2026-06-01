@@ -211,21 +211,15 @@ expect fun jlParseFiniteDouble(input: String): Double
 expect fun jlToStringRounded(value: Double, digits: Int): String
 
 //------------------------------------------------------------------------------
-// Helpers for message display and error handling
+// Helper for logging/reporting crashes
 //------------------------------------------------------------------------------
 
-// Handle an informational message.
+interface CrashReporter {
+    fun recordThrowable(throwable: Throwable, message: String? = null)
+}
 
-expect fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?)
-
-// Handle a recoverable user error.
-
-expect fun jlHandleUserException(parent: Any?, msg: String?)
-
-// Handle a fatal exception. The intent is that these exceptions only happen in
-// the event of a bug in Juggling Lab.
-
-expect fun jlHandleFatalException(e: Exception)
+// global reference configured at startup
+lateinit var crashReporter: CrashReporter
 
 //------------------------------------------------------------------------------
 // Helpers for execution context information
@@ -260,62 +254,61 @@ val jlIsAndroid: Boolean by lazy {
 // Helpers for file opening/saving files
 //------------------------------------------------------------------------------
 
-// Sanitize filename based on platform restrictions.
+// Sanitize filename based on platform-independent rules to ensure files can be
+// transferred safely across Windows, macOS, Linux, Android, and iOS.
 //
-// See e.g.:
-// https://stackoverflow.com/questions/1976007/
-//       what-characters-are-forbidden-in-windows-and-linux-directory-names
+// Windows is the most restrictive, which forms the base of these rules.
 
 fun jlSanitizeFilename(fname: String): String {
+    if (fname.isEmpty()) return "Pattern"
+
+    // 1. Separate base and extension
     val index = fname.lastIndexOf(".")
-    val base = if (index >= 0) fname.take(index) else fname
-    val extension = if (index >= 0) fname.substring(index) else ""
+    var base = if (index >= 0) fname.take(index) else fname
+    var extension = if (index >= 0) fname.substring(index) else ""
 
-    if (jlIsMacOs) {
-        // remove all instances of `:` and `/`
-        var b = base.replace("[:/]".toRegex(), "")
+    // 2. Replace path separators with underscores (safe on all OSs)
+    val pathsepRegex = "[\\\\/]".toRegex()
+    base = base.replace(pathsepRegex, "_")
+    extension = extension.replace(pathsepRegex, "_")
 
-        // remove leading `.` and space
-        while (b.startsWith(".") || b.startsWith(" ")) {
-            b = b.substring(1)
-        }
+    // 3. Replace other forbidden characters with underscores:
+    // : * ? " < > | and control characters (ASCII 0-31)
+    val forbiddenRegex = "[:*?\"<>|\\x00-\\x1F]".toRegex()
+    base = base.replace(forbiddenRegex, "_")
+    extension = extension.replace(forbiddenRegex, "_")
 
-        if (b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else if (jlIsWindows) {
-        // remove all instances of `\/?:*"`
-        var b = base.replace("[/?:*\"]".toRegex(), "")
-
-        // disallow strings with `><|`
-        var forbidden = (b.contains(">"))
-        forbidden = forbidden || (b.contains("<"))
-        forbidden = forbidden || (b.contains("|"))
-
-        if (forbidden || b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else if (jlIsLinux || jlIsAndroid) {
-        // change all `/` to `:`
-        var b = base.replace("/".toRegex(), ":")
-
-        // remove leading `.` and space
-        while (b.startsWith(".") || b.startsWith(" ")) {
-            b = b.substring(1)
-        }
-
-        if (b.isEmpty()) {
-            b = "Pattern"
-        }
-
-        return b + extension
-    } else {
-        return fname
+    // 4. Remove leading dots and leading/trailing spaces from base
+    base = base.trim()
+    while (base.startsWith(".") || base.startsWith(" ")) {
+        base = base.substring(1)
     }
+    while (base.endsWith(".") || base.endsWith(" ")) {
+        base = base.dropLast(1)
+    }
+
+    // 5. Trim trailing dots and spaces from extension
+    extension = extension.trim()
+    while (extension.endsWith(".") || extension.endsWith(" ")) {
+        extension = extension.dropLast(1)
+    }
+
+    // 6. Check for Windows reserved device names (case-insensitive) on the base name
+    val reservedNames = setOf(
+        "CON", "PRN", "AUX", "NUL",
+        "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
+        "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
+    )
+    if (reservedNames.contains(base.uppercase())) {
+        base += "_pattern"
+    }
+
+    // 7. Ensure base is not empty after sanitization
+    if (base.isEmpty()) {
+        base = "Pattern"
+    }
+
+    return base + extension
 }
 
 @Throws(JuggleExceptionUser::class)
@@ -373,10 +366,6 @@ expect fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap
 //------------------------------------------------------------------------------
 // Other
 //------------------------------------------------------------------------------
-
-// Return the native screen refresh rate.
-
-expect fun jlGetScreenFps(): Double
 
 // Open the platform's native share UI with the given URL string.
 // `subject`  is used as the email subject.

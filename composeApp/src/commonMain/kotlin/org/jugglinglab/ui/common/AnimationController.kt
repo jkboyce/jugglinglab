@@ -16,7 +16,6 @@ import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
-import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.jlIsNearLine
 import org.jugglinglab.util.jlGetStringResource
@@ -184,269 +183,261 @@ class AnimationController(
     //--------------------------------------------------------------------------
 
     private fun mousePressedLogic(mx: Int, my: Int) {
-        try {
-            val layout = currentLayout ?: return
-            startX = mx
-            startY = my
+        val layout = currentLayout ?: return
+        startX = mx
+        startY = my
 
-            val activeEventImage = AnimationLayout.getActiveEvent(state)
-            if (activeEventImage != null) {
+        val activeEventImage = AnimationLayout.getActiveEvent(state)
+        if (activeEventImage != null) {
+            for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
+                val t = i * layout.width / 2
+
+                if (layout.showYDragControl) {
+                    draggingY = jlIsNearLine(
+                        mx - t,
+                        my,
+                        layout.eventPoints[0][i][5][0].roundToInt(),
+                        layout.eventPoints[0][i][5][1].roundToInt(),
+                        layout.eventPoints[0][i][6][0].roundToInt(),
+                        layout.eventPoints[0][i][6][1].roundToInt(),
+                        if (jlIsMobile) 30 else 4
+                    )
+                    if (draggingY) {
+                        dragging = true
+                        draggingLeft = (i == 0)
+                        deltaX = 0; deltaY = 0
+                        val activeEventImage = AnimationLayout.getActiveEvent(state)!!
+                        eventStart = activeEventImage.first.localCoordinate
+                        eventPrimaryStart = activeEventImage.second.localCoordinate
+                        state.update(fitToFrame = false)
+                        return
+                    }
+                }
+
+                if (layout.showXzDragControl) {
+                    for (j in layout.eventPoints.indices) {
+                        if (!isInsidePolygon(mx - t, my, layout.eventPoints[j], i, FACE_XZ)) continue
+                        if (j > 0) {
+                            val image =
+                                state.pattern.allEvents.find { it.event == layout.visibleEvents[j] }
+                                    ?: throw JuggleExceptionInternal("Error 1 in AC.mousePressedLogic()")
+                            val code = state.pattern.loopEvents.find {
+                                it.primary == image.primary &&
+                                        it.event.juggler == image.event.juggler &&
+                                        it.event.hand == image.event.hand
+                            }?.event?.jlHashCode
+                                ?: throw JuggleExceptionInternal("Error 2 in AC.mousePressedLogic()")
+                            state.update(selectedItemHashCode = code)
+                        }
+                        draggingXz = true
+                        dragging = true
+                        draggingLeft = (i == 0)
+                        deltaX = 0; deltaY = 0
+                        val activeEventImage = AnimationLayout.getActiveEvent(state)!!
+                        eventStart = activeEventImage.first.localCoordinate
+                        eventPrimaryStart = activeEventImage.second.localCoordinate
+                        state.update(fitToFrame = false)
+                        return
+                    }
+                }
+            }
+        } else {
+            val activePosition = AnimationLayout.getActivePosition(state)
+
+            if (activePosition != null) {
                 for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
                     val t = i * layout.width / 2
 
-                    if (layout.showYDragControl) {
-                        draggingY = jlIsNearLine(
-                            mx - t,
-                            my,
-                            layout.eventPoints[0][i][5][0].roundToInt(),
-                            layout.eventPoints[0][i][5][1].roundToInt(),
-                            layout.eventPoints[0][i][6][0].roundToInt(),
-                            layout.eventPoints[0][i][6][1].roundToInt(),
+                    if (layout.showZDragControl) {
+                        draggingZ = jlIsNearLine(
+                            mx - t, my,
+                            layout.posPoints[i][4][0].roundToInt(),
+                            layout.posPoints[i][4][1].roundToInt(),
+                            layout.posPoints[i][6][0].roundToInt(),
+                            layout.posPoints[i][6][1].roundToInt(),
                             if (jlIsMobile) 30 else 4
                         )
-                        if (draggingY) {
+                        if (draggingZ) {
                             dragging = true
                             draggingLeft = (i == 0)
                             deltaX = 0; deltaY = 0
-                            val activeEventImage = AnimationLayout.getActiveEvent(state)!!
-                            eventStart = activeEventImage.first.localCoordinate
-                            eventPrimaryStart = activeEventImage.second.localCoordinate
-                            state.update(fitToFrame = false)
+                            positionStart = activePosition.coordinate
+                            state.update(fitToFrame = false, draggingPosition = true, draggingPositionZ = true)
                             return
                         }
                     }
-
-                    if (layout.showXzDragControl) {
-                        for (j in layout.eventPoints.indices) {
-                            if (!isInsidePolygon(mx - t, my, layout.eventPoints[j], i, FACE_XZ)) continue
-                            if (j > 0) {
-                                val image =
-                                    state.pattern.allEvents.find { it.event == layout.visibleEvents[j] }
-                                        ?: throw JuggleExceptionInternal("Error 1 in AC.mousePressedLogic()")
-                                val code = state.pattern.loopEvents.find {
-                                    it.primary == image.primary &&
-                                            it.event.juggler == image.event.juggler &&
-                                            it.event.hand == image.event.hand
-                                }?.event?.jlHashCode
-                                    ?: throw JuggleExceptionInternal("Error 2 in AC.mousePressedLogic()")
-                                state.update(selectedItemHashCode = code)
-                            }
-                            draggingXz = true
+                    if (layout.showXyDragControl) {
+                        draggingXy = isInsidePolygon(mx - t, my, layout.posPoints, i, FACE_XY)
+                        if (draggingXy) {
                             dragging = true
                             draggingLeft = (i == 0)
                             deltaX = 0; deltaY = 0
-                            val activeEventImage = AnimationLayout.getActiveEvent(state)!!
-                            eventStart = activeEventImage.first.localCoordinate
-                            eventPrimaryStart = activeEventImage.second.localCoordinate
-                            state.update(fitToFrame = false)
+                            positionStart = activePosition.coordinate
+                            state.update(fitToFrame = false, draggingPosition = true)
                             return
                         }
                     }
-                }
-            } else {
-                val activePosition = AnimationLayout.getActivePosition(state)
+                    if (layout.showAngleDragControl) {
+                        val dmx = mx - t - layout.posPoints[i][5][0].roundToInt()
+                        val dmy = my - layout.posPoints[i][5][1].roundToInt()
+                        draggingAngle = (dmx * dmx + dmy * dmy < if (jlIsMobile) 2500.0 else 49.0)
+                        if (draggingAngle) {
+                            dragging = true
+                            draggingLeft = (i == 0)
+                            deltaX = 0; deltaY = 0
+                            startAngle = Math.toRadians(activePosition.angle)
 
-                if (activePosition != null) {
-                    for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
-                        val t = i * layout.width / 2
-
-                        if (layout.showZDragControl) {
-                            draggingZ = jlIsNearLine(
-                                mx - t, my,
-                                layout.posPoints[i][4][0].roundToInt(),
-                                layout.posPoints[i][4][1].roundToInt(),
-                                layout.posPoints[i][6][0].roundToInt(),
-                                layout.posPoints[i][6][1].roundToInt(),
-                                if (jlIsMobile) 30 else 4
+                            // record pixel coordinates of x and y unit vectors
+                            // in juggler's frame, at start of angle drag
+                            startDx = doubleArrayOf(
+                                layout.posPoints[i][11][0] - layout.posPoints[i][4][0],
+                                layout.posPoints[i][11][1] - layout.posPoints[i][4][1]
                             )
-                            if (draggingZ) {
-                                dragging = true
-                                draggingLeft = (i == 0)
-                                deltaX = 0; deltaY = 0
-                                positionStart = activePosition.coordinate
-                                state.update(fitToFrame = false, draggingPosition = true, draggingPositionZ = true)
-                                return
-                            }
-                        }
-                        if (layout.showXyDragControl) {
-                            draggingXy = isInsidePolygon(mx - t, my, layout.posPoints, i, FACE_XY)
-                            if (draggingXy) {
-                                dragging = true
-                                draggingLeft = (i == 0)
-                                deltaX = 0; deltaY = 0
-                                positionStart = activePosition.coordinate
-                                state.update(fitToFrame = false, draggingPosition = true)
-                                return
-                            }
-                        }
-                        if (layout.showAngleDragControl) {
-                            val dmx = mx - t - layout.posPoints[i][5][0].roundToInt()
-                            val dmy = my - layout.posPoints[i][5][1].roundToInt()
-                            draggingAngle = (dmx * dmx + dmy * dmy < if (jlIsMobile) 2500.0 else 49.0)
-                            if (draggingAngle) {
-                                dragging = true
-                                draggingLeft = (i == 0)
-                                deltaX = 0; deltaY = 0
-                                startAngle = Math.toRadians(activePosition.angle)
-
-                                // record pixel coordinates of x and y unit vectors
-                                // in juggler's frame, at start of angle drag
-                                startDx = doubleArrayOf(
-                                    layout.posPoints[i][11][0] - layout.posPoints[i][4][0],
-                                    layout.posPoints[i][11][1] - layout.posPoints[i][4][1]
-                                )
-                                startDy = doubleArrayOf(
-                                    layout.posPoints[i][12][0] - layout.posPoints[i][4][0],
-                                    layout.posPoints[i][12][1] - layout.posPoints[i][4][1]
-                                )
-                                startControl = doubleArrayOf(
-                                    layout.posPoints[i][5][0] - layout.posPoints[i][4][0],
-                                    layout.posPoints[i][5][1] - layout.posPoints[i][4][1]
-                                )
-                                state.update(fitToFrame = false, draggingPosition = true, draggingPositionAngle = true)
-                                return
-                            }
+                            startDy = doubleArrayOf(
+                                layout.posPoints[i][12][0] - layout.posPoints[i][4][0],
+                                layout.posPoints[i][12][1] - layout.posPoints[i][4][1]
+                            )
+                            startControl = doubleArrayOf(
+                                layout.posPoints[i][5][0] - layout.posPoints[i][4][0],
+                                layout.posPoints[i][5][1] - layout.posPoints[i][4][1]
+                            )
+                            state.update(fitToFrame = false, draggingPosition = true, draggingPositionAngle = true)
+                            return
                         }
                     }
                 }
             }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
         }
     }
 
     private fun mouseDraggedLogic(mx: Int, my: Int, density: Float) {
-        try {
-            if (dragging) {
-                if (draggingAngle) {
-                    // shift pixel coords of control point by mouse drag
-                    val dcontrol =
-                        doubleArrayOf(startControl[0] + mx - startX, startControl[1] + my - startY)
+        if (dragging) {
+            if (draggingAngle) {
+                // shift pixel coords of control point by mouse drag
+                val dcontrol =
+                    doubleArrayOf(startControl[0] + mx - startX, startControl[1] + my - startY)
 
-                    // re-express the control point location in coordinate system
-                    // of juggler:
-                    //
-                    // dcontrol_x = A * startDx_x + B * startDy_x;
-                    // dcontrol_y = A * startDx_y + B * startDy_y;
-                    //
-                    // then (A, B) are coordinates of shifted control point, in
-                    // juggler space
-                    val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
-                    val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
-                    val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
-                    deltaAngle = -atan2(-a, -b)
+                // re-express the control point location in coordinate system
+                // of juggler:
+                //
+                // dcontrol_x = A * startDx_x + B * startDy_x;
+                // dcontrol_y = A * startDx_y + B * startDy_y;
+                //
+                // then (A, B) are coordinates of shifted control point, in
+                // juggler space
+                val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
+                val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
+                val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
+                deltaAngle = -atan2(-a, -b)
 
-                    // snap the angle to the four cardinal directions
-                    val newAngle = startAngle + deltaAngle
-                    if (anglediff(newAngle) < SNAP_ANGLE / 2) {
-                        deltaAngle = -startAngle
-                    } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAP_ANGLE / 2) {
-                        deltaAngle = -startAngle - 0.5 * Math.PI
-                    } else if (anglediff(newAngle + Math.PI) < SNAP_ANGLE / 2) {
-                        deltaAngle = -startAngle + Math.PI
-                    } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAP_ANGLE / 2) {
-                        deltaAngle = -startAngle + 0.5 * Math.PI
+                // snap the angle to the four cardinal directions
+                val newAngle = startAngle + deltaAngle
+                if (anglediff(newAngle) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle
+                } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle - 0.5 * Math.PI
+                } else if (anglediff(newAngle + Math.PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle + Math.PI
+                } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle + 0.5 * Math.PI
+                }
+
+                var finalAngle = Math.toDegrees(startAngle + deltaAngle)
+                while (finalAngle > 360) finalAngle -= 360.0
+                while (finalAngle < 0) finalAngle += 360.0
+
+                val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                val activePosition = AnimationLayout.getActivePosition(state)!!
+                val index = rec.positions.indexOf(activePosition)
+                if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
+                val newPosition = activePosition.copy(angle = finalAngle)
+                rec.positions[index] = newPosition
+                state.update(
+                    pattern = JmlPattern.fromPatternBuilder(rec),
+                    selectedItemHashCode = newPosition.jlHashCode
+                )
+            } else {
+                deltaX = mx - startX
+                deltaY = my - startY
+
+                // Get updated event/position coordinate based on mouse position.
+                // This modifies deltaX, deltaY based on snapping and projection.
+                val cc = currentCoordinate
+                val activeEventImage = AnimationLayout.getActiveEvent(state)
+
+                if (activeEventImage != null) {
+                    var deltalc = Coordinate.sub(cc, eventStart)!!
+                    deltalc = Coordinate.truncate(deltalc, 1e-7)
+
+                    val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
+                    val newEvent = activeEventImage.first.copy(
+                        x = newEventCoordinate.x,
+                        y = newEventCoordinate.y,
+                        z = newEventCoordinate.z
+                    )
+
+                    if (activeEventImage.first.hand != activeEventImage.second.hand) {
+                        deltalc.x = -deltalc.x
                     }
+                    val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
+                    val newPrimary = activeEventImage.second.copy(
+                        x = newPrimaryCoordinate.x,
+                        y = newPrimaryCoordinate.y,
+                        z = newPrimaryCoordinate.z
+                    )
 
-                    var finalAngle = Math.toDegrees(startAngle + deltaAngle)
-                    while (finalAngle > 360) finalAngle -= 360.0
-                    while (finalAngle < 0) finalAngle += 360.0
-
-                    val rec = PatternBuilder.fromJmlPattern(state.pattern)
-                    val activePosition = AnimationLayout.getActivePosition(state)!!
-                    val index = rec.positions.indexOf(activePosition)
-                    if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
-                    val newPosition = activePosition.copy(angle = finalAngle)
-                    rec.positions[index] = newPosition
+                    val record = PatternBuilder.fromJmlPattern(state.pattern)
+                    val index = record.events.indexOf(activeEventImage.second)
+                    record.events[index] = newPrimary
                     state.update(
-                        pattern = JmlPattern.fromPatternBuilder(rec),
-                        selectedItemHashCode = newPosition.jlHashCode
+                        pattern = JmlPattern.fromPatternBuilder(record),
+                        selectedItemHashCode = newEvent.jlHashCode
                     )
                 } else {
-                    deltaX = mx - startX
-                    deltaY = my - startY
+                    val activePosition = AnimationLayout.getActivePosition(state)
 
-                    // Get updated event/position coordinate based on mouse position.
-                    // This modifies deltaX, deltaY based on snapping and projection.
-                    val cc = currentCoordinate
-                    val activeEventImage = AnimationLayout.getActiveEvent(state)
-
-                    if (activeEventImage != null) {
-                        var deltalc = Coordinate.sub(cc, eventStart)!!
-                        deltalc = Coordinate.truncate(deltalc, 1e-7)
-
-                        val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
-                        val newEvent = activeEventImage.first.copy(
-                            x = newEventCoordinate.x,
-                            y = newEventCoordinate.y,
-                            z = newEventCoordinate.z
-                        )
-
-                        if (activeEventImage.first.hand != activeEventImage.second.hand) {
-                            deltalc.x = -deltalc.x
+                    if (activePosition != null) {
+                        val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                        val index = rec.positions.indexOf(activePosition)
+                        if (index < 0) {
+                            throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
                         }
-                        val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
-                        val newPrimary = activeEventImage.second.copy(
-                            x = newPrimaryCoordinate.x,
-                            y = newPrimaryCoordinate.y,
-                            z = newPrimaryCoordinate.z
-                        )
-
-                        val record = PatternBuilder.fromJmlPattern(state.pattern)
-                        val index = record.events.indexOf(activeEventImage.second)
-                        record.events[index] = newPrimary
+                        val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
+                        rec.positions[index] = newPosition
                         state.update(
-                            pattern = JmlPattern.fromPatternBuilder(record),
-                            selectedItemHashCode = newEvent.jlHashCode
+                            pattern = JmlPattern.fromPatternBuilder(rec),
+                            selectedItemHashCode = newPosition.jlHashCode
                         )
-                    } else {
-                        val activePosition = AnimationLayout.getActivePosition(state)
-
-                        if (activePosition != null) {
-                            val rec = PatternBuilder.fromJmlPattern(state.pattern)
-                            val index = rec.positions.indexOf(activePosition)
-                            if (index < 0) {
-                                throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
-                            }
-                            val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
-                            rec.positions[index] = newPosition
-                            state.update(
-                                pattern = JmlPattern.fromPatternBuilder(rec),
-                                selectedItemHashCode = newPosition.jlHashCode
-                            )
-                        }
                     }
                 }
-            } else if (!draggingCamera) {
-                draggingCamera = true
-                lastX = startX
-                lastY = startY
-                dragCameraAngle = state.cameraAngle
-                state.update(showAxes = true)
             }
+        } else if (!draggingCamera) {
+            draggingCamera = true
+            lastX = startX
+            lastY = startY
+            dragCameraAngle = state.cameraAngle
+            state.update(showAxes = true)
+        }
 
-            if (draggingCamera) {
-                val dx = mx - lastX
-                val dy = my - lastY
-                lastX = mx
-                lastY = my
-                var ca0 = dragCameraAngle[0]
-                var ca1 = dragCameraAngle[1]
-                // correct for display density to get a similar slew rate
-                // across platforms
-                ca0 += dx.toDouble() * 0.02 / density
-                ca1 -= dy.toDouble() * 0.02 / density
-                if (ca1 < Math.toRadians(0.0001)) ca1 = Math.toRadians(0.0001)
-                if (ca1 > Math.toRadians(179.9999)) ca1 = Math.toRadians(179.9999)
-                while (ca0 < 0) ca0 += 2.0 * Math.PI
-                while (ca0 >= 2.0 * Math.PI) ca0 -= 2.0 * Math.PI
+        if (draggingCamera) {
+            val dx = mx - lastX
+            val dy = my - lastY
+            lastX = mx
+            lastY = my
+            var ca0 = dragCameraAngle[0]
+            var ca1 = dragCameraAngle[1]
+            // correct for display density to get a similar slew rate
+            // across platforms
+            ca0 += dx.toDouble() * 0.02 / density
+            ca1 -= dy.toDouble() * 0.02 / density
+            if (ca1 < Math.toRadians(0.0001)) ca1 = Math.toRadians(0.0001)
+            if (ca1 > Math.toRadians(179.9999)) ca1 = Math.toRadians(179.9999)
+            while (ca0 < 0) ca0 += 2.0 * Math.PI
+            while (ca0 >= 2.0 * Math.PI) ca0 -= 2.0 * Math.PI
 
-                dragCameraAngle = listOf(ca0, ca1)
-                state.update(cameraAngle = snapCamera(dragCameraAngle))
-                onCameraChange?.invoke(dragCameraAngle)
-            }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            dragCameraAngle = listOf(ca0, ca1)
+            state.update(cameraAngle = snapCamera(dragCameraAngle))
+            onCameraChange?.invoke(dragCameraAngle)
         }
     }
 
@@ -458,41 +449,37 @@ class AnimationController(
             onSimpleMouseClick?.invoke()
         }
 
-        try {
-            val activeEventImage = AnimationLayout.getActiveEvent(state)
-            val activePosition = AnimationLayout.getActivePosition(state)
+        val activeEventImage = AnimationLayout.getActiveEvent(state)
+        val activePosition = AnimationLayout.getActivePosition(state)
 
-            if ((activeEventImage != null || activePosition != null) && dragging) {
-                state.update(fitToFrame = true)
-                state.addCurrentToUndoList()
-            }
-            if (draggingCamera) {
-                state.update(showAxes = false)
-            }
-            if (dragging) {
-                state.update(
-                    draggingPosition = false,
-                    draggingPositionZ = false,
-                    draggingPositionAngle = false
-                )
-            }
-
-            draggingCamera = false
-            dragging = false
-            draggingY = false
-            draggingXz = false
-            draggingAngle = false
-            draggingZ = false
-            draggingXy = false
-            deltaX = 0
-            deltaY = 0
-            deltaAngle = 0.0
-            eventStart = null
-            eventPrimaryStart = null
-            positionStart = null
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        if ((activeEventImage != null || activePosition != null) && dragging) {
+            state.update(fitToFrame = true)
+            state.addCurrentToUndoList()
         }
+        if (draggingCamera) {
+            state.update(showAxes = false)
+        }
+        if (dragging) {
+            state.update(
+                draggingPosition = false,
+                draggingPositionZ = false,
+                draggingPositionAngle = false
+            )
+        }
+
+        draggingCamera = false
+        dragging = false
+        draggingY = false
+        draggingXz = false
+        draggingAngle = false
+        draggingZ = false
+        draggingXy = false
+        deltaX = 0
+        deltaY = 0
+        deltaAngle = 0.0
+        eventStart = null
+        eventPrimaryStart = null
+        positionStart = null
     }
 
     //--------------------------------------------------------------------------

@@ -42,6 +42,8 @@ kotlin {
         androidResources {
             enable = true
         }
+
+        withHostTest {}
     }
 
     jvm()
@@ -73,6 +75,8 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
+            // Juggling Lab specific
+            implementation(libs.firebase.crashlytics)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)

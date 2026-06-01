@@ -16,7 +16,6 @@ import org.jugglinglab.jml.*
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
-import org.jugglinglab.util.jlHandleFatalException
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.runtime.*
 import org.jetbrains.compose.resources.StringResource
@@ -24,7 +23,8 @@ import kotlin.math.*
 
 class LadderDiagramController(
     val state: PatternAnimationState,
-    val onMakePopup: ((LadderItem?, Int, Int) -> Unit)? = null
+    val onMakePopup: ((LadderItem?, Int, Int) -> Unit)? = null,
+    val onError: (Throwable) -> Unit
 ) {
     // UI state for Compose
     var uiState by mutableStateOf(LadderDiagramUiState())
@@ -65,6 +65,8 @@ class LadderDiagramController(
     // Mouse event handlers
     //--------------------------------------------------------------------------
 
+    // return true if the event was handled, false otherwise
+
     fun handlePress(
         offset: Offset,
         isPopup: Boolean,
@@ -75,17 +77,37 @@ class LadderDiagramController(
         val my = offset.y.toInt()
         val sx = screenOffset.x.toInt()
         val sy = screenOffset.y.toInt()
-        return mousePressedLogic(mx, my, sx, sy, isPopup, ignoreEmptySpace)
+        return try {
+            mousePressedLogic(mx, my, sx, sy, isPopup, ignoreEmptySpace)
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+            false
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
+            false
+        }
     }
 
     fun handleDrag(offset: Offset) {
         val mx = offset.x.toInt()
         val my = offset.y.toInt()
-        mouseDraggedLogic(mx, my)
+        try {
+            mouseDraggedLogic(mx, my)
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
+        }
     }
 
     fun handleRelease() {
-        mouseReleasedLogic()
+        try {
+            mouseReleasedLogic()
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
+        }
     }
 
     //--------------------------------------------------------------------------
@@ -100,168 +122,156 @@ class LadderDiagramController(
         isPopup: Boolean,
         ignoreEmptySpace: Boolean
     ): Boolean {
-        try {
-            val layout = currentLayout ?: return false
-            if (layout.pattern !== state.pattern) return false
-            val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
+        val layout = currentLayout ?: return false
+        if (layout.pattern !== state.pattern) return false
+        val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
 
-            if (isPopup) {
-                guiState = STATE_POPUP
-                popupItem = getSelectedLadderEvent(mx, my) ?: getSelectedLadderPosition(mx, my)
-                    ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
-                popupX = mx
-                popupY = myClamped
+        if (isPopup) {
+            guiState = STATE_POPUP
+            popupItem = getSelectedLadderEvent(mx, my) ?: getSelectedLadderPosition(mx, my)
+                ?: getSelectedLadderPath(mx, my, (PATH_SLOP_DP * currentDensity).toInt())
+            popupX = mx
+            popupY = myClamped
 
-                animWasPaused = animWasPaused ?: state.isPaused
-                val newTime = layout.yToTime(myClamped)
-                val code = popupItem?.jlHashCode ?: 0
-                state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
+            animWasPaused = animWasPaused ?: state.isPaused
+            val newTime = layout.yToTime(myClamped)
+            val code = popupItem?.jlHashCode ?: 0
+            state.update(time = newTime, isPaused = true, selectedItemHashCode = code)
 
-                onMakePopup?.invoke(popupItem, sx, sy)
+            onMakePopup?.invoke(popupItem, sx, sy)
+            return true
+        }
+
+        when (guiState) {
+            STATE_INACTIVE -> {
+                var needsHandling = true
+                itemWasSelected = false
+                val oldActiveLadderItem = activeLadderItem()
+
+                val newActiveEventItem = getSelectedLadderEvent(mx, my)
+                if (newActiveEventItem != null) {
+                    if (oldActiveLadderItem === newActiveEventItem) {
+                        itemWasSelected = true
+                    }
+                    state.update(selectedItemHashCode = newActiveEventItem.jlHashCode)
+                    if (newActiveEventItem.type == LadderItem.TYPE_TRANSITION) {
+                        // only allow dragging of TYPE_EVENT
+                        needsHandling = false
+                    }
+
+                    if (needsHandling) {
+                        guiState = STATE_MOVING_EVENT
+                        startY = myClamped
+                        startYLow = newActiveEventItem.yLow
+                        startYHigh = newActiveEventItem.yHigh
+                        startT = newActiveEventItem.event.t
+                        findEventLimits(newActiveEventItem)
+                        needsHandling = false
+                    }
+                }
+
+                if (needsHandling) {
+                    val newActivePositionItem = getSelectedLadderPosition(mx, my)
+                    if (newActivePositionItem != null) {
+                        if (oldActiveLadderItem === newActivePositionItem) {
+                            itemWasSelected = true
+                        }
+                        guiState = STATE_MOVING_POSITION
+                        startY = myClamped
+                        startYLow = newActivePositionItem.yLow
+                        startYHigh = newActivePositionItem.yHigh
+                        startT = newActivePositionItem.position.t
+                        findPositionLimits(newActivePositionItem)
+                        state.update(selectedItemHashCode = newActivePositionItem.jlHashCode)
+                        needsHandling = false
+                    }
+                }
+
+                if (needsHandling) {
+                    if (ignoreEmptySpace) {
+                        return false
+                    }
+                    guiState = STATE_MOVING_TRACKER
+                    val newTime = layout.yToTime(myClamped)
+                    animWasPaused = animWasPaused ?: state.isPaused
+                    state.update(isPaused = true, selectedItemHashCode = 0)
+                    state.update(time = newTime)
+                    return true
+                }
                 return true
             }
 
-            when (guiState) {
-                STATE_INACTIVE -> {
-                    var needsHandling = true
-                    itemWasSelected = false
-                    val oldActiveLadderItem = activeLadderItem()
-
-                    val newActiveEventItem = getSelectedLadderEvent(mx, my)
-                    if (newActiveEventItem != null) {
-                        if (oldActiveLadderItem === newActiveEventItem) {
-                            itemWasSelected = true
-                        }
-                        state.update(selectedItemHashCode = newActiveEventItem.jlHashCode)
-                        if (newActiveEventItem.type == LadderItem.TYPE_TRANSITION) {
-                            // only allow dragging of TYPE_EVENT
-                            needsHandling = false
-                        }
-
-                        if (needsHandling) {
-                            guiState = STATE_MOVING_EVENT
-                            startY = myClamped
-                            startYLow = newActiveEventItem.yLow
-                            startYHigh = newActiveEventItem.yHigh
-                            startT = newActiveEventItem.event.t
-                            findEventLimits(newActiveEventItem)
-                            needsHandling = false
-                        }
-                    }
-
-                    if (needsHandling) {
-                        val newActivePositionItem = getSelectedLadderPosition(mx, my)
-                        if (newActivePositionItem != null) {
-                            if (oldActiveLadderItem === newActivePositionItem) {
-                                itemWasSelected = true
-                            }
-                            guiState = STATE_MOVING_POSITION
-                            startY = myClamped
-                            startYLow = newActivePositionItem.yLow
-                            startYHigh = newActivePositionItem.yHigh
-                            startT = newActivePositionItem.position.t
-                            findPositionLimits(newActivePositionItem)
-                            state.update(selectedItemHashCode = newActivePositionItem.jlHashCode)
-                            needsHandling = false
-                        }
-                    }
-
-                    if (needsHandling) {
-                        if (ignoreEmptySpace) {
-                            return false
-                        }
-                        guiState = STATE_MOVING_TRACKER
-                        val newTime = layout.yToTime(myClamped)
-                        animWasPaused = animWasPaused ?: state.isPaused
-                        state.update(isPaused = true, selectedItemHashCode = 0)
-                        state.update(time = newTime)
-                        return true
-                    }
-                    return true
-                }
-
-                STATE_MOVING_EVENT -> {}
-                STATE_MOVING_POSITION -> {}
-                STATE_MOVING_TRACKER -> {}
-                STATE_POPUP -> finishPopup()
-            }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            STATE_MOVING_EVENT -> {}
+            STATE_MOVING_POSITION -> {}
+            STATE_MOVING_TRACKER -> {}
+            STATE_POPUP -> finishPopup()
         }
         return false
     }
 
     @Suppress("unused")
     private fun mouseDraggedLogic(mx: Int, my: Int) {
-        try {
-            val layout = currentLayout ?: return
-            if (layout.pattern !== state.pattern) return
-            val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
+        val layout = currentLayout ?: return
+        if (layout.pattern !== state.pattern) return
+        val myClamped = min(max(my, layout.borderTop), layout.height - layout.borderTop)
 
-            when (guiState) {
-                STATE_INACTIVE, STATE_POPUP -> {}
-                STATE_MOVING_EVENT -> {
-                    val activeEventItem = activeLadderItem() as LadderEventItem
-                    val oldDeltaY = deltaY
-                    deltaY = getClippedEventTime(activeEventItem, myClamped)
-                    if (deltaY != oldDeltaY) {
-                        moveEventInPattern(activeEventItem.transEventItem!!)
-                    }
-                }
-
-                STATE_MOVING_POSITION -> {
-                    val activePositionItem = activeLadderItem() as LadderPositionItem
-                    val oldDeltaY = deltaY
-                    deltaY = getClippedPositionTime(myClamped, activePositionItem.position)
-                    if (deltaY != oldDeltaY) {
-                        movePositionInPattern(activePositionItem)
-                    }
-                }
-
-                STATE_MOVING_TRACKER -> {
-                    val newTime = layout.yToTime(myClamped)
-                    state.update(time = newTime)
+        when (guiState) {
+            STATE_INACTIVE, STATE_POPUP -> {}
+            STATE_MOVING_EVENT -> {
+                val activeEventItem = activeLadderItem() as LadderEventItem
+                val oldDeltaY = deltaY
+                deltaY = getClippedEventTime(activeEventItem, myClamped)
+                if (deltaY != oldDeltaY) {
+                    moveEventInPattern(activeEventItem.transEventItem!!)
                 }
             }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+
+            STATE_MOVING_POSITION -> {
+                val activePositionItem = activeLadderItem() as LadderPositionItem
+                val oldDeltaY = deltaY
+                deltaY = getClippedPositionTime(myClamped, activePositionItem.position)
+                if (deltaY != oldDeltaY) {
+                    movePositionInPattern(activePositionItem)
+                }
+            }
+
+            STATE_MOVING_TRACKER -> {
+                val newTime = layout.yToTime(myClamped)
+                state.update(time = newTime)
+            }
         }
     }
 
     private fun mouseReleasedLogic() {
-        try {
-            when (guiState) {
-                STATE_INACTIVE -> {}
-                STATE_MOVING_EVENT -> {
-                    guiState = STATE_INACTIVE
-                    if (deltaY != 0) {
-                        deltaY = 0
-                        state.addCurrentToUndoList()
-                    } else if (itemWasSelected) {
-                        state.update(selectedItemHashCode = 0)
-                    }
+        when (guiState) {
+            STATE_INACTIVE -> {}
+            STATE_MOVING_EVENT -> {
+                guiState = STATE_INACTIVE
+                if (deltaY != 0) {
+                    deltaY = 0
+                    state.addCurrentToUndoList()
+                } else if (itemWasSelected) {
+                    state.update(selectedItemHashCode = 0)
                 }
-
-                STATE_MOVING_POSITION -> {
-                    guiState = STATE_INACTIVE
-                    if (deltaY != 0) {
-                        deltaY = 0
-                        state.addCurrentToUndoList()
-                    } else if (itemWasSelected) {
-                        state.update(selectedItemHashCode = 0)
-                    }
-                }
-
-                STATE_MOVING_TRACKER -> {
-                    guiState = STATE_INACTIVE
-                    state.update(isPaused = animWasPaused)
-                    animWasPaused = null
-                }
-
-                STATE_POPUP -> {}
             }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+
+            STATE_MOVING_POSITION -> {
+                guiState = STATE_INACTIVE
+                if (deltaY != 0) {
+                    deltaY = 0
+                    state.addCurrentToUndoList()
+                } else if (itemWasSelected) {
+                    state.update(selectedItemHashCode = 0)
+                }
+            }
+
+            STATE_MOVING_TRACKER -> {
+                guiState = STATE_INACTIVE
+                state.update(isPaused = animWasPaused)
+                animWasPaused = null
+            }
+
+            STATE_POPUP -> {}
         }
     }
 
@@ -724,8 +734,10 @@ class LadderDiagramController(
                 propForPath = newPattern.initialPropForPath
             )
             state.addCurrentToUndoList()
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
         }
         onDismissDialog()
     }
@@ -750,8 +762,10 @@ class LadderDiagramController(
             val newPattern = JmlPattern.fromPatternBuilder(record)
             state.update(pattern = newPattern)
             state.addCurrentToUndoList()
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
         }
         onDismissDialog()
     }
@@ -774,8 +788,10 @@ class LadderDiagramController(
                 "makelast" -> makeLastInEvent()
                 else -> throw JuggleExceptionInternal("unknown item in LDC popup")
             }
-        } catch (e: Exception) {
-            jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+        } catch (e: JuggleExceptionUser) {
+            onError(e)
+        } catch (e: Throwable) {
+            onError(JuggleExceptionInternal(e, state.pattern))
         }
     }
 

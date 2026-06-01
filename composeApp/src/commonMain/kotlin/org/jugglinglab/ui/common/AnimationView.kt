@@ -16,7 +16,7 @@ import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.renderer.Renderer
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
-import org.jugglinglab.util.jlHandleFatalException
+import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlToStringRounded
 import org.jugglinglab.util.jlPlayBounceSound
 import org.jugglinglab.util.jlPlayCatchSound
@@ -74,7 +74,8 @@ fun AnimationView(
     onFrame: (Double) -> Unit = {},
     onZoom: (Float) -> Unit = {},
     textMeasurer: TextMeasurer = rememberTextMeasurer(),
-    isAntiAlias: Boolean = true
+    isAntiAlias: Boolean = true,
+    onError: (Throwable) -> Unit
 ) {
     // two renderers for stereo support
     val renderer1 = remember { Renderer() }
@@ -170,8 +171,10 @@ fun AnimationView(
                 } else {
                     renderer1.cameraAngle = ca
                 }
-            } catch (e: Exception) {
-                jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
+            } catch (e: JuggleExceptionUser) {
+                onError(e)
+            } catch (e: Throwable) {
+                onError(JuggleExceptionInternal(e, state.pattern))
             }
             true
         }
@@ -250,7 +253,8 @@ fun AnimationView(
                         onPress = onPress,
                         onDrag = onDrag,
                         onRelease = onRelease,
-                        density = density
+                        density = density,
+                        onError = onError
                     )
                 }
         ) {
@@ -319,7 +323,7 @@ fun AnimationView(
                 }
             } catch (e: Exception) {
                 coroutineScope.launch {
-                    state.update(message = e.message ?: e.toString(), isPaused = true)
+                    onError(e)
                 }
             }
         }
@@ -337,7 +341,8 @@ private suspend fun PointerInputScope.handlePointerEvents(
     onPress: (Offset) -> Unit,
     onDrag: (Offset, Float) -> Unit,
     onRelease: (Boolean) -> Unit,
-    density: Float
+    density: Float,
+    onError: (Throwable) -> Unit
 ) {
     awaitPointerEventScope {
         var isZooming = false
@@ -349,17 +354,29 @@ private suspend fun PointerInputScope.handlePointerEvents(
             val changes = event.changes
 
             if (event.type == PointerEventType.Enter) {
-                onEnter()
-            } else if (event.type == PointerEventType.Exit) {
-                onExit()
-            } else if (event.type == PointerEventType.Scroll) {
-                val delta = changes.first().scrollDelta
-                // delta.y is positive for scrolling down (zoom in), negative for up (zoom out)
-                var zoomFactor = 1f + 0.1f * abs(delta.y)
-                if (delta.y < 0) {
-                    zoomFactor = 1 / zoomFactor
+                try {
+                    onEnter()
+                } catch (e: Exception) {
+                    onError(e)
                 }
-                onZoom(zoomFactor)
+            } else if (event.type == PointerEventType.Exit) {
+                try {
+                    onExit()
+                } catch (e: Exception) {
+                    onError(e)
+                }
+            } else if (event.type == PointerEventType.Scroll) {
+                try {
+                    val delta = changes.first().scrollDelta
+                    // delta.y is positive for scrolling down (zoom in), negative for up (zoom out)
+                    var zoomFactor = 1f + 0.1f * abs(delta.y)
+                    if (delta.y < 0) {
+                        zoomFactor = 1 / zoomFactor
+                    }
+                    onZoom(zoomFactor)
+                } catch (e: Exception) {
+                    onError(e)
+                }
                 changes.first().consume()
                 continue
             }
@@ -368,7 +385,11 @@ private suspend fun PointerInputScope.handlePointerEvents(
 
             if (pressed.size >= 2) {
                 if (!isZooming) {
-                    onRelease(true)  // cancel any active drag without triggering a click
+                    try {
+                        onRelease(true)  // cancel any active drag without triggering a click
+                    } catch (e: Exception) {
+                        onError(e)
+                    }
                     isZooming = true
                     wasZoomingThisGesture = true
                     zoomLastDistance = 0f
@@ -381,7 +402,11 @@ private suspend fun PointerInputScope.handlePointerEvents(
                 if (zoomLastDistance > 0f) {
                     val zoomFactor = currentDistance / zoomLastDistance
                     if (zoomFactor != 1.0f) {
-                        onZoom(zoomFactor)
+                        try {
+                            onZoom(zoomFactor)
+                        } catch (e: Exception) {
+                            onError(e)
+                        }
                     }
                 }
                 zoomLastDistance = currentDistance
@@ -400,10 +425,18 @@ private suspend fun PointerInputScope.handlePointerEvents(
                         change.consume()
                     } else {
                         if (change.changedToDown()) {
-                            onPress(offset)
+                            try {
+                                onPress(offset)
+                            } catch (e: Exception) {
+                                onError(e)
+                            }
                             change.consume()
                         } else if (change.positionChanged()) {
-                            onDrag(offset, density)
+                            try {
+                                onDrag(offset, density)
+                            } catch (e: Exception) {
+                                onError(e)
+                            }
                             change.consume()
                         }
                     }
@@ -411,7 +444,11 @@ private suspend fun PointerInputScope.handlePointerEvents(
             } else {
                 isZooming = false
                 if (changes.any { it.changedToUp() }) {
-                    onRelease(wasZoomingThisGesture)
+                    try {
+                        onRelease(wasZoomingThisGesture)
+                    } catch (e: Exception) {
+                        onError(e)
+                    }
                     wasZoomingThisGesture = false
                     changes.forEach { it.consume() }
                 } else {

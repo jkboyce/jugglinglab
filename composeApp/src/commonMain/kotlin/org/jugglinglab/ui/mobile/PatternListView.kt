@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
@@ -50,8 +51,6 @@ fun PatternListView(
     patternListPath: Path? = null,
     listState: LazyListState = rememberLazyListState(),
     onItemClick: (Int, PatternRecord) -> Unit,
-    onLoadClick: () -> Unit = {},
-    onNewListClick: () -> Unit = {},
     onDuplicateClick: () -> Unit = {},
     onSaveAsClick: (String) -> Unit = {},
     onRenameListClick: (String) -> Unit = {},
@@ -62,7 +61,8 @@ fun PatternListView(
     onPatternListModified: () -> Unit = {},
     onExportList: () -> Unit = {},
     onSharePattern: (PatternRecord) -> Unit = {},
-    onExportPattern: (PatternRecord) -> Unit = {}
+    onExportPattern: (PatternRecord) -> Unit = {},
+    onCloseClick: (() -> Unit)? = null
 ) {
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -74,9 +74,26 @@ fun PatternListView(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 2.dp),
+                .padding(
+                    start = if (onCloseClick != null) 4.dp else 16.dp,
+                    end = 12.dp,
+                    top = 2.dp,
+                    bottom = 2.dp
+                ),
             verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
         ) {
+            if (onCloseClick != null) {
+                IconButton(
+                    onClick = onCloseClick,
+                    modifier = Modifier.walkthroughTarget("pattern_list_close")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Close",
+                        tint = MaterialTheme.colorScheme.onBackground
+                    )
+                }
+            }
             val heading = patternListPath?.name?.removeSuffix(".jml")
                 ?: patternList.title?.let { if (isEditable) "$it (unsaved)" else it }
                 ?: if (isEditable) stringResource(
@@ -113,23 +130,6 @@ fun PatternListView(
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
-                    HorizontalDivider()
-                    if (!isFavoritesList) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(Res.string.gui_new_pattern_list)) },
-                            onClick = {
-                                showMainMenu = false
-                                onNewListClick()
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(Res.string.gui_mobile_load___)) },
-                            onClick = {
-                                showMainMenu = false
-                                onLoadClick()
-                            }
-                        )
-                    }
                     HorizontalDivider()
 
                     if (isEditable && patternListPath == null) {

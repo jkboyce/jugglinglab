@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "805605786644",
+    "project_id": "juggling-lab",
+    "storage_bucket": "juggling-lab.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805605786644:android:502a847e164ae2d1191301",
+        "android_client_info": {
+          "package_name": "com.jonglen7.jugglinglab"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCukcueSCnG2CTZZCvMr8pbsXuQFmntuyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:805605786644:android:34442cd72ae500ea191301",
+        "android_client_info": {
+          "package_name": "com.jonglen7.jugglinglab.debug"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCukcueSCnG2CTZZCvMr8pbsXuQFmntuyQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

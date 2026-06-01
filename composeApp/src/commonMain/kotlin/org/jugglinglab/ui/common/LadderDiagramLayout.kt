@@ -142,7 +142,7 @@ class LadderDiagramLayout(
 
             // expand to fit width
             val maxTransitions = pattern.loopEvents.maxOf { it.event.transitions.size }
-            val scale2 = ((rightX - leftX) / (maxTransitions * 6 + 6)).toDouble() / transitionRadius.toDouble()
+            val scale2 = ((rightX - leftX) / (maxTransitions * 4 + 4)).toDouble() / transitionRadius.toDouble()
             if (scale2 > 1.0) {
                 transitionRadius = (transitionRadius * scale2).roundToInt()
                 positionRadius = (positionRadius * scale2).roundToInt()

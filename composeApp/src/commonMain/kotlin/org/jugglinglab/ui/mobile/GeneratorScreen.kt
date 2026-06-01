@@ -41,7 +41,7 @@ fun GeneratorScreen(
     combinedState: GeneratorControlCombinedState,
     onNavigateTo: (String) -> Unit,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -91,13 +91,13 @@ fun GeneratorScreen(
                                 patternList.addLine(-1, record)
                             }
                     } catch (e: Exception) {
-                        onError(e.message)
+                        onError(e)
                     } finally {
                         onBusyChange(false)
                     }
                 }
             } catch (e: Exception) {
-                onError(e.message)
+                onError(e)
                 onBusyChange(false)
             }
         },
@@ -144,13 +144,13 @@ fun GeneratorScreen(
                                 patternList.addLine(-1, record)
                             }
                     } catch (e: Exception) {
-                        onError(e.message)
+                        onError(e)
                     } finally {
                         onBusyChange(false)
                     }
                 }
             } catch (e: Exception) {
-                onError(e.message)
+                onError(e)
                 onBusyChange(false)
             }
         },

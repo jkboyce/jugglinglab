@@ -24,7 +24,7 @@ fun NotationScreen(
     animationController: AnimationController,
     onNavigateToAnimation: () -> Unit,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
     val initialParams = if (state.pattern.basePatternNotation.equals("siteswap", ignoreCase = true)) {
@@ -47,7 +47,7 @@ fun NotationScreen(
                         onNavigateToAnimation()
                     }
                 } catch (e: Exception) {
-                    onError(e.message)
+                    onError(e)
                 } finally {
                     onBusyChange(false)
                 }

@@ -15,6 +15,9 @@ import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.ui.mobile.App
 import org.jugglinglab.ui.components.JlErrorDialog
 import org.jugglinglab.util.AndroidContext
+import org.jugglinglab.util.CrashReporter
+import org.jugglinglab.util.crashReporter
+import org.jugglinglab.util.JuggleExceptionInternal
 import android.os.Bundle
 import android.content.Context
 import androidx.activity.ComponentActivity
@@ -36,6 +39,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.lifecycle.lifecycleScope
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import okio.FileSystem
@@ -69,6 +73,29 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
+
+        // Set up Firebase crash logging/reporting
+        crashReporter = object : CrashReporter {
+            override fun recordThrowable(throwable: Throwable, message: String?) {
+                val crashlytics = FirebaseCrashlytics.getInstance()
+                message?.let { crashlytics.log(it) }  // Adds custom breadcrumb context
+                if (throwable is JuggleExceptionInternal) {
+                    val pat = throwable.pattern
+                    if (pat != null) {
+                        crashlytics.setCustomKey("jml_pattern", pat.toString())
+                    }
+                    val wrapped = throwable.wrapped
+                    if (wrapped != null) {
+                        crashlytics.setCustomKey("wrapped_exception", wrapped.toString())
+                        crashlytics.recordException(wrapped)
+                    } else {
+                        crashlytics.recordException(throwable)
+                    }
+                } else {
+                    crashlytics.recordException(throwable)
+                }
+            }
+        }
 
         // Provide the application context to platform functions that need it
         // (e.g. jlShareUrl).

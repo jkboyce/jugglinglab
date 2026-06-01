@@ -18,17 +18,20 @@ import org.jugglinglab.util.ParameterList
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlCompareVersions
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 
 class JmlPatternList(
     jmlNode: JmlNode? = null
 ) {
     var loadingJmlVersion: String = JmlDefs.CURRENT_JML_VERSION
 
-    var title: String? = null
+    private val _title = mutableStateOf<String?>(null)
+    var title: String?
+        get() = _title.value
         set(t) {
             // by convention we don't allow title to be zero-length string "",
             // but use null instead
-            field = if (t == null || t.trim().isEmpty()) null else t.trim()
+            _title.value = if (t == null || t.trim().isEmpty()) null else t.trim()
         }
 
     var info: String? = null

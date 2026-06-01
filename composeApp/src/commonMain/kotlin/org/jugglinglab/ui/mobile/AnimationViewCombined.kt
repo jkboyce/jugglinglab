@@ -19,7 +19,6 @@ import org.jugglinglab.prop.Prop
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
-import org.jugglinglab.util.jlHandleFatalException
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -29,7 +28,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -80,7 +79,8 @@ fun AnimationViewCombined(
     onRemoveFromFavorites: (JmlPattern, AnimationPrefs) -> Unit = { _, _ -> },
     onShare: () -> Unit = {},
     onExport: () -> Unit = {},
-    onBusy: (Boolean) -> Unit = {}
+    onBusy: (Boolean) -> Unit = {},
+    onError: (Throwable) -> Unit
 ) {
     val coordinator = LocalWalkthroughCoordinator.current
     val coroutineScope = rememberCoroutineScope()
@@ -88,7 +88,8 @@ fun AnimationViewCombined(
         lateinit var controller: LadderDiagramController
         controller = LadderDiagramController(
             state = state,
-            onMakePopup = { _, _, _ -> controller.onShowMenu() }
+            onMakePopup = { _, _, _ -> controller.onShowMenu() },
+            onError = onError
         )
         controller
     }
@@ -116,9 +117,10 @@ fun AnimationViewCombined(
     }
 
     val currentLayout = animationController.currentLayout
-    LaunchedEffect(animCenter.value, currentLayout, state.selectedItemHashCode, coordinator) {
+    LaunchedEffect(animCenter.value, currentLayout, state.selectedItemHashCode, coordinator, coordinator?.walkthroughStep) {
+        val step = coordinator?.walkthroughStep ?: 0
         val ac = animCenter.value
-        if (ac != null && currentLayout != null && state.selectedItemHashCode != 0 && coordinator != null) {
+        if (step != 0 && ac != null && currentLayout != null && state.selectedItemHashCode != 0 && coordinator != null) {
             val eventPoints = currentLayout.eventPoints.getOrNull(0)?.getOrNull(0)
             if (eventPoints != null && eventPoints.size >= 4) {
                 val minX = eventPoints.take(4).minOf { it[0] }.toFloat()
@@ -139,15 +141,18 @@ fun AnimationViewCombined(
     }
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+        val boxWidth = maxWidth
         val isLandscape = maxWidth > maxHeight
 
+        // for portrait mode
         val targetWeight = if (isLadderExpanded && !isLandscape) 1.5f else 0.001f
         val ladderWeight by animateFloatAsState(
             targetValue = targetWeight,
             label = "ladderWeight"
         )
 
-        val targetWidthFraction = if (isLadderExpanded && isLandscape) 0.8f else 0.001f
+        // for landscape mode
+        val targetWidthFraction = if (isLadderExpanded && isLandscape) 1f else 0.001f
         val ladderWidthFraction by animateFloatAsState(
             targetValue = targetWidthFraction,
             label = "ladderWidthFraction"
@@ -193,7 +198,8 @@ fun AnimationViewCombined(
                             .walkthroughTarget("anim_center")
                             .onGloballyPositioned { coords ->
                                 animCenter.value = coords.boundsInRoot()
-                            }
+                            },
+                        onError = onError
                     )
 
                     IconButton(
@@ -232,14 +238,22 @@ fun AnimationViewCombined(
                         onBusy = onBusy,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = 12.dp, end = 12.dp),
+                            .padding(top = 16.dp, end = 12.dp),
                         onMenuPositioned = { bounds ->
-                            coordinator?.reportElement("anim_menu", bounds)
+                            if (coordinator != null && coordinator.walkthroughStep != 0) {
+                                coordinator.reportElement("anim_menu", bounds)
+                            }
                         }
                     )
                 }
 
                 if (ladderWidthFraction > 0.01f) {
+                    val borderTopDp = 25.dp
+                    val preferredLadderWidth = borderTopDp * (12 * state.pattern.numberOfJugglers)
+                    val maximumLadderWidth = boxWidth * 0.55f
+                    val fullExpandedWidth = minOf(preferredLadderWidth, maximumLadderWidth)
+                    val currentWidth = fullExpandedWidth * ladderWidthFraction
+
                     LadderDiagramView(
                         state = state,
                         colorScheme = colorScheme,
@@ -252,7 +266,7 @@ fun AnimationViewCombined(
                         scrollState = ladderScrollState,
                         modifier = Modifier
                             .fillMaxHeight()
-                            .aspectRatio(ladderWidthFraction, matchHeightConstraintsFirst = true)
+                            .width(currentWidth)
                     )
                 }
             }
@@ -277,7 +291,8 @@ fun AnimationViewCombined(
                             .walkthroughTarget("anim_center")
                             .onGloballyPositioned { coords ->
                                 animCenter.value = coords.boundsInRoot()
-                            }
+                            },
+                        onError = onError
                     )
 
                     IconButton(
@@ -316,9 +331,11 @@ fun AnimationViewCombined(
                         onBusy = onBusy,
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .padding(top = 12.dp, end = 12.dp),
+                            .padding(top = 16.dp, end = 12.dp),
                         onMenuPositioned = { bounds ->
-                            coordinator?.reportElement("anim_menu", bounds)
+                            if (coordinator != null && coordinator.walkthroughStep != 0) {
+                                coordinator.reportElement("anim_menu", bounds)
+                            }
                         }
                     )
                 }
@@ -412,7 +429,8 @@ private fun AnimationViewMenus(
     onExport: () -> Unit,
     modifier: Modifier = Modifier,
     onBusy: (Boolean) -> Unit = {},
-    onMenuPositioned: ((Rect) -> Unit)? = null
+    onMenuPositioned: ((Rect) -> Unit)? = null,
+    onError: (Throwable) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
     val state = animationController.state
@@ -492,7 +510,7 @@ private fun AnimationViewMenus(
                             )
                         } catch (jeu: JuggleExceptionUser) {
                             // pattern was animated before so user error should not occur
-                            jlHandleFatalException(JuggleExceptionInternal(jeu.message ?: ""))
+                            onError(JuggleExceptionInternal(jeu, state.pattern))
                         }
                     }
                 }
@@ -511,7 +529,7 @@ private fun AnimationViewMenus(
                             )
                         } catch (jeu: JuggleExceptionUser) {
                             // pattern was animated before so user error should not occur
-                            jlHandleFatalException(JuggleExceptionInternal(jeu.message ?: ""))
+                            onError(JuggleExceptionInternal(jeu, state.pattern))
                         }
                     }
                 }
@@ -636,8 +654,12 @@ private fun AnimationViewMenus(
                 text = { Text(stringResource(Res.string.gui_flip_pattern_in_time)) },
                 onClick = {
                     isMenuExpanded = false
-                    state.update(pattern = state.pattern.withInvertedTime())
-                    state.addCurrentToUndoList()
+                    try {
+                        state.update(pattern = state.pattern.withInvertedTime())
+                        state.addCurrentToUndoList()
+                    } catch (e: Exception) {
+                        onError(e)
+                    }
                 }
             )
         }

@@ -23,7 +23,9 @@ class WalkthroughCoordinator(
     private val prefsRepo: StoredPreferencesRepository?,
     private val state: PatternAnimationState,
     private val coroutineScope: CoroutineScope,
-    private val onNavigateTo: (String) -> Unit
+    private val onNavigateTo: (String) -> Unit,
+    private val onResetAnimationToDefault: () -> Unit = {},
+    private val onResetPatternListState: () -> Unit = {}
 ) {
     var walkthroughStep by mutableIntStateOf(0)
     val walkthroughPositions = mutableStateMapOf<String, Rect>()
@@ -38,6 +40,7 @@ class WalkthroughCoordinator(
     fun handleOkClick() {
         when (walkthroughStep) {
             3 -> {
+                onResetAnimationToDefault()
                 onNavigateTo("Animation")
                 walkthroughStep = 4
             }
@@ -48,19 +51,24 @@ class WalkthroughCoordinator(
             }
 
             13 -> {
+                onResetPatternListState()
                 onNavigateTo("Info")
                 walkthroughStep = 14
             }
 
             17 -> {
-                onNavigateTo("Info")
                 walkthroughStep = 18
             }
 
             18 -> {
+                // Interactive close button step. Handled reactively.
+            }
+
+            19 -> {
                 coroutineScope.launch {
                     prefsRepo?.saveOnboardingCompleted(true)
                 }
+                onNavigateTo("Info")
                 state.update(selectedItemHashCode = 0)
                 walkthroughPositions.clear()
                 walkthroughStep = 0
@@ -108,10 +116,10 @@ private val WALKTHROUGH_STEPS = listOf(
     Pair("", ""), // Step 0 placeholder
     Pair(
         "nav_info",
-        "Welcome to Juggling Lab! This is the main screen – come back here by clicking this icon."
+        "Welcome to Juggling Lab! This is the home screen – come back here by clicking this icon. (Please do so to advance.)"
     ),
     Pair(
-        "info_library",
+        "info_pattern_list",
         "Go here to open juggling patterns to view."
     ),
     Pair(
@@ -124,7 +132,7 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "anim_menu",
-        "Touch this to access the pattern menu."
+        "Touch this to access the pattern menu. (Please do so to advance.)"
     ),
     Pair(
         "anim_ladder_toggle",
@@ -156,11 +164,11 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "anim_ladder_toggle",
-        "Touch this to close the ladder diagram."
+        "Touch this to close the ladder diagram. (Please do so to advance.)"
     ),
     Pair(
-        "info_library",
-        "Select the Library icon to open a list of patterns. (Please do so to advance.)"
+        "info_pattern_list",
+        "Select the Pattern List icon to open a list of patterns. (Please do so to advance.)"
     ),
     Pair(
         "file_my_lists",
@@ -168,11 +176,15 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "file_how_to_juggle",
-        "These are the pattern lists that come with Juggling Lab. Select this one to open it."
+        "These are the pattern lists that come with Juggling Lab. Select this one to open it. (Please do so to advance.)"
     ),
     Pair(
         "pattern_list_line",
         "Each line is a separate pattern. Touch one to launch an animation, or long press for additional options. The menu at the upper right accesses features for the entire list."
+    ),
+    Pair(
+        "pattern_list_close",
+        "Use this to close a pattern list and load a new one. (Please do so to advance.)"
     ),
     Pair(
         "",

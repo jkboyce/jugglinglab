@@ -56,31 +56,6 @@ actual fun jlToStringRounded(value: Double, digits: Int): String {
 }
 
 //------------------------------------------------------------------------------
-// Helpers for message display and error handling
-//------------------------------------------------------------------------------
-
-// Show an informational message dialog.
-
-actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
-    // do something here
-}
-
-// Show a message dialog for a recoverable user error.
-
-actual fun jlHandleUserException(parent: Any?, msg: String?) {
-    // do something here
-}
-
-// Handle a fatal exception by presenting a window to the user with detailed
-// debugging information. The intent is that these exceptions only happen in
-// the event of a bug in Juggling Lab, and so we invite users to email us this
-// information.
-
-actual fun jlHandleFatalException(e: Exception) {
-    // do something here
-}
-
-//------------------------------------------------------------------------------
 // Helpers for execution context information
 //------------------------------------------------------------------------------
 
@@ -134,12 +109,6 @@ actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
 //------------------------------------------------------------------------------
 // Other
 //------------------------------------------------------------------------------
-
-// Return the native screen refresh rate.
-
-actual fun jlGetScreenFps(): Double {
-    return 33.3
-}
 
 // Singleton holder for the application Context, set by MainActivity.
 // Required so that platform functions like jlShareUrl can access a Context

@@ -35,24 +35,31 @@ fun WalkthroughOverlay(
     walkthroughCoordinator: WalkthroughCoordinator,
     currentRoute: String,
     patternListTitle: String?,
+    hasLoadedPatternList: Boolean,
     maxW: Dp,
     maxH: Dp,
     modifier: Modifier = Modifier
 ) {
     // Walkthrough auto-advancements observer effects
-    LaunchedEffect(currentRoute) {
-        if (walkthroughCoordinator.walkthroughStep == 14 && currentRoute == "FileChooser") {
+    LaunchedEffect(currentRoute, walkthroughCoordinator.walkthroughStep) {
+        if (walkthroughCoordinator.walkthroughStep == 14 && currentRoute == "PatternList") {
             walkthroughCoordinator.walkthroughStep = 15
         }
     }
 
-    LaunchedEffect(currentRoute, patternListTitle) {
+    LaunchedEffect(currentRoute, patternListTitle, walkthroughCoordinator.walkthroughStep) {
         if (walkthroughCoordinator.walkthroughStep == 16 && currentRoute == "PatternList" && patternListTitle == "How to Juggle") {
             walkthroughCoordinator.walkthroughStep = 17
         }
     }
 
-    if (walkthroughCoordinator.walkthroughStep in 1..18) {
+    LaunchedEffect(currentRoute, hasLoadedPatternList, walkthroughCoordinator.walkthroughStep) {
+        if (walkthroughCoordinator.walkthroughStep == 18 && currentRoute == "PatternList" && !hasLoadedPatternList) {
+            walkthroughCoordinator.walkthroughStep = 19
+        }
+    }
+
+    if (walkthroughCoordinator.walkthroughStep in 1..19) {
         val activeStepData = walkthroughCoordinator.activeStepData
         if (activeStepData != null) {
             val highlightKey = activeStepData.first
@@ -64,7 +71,7 @@ fun WalkthroughOverlay(
                 val localTop = rawHighlightRect.top - rBounds.top
                 val localWidth = rawHighlightRect.width
                 val localHeight = rawHighlightRect.height
-                if (highlightKey == "anim_center" || highlightKey == "ladder_center" || highlightKey == "info_library" || highlightKey == "info_favorites") {
+                if (highlightKey == "anim_center" || highlightKey == "ladder_center" || highlightKey == "info_favorites" || highlightKey == "info_pattern_list") {
                     Rect(
                         left = localLeft,
                         top = localTop,
@@ -84,7 +91,7 @@ fun WalkthroughOverlay(
             } else {
                 rawHighlightRect
             }
-            val isInteractive = walkthroughCoordinator.walkthroughStep in listOf(6, 9, 14, 16)
+            val isInteractive = walkthroughCoordinator.walkthroughStep in listOf(6, 9, 14, 16, 18)
             val density = LocalDensity.current
             val densityVal = density.density
 
@@ -188,10 +195,18 @@ fun WalkthroughOverlay(
                             .pointerInput(Unit) { detectTapGestures {} }
                     )
                 } else if (!isInteractive) {
+                    val step = walkthroughCoordinator.walkthroughStep
+                    val isTapToAdvanceStep = step in listOf(1, 5, 13)
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
-                            .pointerInput(Unit) { detectTapGestures {} }
+                            .pointerInput(step, highlightRect) {
+                                detectTapGestures { offset ->
+                                    if (isTapToAdvanceStep && highlightRect != null && highlightRect.contains(offset)) {
+                                        walkthroughCoordinator.handleOkClick()
+                                    }
+                                }
+                            }
                     )
                 }
 
@@ -227,7 +242,7 @@ fun WalkthroughOverlay(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = "TOUR: STEP ${walkthroughCoordinator.walkthroughStep} OF 18",
+                                text = "TOUR: STEP ${walkthroughCoordinator.walkthroughStep} OF 19",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.primary,
                                 fontWeight = FontWeight.Bold
@@ -236,7 +251,7 @@ fun WalkthroughOverlay(
                                 onClick = onSkipClick,
                                 colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                             ) {
-                                Text("Skip Tour")
+                                Text("Exit Tour")
                             }
                         }
                         Spacer(modifier = Modifier.height(10.dp))
@@ -245,14 +260,15 @@ fun WalkthroughOverlay(
                             style = MaterialTheme.typography.bodyLarge.copy(lineHeight = 22.sp),
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
-                        if (!isInteractive) {
+                        val showOkButton = !isInteractive && walkthroughCoordinator.walkthroughStep !in listOf(1, 5, 13)
+                        if (showOkButton) {
                             Spacer(modifier = Modifier.height(16.dp))
                             Button(
                                 onClick = onOkClick,
                                 modifier = Modifier.align(Alignment.End),
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text(if (walkthroughCoordinator.walkthroughStep == 18) "Finish" else "OK")
+                                Text(if (walkthroughCoordinator.walkthroughStep == 19) "Finish" else "OK")
                             }
                         }
                     }

@@ -13,6 +13,7 @@ import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.ui.common.*
+import org.jugglinglab.util.JuggleExceptionInternal
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,7 +38,7 @@ fun FavoritesScreen(
     onPatternListScrollStateChange: (LazyListState) -> Unit,
     onNavigateTo: (String) -> Unit,
     onBusyChange: (Boolean) -> Unit,
-    onError: (String?) -> Unit,
+    onError: (Throwable) -> Unit,
     onAddToFavorites: (PatternRecord) -> Unit,
     onRemoveFromFavorites: (PatternRecord) -> Unit,
     saveFavoritesList: () -> Unit,
@@ -66,7 +67,7 @@ fun FavoritesScreen(
                         onNavigateTo("Animation")
                     }
                 } catch (e: Exception) {
-                    onError(e.message)
+                    onError(e)
                 } finally {
                     onBusyChange(false)
                 }
@@ -124,7 +125,14 @@ fun FavoritesScreen(
                         }
                         kotlin.system.exitProcess(0)
                     } catch (e: Exception) {
-                        onError(getString(Res.string.error_mobile_deleting_favorites, e.message ?: ""))
+                        onError(
+                            JuggleExceptionInternal(
+                                getString(
+                                    Res.string.error_mobile_deleting_favorites,
+                                    e.message ?: ""
+                                )
+                            )
+                        )
                     }
                 }
             } else {

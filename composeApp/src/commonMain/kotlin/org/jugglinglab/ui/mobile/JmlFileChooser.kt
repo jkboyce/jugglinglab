@@ -12,6 +12,7 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
+import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -59,7 +60,7 @@ fun JmlFileChooser(
     onPatternLoaded: (JmlPattern) -> Unit,
     onPatternListLoaded: (JmlPatternList, Boolean, Path?) -> Unit,
     onNewListClick: () -> Unit,
-    onError: (String) -> Unit,
+    onError: (Throwable) -> Unit,
     modifier: Modifier = Modifier,
     localFilesDir: Path? = null,
     jmlStorageRepository: org.jugglinglab.core.JmlStorageRepository
@@ -159,13 +160,13 @@ fun JmlFileChooser(
                             }
 
                             else -> {
-                                onError("Invalid JML file type")
+                                onError(JuggleExceptionInternal("Invalid JML file type"))
                             }
                         }
                     } catch (e: Exception) {
                         val message = if (e is JuggleExceptionUser) e.message
                             ?: "Unknown User Error" else e.message ?: "Unknown Error"
-                        onError("Error reading file: $message")
+                        onError(JuggleExceptionInternal("Error reading file: $message"))
                     } finally {
                         isBusy = false
                     }
@@ -217,13 +218,13 @@ fun JmlFileChooser(
                                         }
 
                                         else -> {
-                                            onError("Invalid JML file type")
+                                            onError(JuggleExceptionUser("Invalid JML file type"))
                                         }
                                     }
                                 } catch (e: Exception) {
                                     val message = if (e is JuggleExceptionUser) e.message
                                         ?: "Unknown User Error" else e.message ?: "Unknown Error"
-                                    onError("Error reading file: $message")
+                                    onError(JuggleExceptionUser("Error reading file: $message"))
                                 } finally {
                                     isBusy = false
                                 }

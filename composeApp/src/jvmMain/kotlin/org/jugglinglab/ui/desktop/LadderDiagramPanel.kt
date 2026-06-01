@@ -67,7 +67,8 @@ class LadderDiagramPanel(
                     (x / density).toInt(),
                     (y / density).toInt()
                 )
-            }
+            },
+            onError = { jlHandleFatalException(it) }
         )
         ladderController
     }

@@ -14,6 +14,8 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.googleServices)
+    alias(libs.plugins.firebaseCrashlytics)
 }
 
 kotlin {
@@ -28,6 +30,10 @@ kotlin {
         implementation(libs.compose.uiToolingPreview)
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
+        // Juggling Lab specific
+        implementation(platform(libs.firebase.bom))
+        implementation(libs.firebase.analytics)
+        implementation(libs.firebase.crashlytics)
     }
 }
 
@@ -39,8 +45,8 @@ android {
         applicationId = "com.jonglen7.jugglinglab"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 9
-        versionName = "1.7.2"
+        versionCode = 10
+        versionName = "1.7.3"
     }
     packaging {
         resources {

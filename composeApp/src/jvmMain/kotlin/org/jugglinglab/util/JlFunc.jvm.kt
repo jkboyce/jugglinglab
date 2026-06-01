@@ -71,7 +71,7 @@ actual fun jlToStringRounded(value: Double, digits: Int): String {
 
 // Show an informational message dialog.
 
-actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
+fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
             parent as Component?,
@@ -84,7 +84,7 @@ actual fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
 
 // Show a message dialog for a recoverable user error.
 
-actual fun jlHandleUserException(parent: Any?, msg: String?) {
+fun jlHandleUserException(parent: Any?, msg: String?) {
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
             parent as Component?,
@@ -100,13 +100,13 @@ actual fun jlHandleUserException(parent: Any?, msg: String?) {
 // the event of a bug in Juggling Lab, and so we invite users to email us this
 // information.
 
-actual fun jlHandleFatalException(e: Exception) {
-    SwingUtilities.invokeLater { showInternalErrorWindow(e) }
+fun jlHandleFatalException(t: Throwable) {
+    SwingUtilities.invokeLater { showInternalErrorWindow(t) }
 }
 
 private var internalErrorWindowIsActive = false
 
-private fun showInternalErrorWindow(e: Exception) {
+private fun showInternalErrorWindow(t: Throwable) {
     if (internalErrorWindowIsActive) return
 
     // diagnostic information displayed in the window
@@ -116,19 +116,19 @@ private fun showInternalErrorWindow(e: Exception) {
         sw.write(jlGetStringResource(Res.string.error_internal_msg_part2) + "\n")
         sw.write(jlGetStringResource(Res.string.error_internal_msg_part3) + "\n\n")
         sw.write("Juggling Lab version: $jlCurrentVersion\n\n")
-        if (e is JuggleExceptionInternal) {
-            if (e.wrapped != null) {
-                e.wrapped?.printStackTrace(PrintWriter(sw))
+        if (t is JuggleExceptionInternal) {
+            if (t.wrapped != null) {
+                t.wrapped?.printStackTrace(PrintWriter(sw))
             } else {
-                e.printStackTrace(PrintWriter(sw))
+                t.printStackTrace(PrintWriter(sw))
             }
-            val pat = e.pattern
+            val pat = t.pattern
             if (pat != null) {
                 sw.write("\nJML pattern:\n")
                 sw.write(pat.toString())
             }
         } else {
-            e.printStackTrace(PrintWriter(sw))
+            t.printStackTrace(PrintWriter(sw))
         }
         sw.write("\n")
         sw.toString()
@@ -373,28 +373,12 @@ actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
 // Other
 //------------------------------------------------------------------------------
 
-// Return the native screen refresh rate.
-
-actual fun jlGetScreenFps(): Double {
-    var fpsScreen = 0.0
-    try {
-        val devices = GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
-        if (devices.isNotEmpty()) {
-            fpsScreen = devices[0]!!.getDisplayMode().refreshRate.toDouble()
-            // refreshRate returns 0 when refresh is unknown
-        }
-    } catch (_: Exception) {
-        // HeadlessException when running headless (from CLI)
-    }
-    return if (fpsScreen < 20) 60.0 else fpsScreen
-}
-
 actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
-    // Not applicable on desktop
+    // Not used on desktop
 }
 
 actual fun jlShareFile(content: String, filename: String, mimeType: String, subject: String?) {
-    // Not applicable on desktop
+    // Not used on desktop
 }
 
 //------------------------------------------------------------------------------

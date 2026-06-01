@@ -38,6 +38,28 @@ object JlCommandLine {
     //--------------------------------------------------------------------------
 
     fun startWithArgs(args: Array<String>) {
+        // Set up crash logging/reporting
+        crashReporter = object : CrashReporter {
+            override fun recordThrowable(throwable: Throwable, message: String?) {
+                if (throwable is JuggleExceptionInternal) {
+                    System.err.println("INTERNAL ERROR: $message")
+                    if (throwable.wrapped != null) {
+                        throwable.wrapped?.printStackTrace()
+                    } else {
+                        throwable.printStackTrace()
+                    }
+                    val pat = throwable.pattern
+                    if (pat != null) {
+                        System.err.println("\nJML pattern:\n")
+                        System.err.println(pat.toString())
+                    }
+                } else {
+                    System.err.println("EXCEPTION: $message")
+                    throwable.printStackTrace()
+                }
+            }
+        }
+
         if (jlIsMacOs) {
             System.setProperty("apple.laf.useScreenMenuBar", "true")
         }

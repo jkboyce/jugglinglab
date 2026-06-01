@@ -17,6 +17,10 @@ jetbrains-navigation-compose = "2.9.2"
 ksoup = "0.2.6"
 material-icons = "1.7.3"
 ortools = "9.4.1874"
+firebaseCrashlytics = "20.0.6"
+firebase-bom = "34.14.0"
+google-services = "4.4.4"
+firebase-crashlytics-plugin = "3.0.7"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -42,6 +46,9 @@ ortools-native-macos-x86 = { module = "com.google.ortools:ortools-darwin-x86-64"
 ortools-native-linux-arm = { module = "com.google.ortools:ortools-linux-aarch64", version.ref = "ortools" }
 ortools-native-linux-x86 = { module = "com.google.ortools:ortools-linux-x86-64", version.ref = "ortools" }
 ortools-native-win32-x86 = { module = "com.google.ortools:ortools-win32-x86-64", version.ref = "ortools" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -54,3 +61,5 @@ kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidMultiplatformLibrary = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 shadowJar = { id = "com.gradleup.shadow", version.ref = "shadowjar" }
 antlrKotlin = { id = "com.strumenta.antlr-kotlin", version.ref = "antlr-kotlin" }
+googleServices = { id = "com.google.gms.google-services", version.ref = "google-services" }
+firebaseCrashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }

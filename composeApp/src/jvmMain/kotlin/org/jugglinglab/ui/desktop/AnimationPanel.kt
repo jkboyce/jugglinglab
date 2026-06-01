@@ -54,7 +54,8 @@ class AnimationPanel(
                 onEnter = controller::handleEnter,
                 onExit = controller::handleExit,
                 onLayoutUpdate = controller::updateLayout,
-                onZoom = onZoom
+                onZoom = onZoom,
+                onError = { jlHandleFatalException(it) }
             )
         }
 

@@ -179,7 +179,7 @@ private fun NavGrid(
         }
         Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
             NavButton(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).walkthroughTarget("info_pattern_list"),
                 title = stringResource(Res.string.gui_mobile_info_pattern_list),
                 icon = Icons.AutoMirrored.Filled.FormatListBulleted
             ) { onNavClick("PatternList") }
@@ -196,7 +196,7 @@ private fun NavGrid(
                 icon = Icons.Default.Star
             ) { onNavClick("Favorites") }
             NavButton(
-                modifier = Modifier.weight(1f).walkthroughTarget("info_library"),
+                modifier = Modifier.weight(1f),
                 title = stringResource(Res.string.gui_mobile_info_library),
                 icon = Icons.Default.LocalLibrary
             ) { onNavClick("FileChooser") }

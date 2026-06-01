@@ -10,24 +10,12 @@ package org.jugglinglab.ui.mobile
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
-import org.jugglinglab.core.OkioJmlStorageRepository
-import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.core.ThemeSetting
-import org.jugglinglab.generator.SiteswapGenerator
-import org.jugglinglab.generator.SiteswapTransitioner
-import org.jugglinglab.jml.JmlPattern
-import org.jugglinglab.jml.JmlPatternList
-import org.jugglinglab.jml.JmlPatternList.PatternRecord
-import org.jugglinglab.jml.JmlParser
-import org.jugglinglab.notation.Pattern
 import org.jugglinglab.notation.SiteswapPattern
-import org.jugglinglab.ui.common.*
 import org.jugglinglab.ui.components.JlErrorDialog
-import org.jugglinglab.util.jlShareUrl
-import org.jugglinglab.util.jlShareFile
-import org.jugglinglab.util.buildShareUrl
-import org.jugglinglab.util.decodeShareUrl
+import org.jugglinglab.util.crashReporter
+import org.jugglinglab.util.JuggleExceptionUser
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -41,7 +29,6 @@ import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Animation
@@ -71,16 +58,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.Modifier
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import okio.Path
-import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -93,7 +74,8 @@ fun App(
     onJmlContentHandled: () -> Unit = {},
     isMigrationDialogShown: Boolean = false,
 ) {
-    // theme settings
+    // Theme Settings
+
     val themeSetting by (prefsRepo?.themeSettingFlow ?: flowOf(ThemeSetting.SYSTEM)).collectAsState(
         initial = ThemeSetting.SYSTEM
     )
@@ -104,343 +86,90 @@ fun App(
     }
     val colorScheme = if (useDarkTheme) darkColorScheme() else lightColorScheme()
 
+    // Coroutine Scope & ViewModel Setup
+
     val coroutineScope = rememberCoroutineScope()
+    val viewModel = retain(localFilesDir) {
+        AppViewModel(localFilesDir)
+    }
+
+    // Navigation Setup
+
+    val navController = rememberNavController()
+    val navigateTo = { newView: String ->
+        val targetRoute = if (newView == "FileChooser") {
+            viewModel.hasLoadedPatternList = false
+            "PatternList"
+        } else {
+            newView
+        }
+        navController.navigate(targetRoute) {
+            launchSingleTop = true
+        }
+    }
+
+    // Error Handling
+
+    val handleRuntimeError: (Throwable) -> Unit = { t ->
+        if (t is JuggleExceptionUser) {
+            viewModel.asyncErrorMessage = t.message
+        } else {
+            viewModel.asyncErrorMessage = "Internal error: ${t.message}"
+            crashReporter.recordThrowable(t)
+        }
+    }
+
+    // Walkthrough Coordination
+
+    val walkthroughCoordinator = remember(prefsRepo, viewModel.state) {
+        WalkthroughCoordinator(
+            prefsRepo = prefsRepo,
+            state = viewModel.state,
+            coroutineScope = coroutineScope,
+            onNavigateTo = navigateTo,
+            onResetAnimationToDefault = {
+                try {
+                    val defaultPattern = SiteswapPattern().fromString("3").asJmlPattern()
+                    viewModel.animationController.restartJuggle(
+                        pattern = defaultPattern,
+                        prefs = AnimationPrefs()
+                    )
+                    viewModel.animationController.restartJuggle()  // deselect events
+                } catch (e: Exception) {
+                    handleRuntimeError(e)
+                }
+            },
+            onResetPatternListState = {
+                viewModel.hasLoadedPatternList = false
+                viewModel.patternList.clearModel()
+                viewModel.patternList.title = null
+            }
+        )
+    }
+
+    val onboardingCompleted by (prefsRepo?.onboardingCompletedFlow ?: flowOf(true)).collectAsState(
+        initial = true
+    )
+
+    // Platform Intents & Lifecycle Startup Handlers
+
+    AppStartupIntents(
+        viewModel = viewModel,
+        navController = navController,
+        walkthroughCoordinator = walkthroughCoordinator,
+        onboardingCompleted = onboardingCompleted,
+        isMigrationDialogShown = isMigrationDialogShown,
+        startUrl = startUrl,
+        startJmlContent = startJmlContent,
+        onUrlHandled = onUrlHandled,
+        onJmlContentHandled = onJmlContentHandled,
+        onRuntimeError = handleRuntimeError
+    )
+
+    // Visual Hierarchy
 
     MaterialTheme(colorScheme = colorScheme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            val jmlStorageRepository = remember { OkioJmlStorageRepository() }
-            val navController = rememberNavController()
-            val navigateTo = { newView: String ->
-                navController.navigate(newView) {
-                    launchSingleTop = true
-                }
-            }
-            var asyncErrorMessage by retain { mutableStateOf<String?>(null) }
-            var startupErrorMessage by retain { mutableStateOf<String?>(null) }
-            var isProcessing by retain { mutableStateOf(false) }
-            var isPatternListEditable by retain { mutableStateOf(true) }
-            var patternListPath by retain { mutableStateOf<Path?>(null) }
-            var favoritesHashCodes by retain { mutableStateOf<Set<Int>>(emptySet()) }
-            var hasLoadedFavorites by retain { mutableStateOf(false) }
-            var hasLoadedPatternList by retain { mutableStateOf(false) }
-
-            val state = retain {
-                val pattern = SiteswapPattern().fromString("3").asJmlPattern()
-                PatternAnimationState(pattern, AnimationPrefs())
-            }
-
-            // Onboarding walkthrough coordinator
-            val walkthroughCoordinator = remember(prefsRepo, state) {
-                WalkthroughCoordinator(
-                    prefsRepo = prefsRepo,
-                    state = state,
-                    coroutineScope = coroutineScope,
-                    onNavigateTo = navigateTo
-                )
-            }
-
-            val onboardingCompleted by (prefsRepo?.onboardingCompletedFlow
-                ?: flowOf(true)).collectAsState(
-                initial = true
-            )
-
-            LaunchedEffect(onboardingCompleted, isMigrationDialogShown) {
-                if (!onboardingCompleted && !isMigrationDialogShown && walkthroughCoordinator.walkthroughStep == 0) {
-                    walkthroughCoordinator.startWalkthrough()
-                }
-            }
-            val animationController = retain(state) { AnimationController(state) }
-            val patternList = retain { JmlPatternList() }
-            val favoritesList = retain { JmlPatternList() }
-            var patternListScrollState by retain { mutableStateOf(LazyListState()) }
-            val favoritesListScrollState = retain { LazyListState() }
-
-            val saveFavoritesList = {
-                val path = localFilesDir?.let { it / "Favorites.jml" }
-                if (path != null) {
-                    coroutineScope.launch {
-                        try {
-                            jmlStorageRepository.saveList(path, favoritesList)
-                            favoritesHashCodes =
-                                favoritesList.model.filter { it.canAnimate }.map { it.jlHashCode }
-                                    .toSet()
-                        } catch (e: Exception) {
-                            asyncErrorMessage =
-                                getString(Res.string.error_mobile_saving, e.message ?: "")
-                        }
-                    }
-                }
-            }
-
-            val loadFavoritesList: suspend (onError: (String) -> Unit, onSuccess: () -> Unit) -> Unit =
-                { onError, onSuccess ->
-                    try {
-                        if (localFilesDir != null) {
-                            val path = localFilesDir / "Favorites.jml"
-                            jmlStorageRepository.initializeFavorites(path, DEFAULT_FAVORITES_JML)
-                            val pl = jmlStorageRepository.loadList(path)
-                            if (pl.title == null) {
-                                pl.title = "Favorites"
-                            }
-                            favoritesList.clearModel()
-                            favoritesList.title = pl.title
-                            for (i in 0 until pl.size) {
-                                val item = pl.getLine(i)
-                                if (item != null) {
-                                    favoritesList.addLine(-1, item)
-                                }
-                            }
-                            favoritesHashCodes = favoritesList.model.filter { it.canAnimate }
-                                .map { it.jlHashCode }.toSet()
-                            onSuccess()
-                        } else {
-                            onError(getString(Res.string.error_mobile_local_storage))
-                        }
-                    } catch (e: Exception) {
-                        onError(
-                            getString(
-                                Res.string.error_mobile_loading_favorites,
-                                e.message ?: ""
-                            )
-                        )
-                    }
-                }
-
-            LaunchedEffect(Unit) {
-                if (!hasLoadedFavorites) {
-                    loadFavoritesList(
-                        { errorMessage -> startupErrorMessage = errorMessage },
-                        { hasLoadedFavorites = true }
-                    )
-                }
-            }
-
-            // Handle a share URL passed in at launch (Android deep-link)
-            LaunchedEffect(startUrl) {
-                if (startUrl != null) {
-                    coroutineScope.launch(Dispatchers.Default) {
-                        isProcessing = true
-                        try {
-                            val (pattern, prefs) = decodeShareUrl(startUrl)
-                            if (pattern != null) {
-                                animationController.restartJuggle(pattern = pattern, prefs = prefs)
-                                state.addCurrentToUndoList()
-                                withContext(Dispatchers.Main) {
-                                    navController.navigate("Animation") {
-                                        launchSingleTop = true
-                                    }
-                                }
-                            } else {
-                                asyncErrorMessage =
-                                    getString(Res.string.error_mobile_load_shared_pattern)
-                            }
-                        } catch (e: Exception) {
-                            asyncErrorMessage =
-                                getString(Res.string.error_mobile_loading_pattern, e.message ?: "")
-                        } finally {
-                            isProcessing = false
-                            onUrlHandled()
-                        }
-                    }
-                }
-            }
-
-            // Handle imported JML content (Android ACTION_VIEW intents)
-            LaunchedEffect(startJmlContent) {
-                if (startJmlContent != null) {
-                    coroutineScope.launch(Dispatchers.Default) {
-                        isProcessing = true
-                        try {
-                            val parser = JmlParser()
-                            parser.parse(startJmlContent)
-
-                            when (parser.fileType) {
-                                JmlParser.JML_PATTERN -> {
-                                    val pat = JmlPattern.fromJmlNode(parser.tree!!)
-                                    pat.layout
-                                    animationController.restartJuggle(pattern = pat)
-                                    state.addCurrentToUndoList()
-                                    withContext(Dispatchers.Main) {
-                                        navController.navigate("Animation") {
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                }
-
-                                JmlParser.JML_LIST -> {
-                                    val pl = JmlPatternList(parser.tree)
-                                    patternList.clearModel()
-                                    patternList.title = pl.title
-                                    for (i in 0 until pl.size) {
-                                        val item = pl.getLine(i)
-                                        if (item != null) {
-                                            patternList.addLine(-1, item)
-                                        }
-                                    }
-                                    isPatternListEditable = true
-                                    patternListPath = null
-                                    patternListScrollState = LazyListState()
-                                    withContext(Dispatchers.Main) {
-                                        navController.navigate("PatternList") {
-                                            launchSingleTop = true
-                                        }
-                                    }
-                                }
-
-                                else -> {
-                                    asyncErrorMessage = getString(Res.string.error_invalid_jml)
-                                }
-                            }
-                        } catch (e: Exception) {
-                            asyncErrorMessage = getString(
-                                Res.string.error_mobile_reading_imported_file,
-                                e.message ?: ""
-                            )
-                        } finally {
-                            isProcessing = false
-                            onJmlContentHandled()
-                        }
-                    }
-                }
-            }
-
-            // remembered objects for "generator" panel
-            val generator = retain { SiteswapGenerator() }
-            val transitioner = retain { SiteswapTransitioner() }
-            val generatorState = retain { SiteswapGeneratorState() }
-            val transitionerState = retain { SiteswapTransitionerState() }
-            val combinedState = retain { GeneratorControlCombinedState() }
-
-            val savePatternList = {
-                val path = patternListPath
-                if (path != null) {
-                    coroutineScope.launch {
-                        try {
-                            jmlStorageRepository.saveList(path, patternList)
-                        } catch (e: Exception) {
-                            asyncErrorMessage =
-                                getString(Res.string.error_mobile_saving, e.message ?: "")
-                        }
-                    }
-                }
-            }
-
-            val addToFavoritesRecord: (PatternRecord) -> Unit = { record ->
-                coroutineScope.launch(Dispatchers.Default) {
-                    isProcessing = true
-                    try {
-                        val displaySize =
-                            if (JmlPatternList.BLANK_AT_END) favoritesList.model.size - 1 else favoritesList.model.size
-                        var newRecord = record
-                        if (!(record.notation?.equals("jml", ignoreCase = true) ?: true)) {
-                            // rewrite animation parameters in canonical ordering
-                            val newAnim =
-                                Pattern.newPattern(record.notation).fromString(record.anim!!)
-                                    .toCanonicalString()
-                            newRecord = record.copy(anim = newAnim)
-                        }
-                        favoritesList.model.add(displaySize, newRecord)
-                        saveFavoritesList()
-                    } finally {
-                        isProcessing = false
-                    }
-                }
-            }
-
-            val removeFromFavoritesRecord: (PatternRecord) -> Unit = { record ->
-                coroutineScope.launch(Dispatchers.Default) {
-                    isProcessing = true
-                    try {
-                        val index =
-                            favoritesList.model.indexOfFirst { it.jlHashCode == record.jlHashCode }
-                        if (index != -1) {
-                            favoritesList.model.removeAt(index)
-                            saveFavoritesList()
-                        }
-                    } finally {
-                        isProcessing = false
-                    }
-                }
-            }
-
-            val addToFavoritesPattern: (JmlPattern, AnimationPrefs) -> Unit = { pattern, prefs ->
-                coroutineScope.launch(Dispatchers.Default) {
-                    isProcessing = true
-                    try {
-                        val tempPl = JmlPatternList()
-                        tempPl.insertPattern(pattern, prefs, 0)
-                        addToFavoritesRecord(tempPl.model[0])
-                    } catch (e: Exception) {
-                        asyncErrorMessage =
-                            getString(Res.string.error_mobile_adding_favorites, e.message ?: "")
-                    } finally {
-                        isProcessing = false
-                    }
-                }
-            }
-
-            val removeFromFavoritesPattern: (JmlPattern, AnimationPrefs) -> Unit =
-                { pattern, prefs ->
-                    coroutineScope.launch(Dispatchers.Default) {
-                        isProcessing = true
-                        try {
-                            val tempPl = JmlPatternList()
-                            tempPl.insertPattern(pattern, prefs, 0)
-                            removeFromFavoritesRecord(tempPl.model[0])
-                        } catch (e: Exception) {
-                            asyncErrorMessage =
-                                getString(Res.string.error_mobile_saving, e.message ?: "")
-                        } finally {
-                            isProcessing = false
-                        }
-                    }
-                }
-
-            val onShare: () -> Unit = {
-                coroutineScope.launch(Dispatchers.Default) {
-                    isProcessing = true
-                    try {
-                        val url = buildShareUrl(state.pattern, state.prefs)
-                        if (url.encodeToByteArray().size > 2000) {
-                            asyncErrorMessage = getString(Res.string.error_mobile_pattern_too_long)
-                        } else {
-                            val title = state.pattern.title?.takeIf { it.isNotBlank() }
-                                ?: getString(Res.string.gui_pattern).lowercase()
-                            val subject = getString(Res.string.gui_mobile_share_subject, title)
-                            val htmlText = getString(Res.string.gui_mobile_share_html, url, title)
-                            jlShareUrl(url, subject = subject, htmlText = htmlText)
-                        }
-                    } catch (e: Exception) {
-                        asyncErrorMessage =
-                            getString(Res.string.error_mobile_sharing, e.message ?: "")
-                    } finally {
-                        isProcessing = false
-                    }
-                }
-            }
-
-            // Export the currently animated pattern as a .jml file.
-            val onExport: () -> Unit = {
-                coroutineScope.launch(Dispatchers.Default) {
-                    isProcessing = true
-                    try {
-                        val title = state.pattern.title?.takeIf { it.isNotBlank() }
-                            ?: getString(Res.string.gui_pattern).lowercase()
-                        jlShareFile(
-                            content = state.pattern.toString(),
-                            filename = "$title.jml",
-                            mimeType = "application/xml",
-                            subject = getString(Res.string.gui_mobile_share_subject, title)
-                        )
-                    } catch (e: Exception) {
-                        asyncErrorMessage =
-                            getString(Res.string.error_mobile_exporting, e.message ?: "")
-                    } finally {
-                        isProcessing = false
-                    }
-                }
-            }
-
             CompositionLocalProvider(LocalWalkthroughCoordinator provides walkthroughCoordinator) {
                 BoxWithConstraints(
                     modifier = Modifier.fillMaxSize()
@@ -449,285 +178,158 @@ fun App(
                             walkthroughCoordinator.rootBounds = coords.boundsInRoot()
                         }
                 ) {
-                val maxH = maxHeight
-                val maxW = maxWidth
-                val currentBackStackEntry by navController.currentBackStackEntryAsState()
-                val currentRoute = currentBackStackEntry?.destination?.route ?: "Info"
+                    val maxH = maxHeight
+                    val maxW = maxWidth
+                    val currentBackStackEntry by navController.currentBackStackEntryAsState()
+                    val currentRoute = currentBackStackEntry?.destination?.route ?: "Info"
+                    val isLandscape = maxW > maxH
 
-                val isLandscape = maxW > maxH
-
-                // Composable for the navigation buttons
-
-                val views = listOf(
-                    Triple(
-                        "Info",
-                        Icons.Default.Home,
-                        stringResource(Res.string.gui_mobile_nav_info)
-                    ),
-                    Triple(
-                        "Animation",
-                        Icons.Default.Animation,
-                        stringResource(Res.string.gui_mobile_nav_animation)
-                    ),
-                    Triple(
-                        "Notation",
-                        Icons.Default.Edit,
-                        stringResource(Res.string.gui_mobile_nav_notation)
-                    ),
-                    Triple(
-                        "PatternList",
-                        Icons.AutoMirrored.Filled.FormatListBulleted,
-                        stringResource(Res.string.gui_mobile_nav_pattern_list)
-                    ),
-                    Triple(
-                        "Generator",
-                        Icons.Default.Build,
-                        stringResource(Res.string.gui_mobile_nav_generator)
-                    ),
-                    Triple(
-                        "Favorites",
-                        Icons.Default.Star,
-                        stringResource(Res.string.gui_mobile_favorites)
+                    // Composable for the navigation buttons
+                    val views = listOf(
+                        Triple(
+                            "Info",
+                            Icons.Default.Home,
+                            stringResource(Res.string.gui_mobile_nav_info)
+                        ),
+                        Triple(
+                            "Animation",
+                            Icons.Default.Animation,
+                            stringResource(Res.string.gui_mobile_nav_animation)
+                        ),
+                        Triple(
+                            "Notation",
+                            Icons.Default.Edit,
+                            stringResource(Res.string.gui_mobile_nav_notation)
+                        ),
+                        Triple(
+                            "PatternList",
+                            Icons.AutoMirrored.Filled.FormatListBulleted,
+                            stringResource(Res.string.gui_mobile_nav_pattern_list)
+                        ),
+                        Triple(
+                            "Generator",
+                            Icons.Default.Build,
+                            stringResource(Res.string.gui_mobile_nav_generator)
+                        ),
+                        Triple(
+                            "Favorites",
+                            Icons.Default.Star,
+                            stringResource(Res.string.gui_mobile_favorites)
+                        )
                     )
-                )
-                val navButtons = remember {
-                    movableContentOf<String> { activeRoute ->
-                        views.forEach { (viewName, icon, description) ->
-                            val isSelected = activeRoute == viewName
-                            IconButton(
-                                onClick = { navigateTo(viewName) },
-                                colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
-                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
-                                    contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
-                                ),
-                                modifier = Modifier.walkthroughTarget(
-                                    key = if (viewName == "Info") "nav_info" else "nav_favorites",
-                                    condition = viewName == "Info" || viewName == "Favorites"
-                                )
+                    val navButtons = remember {
+                        movableContentOf<String> { activeRoute ->
+                            views.forEach { (viewName, icon, description) ->
+                                val isSelected = activeRoute == viewName
+                                IconButton(
+                                    onClick = { navigateTo(viewName) },
+                                    colors = androidx.compose.material3.IconButtonDefaults.iconButtonColors(
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
+                                        contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
+                                    ),
+                                    modifier = Modifier.walkthroughTarget(
+                                        key = if (viewName == "Info") "nav_info" else "nav_favorites",
+                                        condition = viewName == "Info" || viewName == "Favorites"
+                                    )
+                                ) {
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = description
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Composable for the main content area
+                    val mainContent = remember {
+                        movableContentOf<Modifier> { modifier ->
+                            AppNavHost(
+                                navController = navController,
+                                viewModel = viewModel,
+                                walkthroughCoordinator = walkthroughCoordinator,
+                                themeSetting = themeSetting,
+                                prefsRepo = prefsRepo,
+                                localFilesDir = localFilesDir,
+                                navigateTo = navigateTo,
+                                handleRuntimeError = handleRuntimeError,
+                                modifier = modifier
+                            )
+                        }
+                    }
+
+                    if (isLandscape) {
+                        Row(modifier = Modifier.fillMaxSize()) {
+                            Column(
+                                modifier = Modifier.fillMaxHeight().navigationBarsPadding(),
+                                verticalArrangement = Arrangement.SpaceEvenly
                             ) {
-                                Icon(
-                                    imageVector = icon,
-                                    contentDescription = description
-                                )
+                                navButtons(currentRoute)
                             }
+                            mainContent(Modifier.weight(1f).fillMaxHeight())
                         }
-                    }
-                }
-
-                // Composable for the main content area
-
-                val mainContent = remember {
-                    movableContentOf<Modifier> { modifier ->
-                        NavHost(
-                            navController = navController,
-                            startDestination = "Info",
-                            modifier = modifier
-                        ) {
-                            composable("Animation") {
-                                AnimationViewCombined(
-                                    state = state,
-                                    animationController = animationController,
-                                    colorScheme = MaterialTheme.colorScheme,
-                                    favoritesHashCodes = favoritesHashCodes,
-                                    onAddToFavorites = addToFavoritesPattern,
-                                    onRemoveFromFavorites = removeFromFavoritesPattern,
-                                    onShare = onShare,
-                                    onExport = onExport,
-                                    onBusy = { isProcessing = it }
-                                )
-                            }
-
-                            composable("Notation") {
-                                NotationScreen(
-                                    state = state,
-                                    animationController = animationController,
-                                    onNavigateToAnimation = { navigateTo("Animation") },
-                                    onBusyChange = { isProcessing = it },
-                                    onError = { asyncErrorMessage = it }
-                                )
-                            }
-
-                            composable("PatternList") {
-                                PatternListScreen(
-                                    patternList = patternList,
-                                    favoritesHashCodes = favoritesHashCodes,
-                                    state = state,
-                                    animationController = animationController,
-                                    isPatternListEditable = isPatternListEditable,
-                                    onIsEditableChange = { isPatternListEditable = it },
-                                    patternListPath = patternListPath,
-                                    onPathChange = { patternListPath = it },
-                                    listState = patternListScrollState,
-                                    onListStateChange = { patternListScrollState = it },
-                                    hasLoadedPatternList = hasLoadedPatternList,
-                                    onHasLoadedChange = { hasLoadedPatternList = it },
-                                    localFilesDir = localFilesDir,
-                                    onNavigateTo = { navigateTo(it) },
-                                    onBusyChange = { isProcessing = it },
-                                    onError = { asyncErrorMessage = it },
-                                    onAddToFavorites = addToFavoritesRecord,
-                                    onRemoveFromFavorites = removeFromFavoritesRecord,
-                                    savePatternList = savePatternList,
-                                    jmlStorageRepository = jmlStorageRepository
-                                )
-                            }
-
-                            composable("Favorites") {
-                                FavoritesScreen(
-                                    favoritesList = favoritesList,
-                                    favoritesHashCodes = favoritesHashCodes,
-                                    state = state,
-                                    animationController = animationController,
-                                    listState = favoritesListScrollState,
-                                    localFilesDir = localFilesDir,
-                                    patternList = patternList,
-                                    onIsEditableChange = { isPatternListEditable = it },
-                                    onPathChange = { patternListPath = it },
-                                    onHasLoadedChange = { hasLoadedPatternList = it },
-                                    onPatternListScrollStateChange = {
-                                        patternListScrollState = it
-                                    },
-                                    onNavigateTo = { navigateTo(it) },
-                                    onBusyChange = { isProcessing = it },
-                                    onError = { asyncErrorMessage = it },
-                                    onAddToFavorites = addToFavoritesRecord,
-                                    onRemoveFromFavorites = removeFromFavoritesRecord,
-                                    saveFavoritesList = saveFavoritesList,
-                                    jmlStorageRepository = jmlStorageRepository
-                                )
-                            }
-
-                            composable("FileChooser") {
-                                FileChooserScreen(
-                                    state = state,
-                                    animationController = animationController,
-                                    patternList = patternList,
-                                    onIsEditableChange = { isPatternListEditable = it },
-                                    onPathChange = { patternListPath = it },
-                                    onHasLoadedChange = { hasLoadedPatternList = it },
-                                    onPatternListScrollStateChange = {
-                                        patternListScrollState = it
-                                    },
-                                    localFilesDir = localFilesDir,
-                                    onNavigateTo = { navigateTo(it) },
-                                    onBusyChange = { isProcessing = it },
-                                    onError = { asyncErrorMessage = it },
-                                    jmlStorageRepository = jmlStorageRepository
-                                )
-                            }
-
-                            composable("Generator") {
-                                GeneratorScreen(
-                                    isBusy = isProcessing,
-                                    generator = generator,
-                                    transitioner = transitioner,
-                                    patternList = patternList,
-                                    onIsEditableChange = { isPatternListEditable = it },
-                                    onPathChange = { patternListPath = it },
-                                    onHasLoadedChange = { hasLoadedPatternList = it },
-                                    onPatternListScrollStateChange = {
-                                        patternListScrollState = it
-                                    },
-                                    generatorState = generatorState,
-                                    transitionerState = transitionerState,
-                                    combinedState = combinedState,
-                                    onNavigateTo = { navigateTo(it) },
-                                    onBusyChange = { isProcessing = it },
-                                    onError = { asyncErrorMessage = it }
-                                )
-                            }
-
-                            composable("Info") {
-                                InfoScreen(
-                                    themeSetting = themeSetting,
-                                    prefsRepo = prefsRepo,
-                                    onNavigateTo = { navigateTo(it) },
-                                    onStartWalkthrough = { walkthroughCoordinator.startWalkthrough() }
-                                )
-                            }
-                        }
-                    }
-                }
-
-                if (isLandscape) {
-                    Row(modifier = Modifier.fillMaxSize()) {
-                        Column(
-                            modifier = Modifier.fillMaxHeight().navigationBarsPadding(),
-                            verticalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            navButtons(currentRoute)
-                        }
-                        mainContent(Modifier.weight(1f).fillMaxHeight())
-                    }
-                } else {
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        mainContent(Modifier.weight(1f).fillMaxWidth())
-                        Row(
-                            modifier = Modifier.fillMaxWidth().navigationBarsPadding(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            navButtons(currentRoute)
-                        }
-                    }
-                }
-
-                // Walkthrough spotlight overlay delegate
-                if (walkthroughCoordinator.walkthroughStep in 1..18) {
-                    WalkthroughOverlay(
-                        walkthroughCoordinator = walkthroughCoordinator,
-                        currentRoute = currentRoute,
-                        patternListTitle = patternList.title,
-                        maxW = maxW,
-                        maxH = maxH
-                    )
-                }
-
-                val currentAsyncErrorMessage = asyncErrorMessage
-                if (currentAsyncErrorMessage != null) {
-                    JlErrorDialog(
-                        errorMessage = currentAsyncErrorMessage,
-                        onDismiss = { asyncErrorMessage = null }
-                    )
-                }
-
-                val currentStartupErrorMessage = startupErrorMessage
-                if (currentStartupErrorMessage != null) {
-                    JlErrorDialog(
-                        errorMessage = currentStartupErrorMessage,
-                        onDismiss = { kotlin.system.exitProcess(0) }
-                    )
-                }
-
-                var showSpinner by remember { mutableStateOf(false) }
-                LaunchedEffect(isProcessing) {
-                    if (isProcessing) {
-                        // 200ms delay to show the busy spinner
-                        kotlinx.coroutines.delay(200)
-                        showSpinner = true
                     } else {
-                        showSpinner = false
+                        Column(modifier = Modifier.fillMaxSize()) {
+                            mainContent(Modifier.weight(1f).fillMaxWidth())
+                            Row(
+                                modifier = Modifier.fillMaxWidth().navigationBarsPadding(),
+                                horizontalArrangement = Arrangement.SpaceEvenly
+                            ) {
+                                navButtons(currentRoute)
+                            }
+                        }
                     }
-                }
 
-                if (showSpinner) {
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        androidx.compose.material3.CircularProgressIndicator()
+                    // Overlays of various kinds
+
+                    // Walkthrough spotlight overlay delegate
+                    if (walkthroughCoordinator.walkthroughStep in 1..19) {
+                        WalkthroughOverlay(
+                            walkthroughCoordinator = walkthroughCoordinator,
+                            currentRoute = currentRoute,
+                            patternListTitle = viewModel.patternList.title,
+                            hasLoadedPatternList = viewModel.hasLoadedPatternList,
+                            maxW = maxW,
+                            maxH = maxH
+                        )
+                    }
+
+                    val currentStartupErrorMessage = viewModel.startupErrorMessage
+                    if (currentStartupErrorMessage != null) {
+                        JlErrorDialog(
+                            errorMessage = currentStartupErrorMessage,
+                            onDismiss = { kotlin.system.exitProcess(0) }
+                        )
+                    }
+
+                    val currentAsyncErrorMessage = viewModel.asyncErrorMessage
+                    if (currentAsyncErrorMessage != null) {
+                        JlErrorDialog(
+                            errorMessage = currentAsyncErrorMessage,
+                            onDismiss = { viewModel.asyncErrorMessage = null }
+                        )
+                    }
+
+                    var showSpinner by remember { mutableStateOf(false) }
+                    LaunchedEffect(viewModel.isProcessing) {
+                        if (viewModel.isProcessing) {
+                            // 200ms delay to show the busy spinner
+                            kotlinx.coroutines.delay(200)
+                            showSpinner = true
+                        } else {
+                            showSpinner = false
+                        }
+                    }
+                    if (showSpinner) {
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator()
+                        }
                     }
                 }
             }
         }
     }
 }
-}
-
-private const val DEFAULT_FAVORITES_JML = """<?xml version="1.0"?>
-<!DOCTYPE jml SYSTEM "file://jml.dtd">
-<jml version="3">
-<patternlist>
-<title>Favorites</title>
-</patternlist>
-</jml>
-"""

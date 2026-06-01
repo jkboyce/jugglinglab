@@ -136,7 +136,7 @@ class AnimationGifWriter(
             gifState.update(isPaused = true, message = "")
 
             scene.setContent {
-                AnimationView(state = gifState, isAntiAlias = false)
+                AnimationView(state = gifState, isAntiAlias = false, onError = { jlHandleFatalException(it) })
             }
 
             // need to convert Skia Image into bitmap with color type BGRA_8888
