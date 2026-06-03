@@ -82,6 +82,7 @@ class SiteswapNotationControlSwing : JPanel() {
         val scrollPane1 = JScrollPane(tf1).apply {
             verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
             horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+            minimumSize = preferredSize
         }
         p1.add(scrollPane1)
         gb.setConstraints(
@@ -96,7 +97,9 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_END, 0, 1, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
-        tf3 = JTextField(4)
+        tf3 = JTextField(4).apply {
+            minimumSize = preferredSize
+        }
         p1.add(tf3)
         gb.setConstraints(
             tf3, jlConstraints(
@@ -110,7 +113,9 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_END, 0, 2, Insets(VSPACING, BORDER, 0, HSPACING)
             )
         )
-        tf2 = JTextField(4)
+        tf2 = JTextField(4).apply {
+            minimumSize = preferredSize
+        }
         p1.add(tf2)
         gb.setConstraints(
             tf2, jlConstraints(
@@ -137,7 +142,9 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_START, 1, 3, Insets(VSPACING, 0, 0, BORDER)
             )
         )
-        tf4 = JTextField(19)
+        tf4 = JTextField(19).apply {
+            minimumSize = preferredSize
+        }
         p1.add(tf4)
         gb.setConstraints(
             tf4, jlConstraints(
@@ -191,7 +198,9 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_START, 1, 5, Insets(VSPACING, 0, 0, BORDER)
             )
         )
-        tf5 = JTextField(19)
+        tf5 = JTextField(19).apply {
+            minimumSize = preferredSize
+        }
         p1.add(tf5)
         gb.setConstraints(
             tf5, jlConstraints(
@@ -250,7 +259,9 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.LINE_START, 0, 8, Insets(2 * VSPACING, BORDER, 0, HSPACING)
             )
         )
-        tf6 = JTextField(25)
+        tf6 = JTextField(25).apply {
+            minimumSize = preferredSize
+        }
         p1.add(tf6)
         val gbc6: GridBagConstraints = jlConstraints(
             GridBagConstraints.LINE_END, 0, 9, Insets(5, BORDER + HSPACING, 0, BORDER)
