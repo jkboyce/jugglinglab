@@ -70,7 +70,7 @@ fun AnimationView(
     onRelease: (cancel: Boolean) -> Unit = {},
     onEnter: () -> Unit = {},
     onExit: () -> Unit = {},
-    onLayoutUpdate: (AnimationLayout) -> Unit = {},
+    onLayoutUpdate: (AnimationLayout?) -> Unit = {},
     onFrame: (Double) -> Unit = {},
     onZoom: (Float) -> Unit = {},
     textMeasurer: TextMeasurer = rememberTextMeasurer(),
@@ -179,7 +179,7 @@ fun AnimationView(
             true
         }
 
-        val layout = remember(
+        val _layout = remember(
             state.pattern,
             state.prefs.stereo,
             state.prefs.borderPixels,
@@ -190,10 +190,39 @@ fun AnimationView(
             widthPx,
             heightPx
         ) {
-            val newLayout = AnimationLayout(state, widthPx, heightPx, renderer1, renderer2)
-            onLayoutUpdate(newLayout)
-            newLayout
+            try {
+                val newLayout = AnimationLayout(state, widthPx, heightPx, renderer1, renderer2)
+                onLayoutUpdate(newLayout)
+                newLayout
+            } catch (e: Throwable) {
+                onLayoutUpdate(null)
+                onError(e)
+                null
+            }
         }
+        if (_layout == null) {
+            // show a text message in the center of the screen
+            val textLayoutResult = textMeasurer.measure(
+                text = "Pattern error, cannot render",
+                style = TextStyle(color = messageColor, fontSize = 13.sp)
+            )
+            val textSize = textLayoutResult.size
+
+            Canvas(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                drawRect(color = backgroundColor)
+                drawText(
+                    textLayoutResult = textLayoutResult,
+                    topLeft = Offset(
+                        x = (widthPx - textSize.width) / 2f,
+                        y = (heightPx - textSize.height) / 2f
+                    )
+                )
+            }
+            return@BoxWithConstraints
+        }
+        val layout: AnimationLayout = _layout
 
         LaunchedEffect(state.isPaused) {
             if (!state.isPaused) {

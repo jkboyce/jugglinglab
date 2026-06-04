@@ -12,7 +12,6 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
-import org.jugglinglab.util.crashReporter
 import org.jugglinglab.util.decodeShareUrl
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
@@ -37,19 +36,14 @@ fun AppStartupIntents(
     startJmlContent: String?,
     onUrlHandled: () -> Unit,
     onJmlContentHandled: () -> Unit,
-    onRuntimeError: (Throwable) -> Unit
+    onError: (Throwable) -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
-
-    val handleStartupError: (Throwable) -> Unit = { t ->
-        viewModel.startupErrorMessage = t.message
-        crashReporter.recordThrowable(t)
-    }
 
     // Load favorites at startup
     LaunchedEffect(Unit) {
         if (!viewModel.hasLoadedFavorites) {
-            viewModel.loadFavoritesList(handleStartupError) {
+            viewModel.loadFavoritesList {
                 viewModel.hasLoadedFavorites = true
             }
         }
@@ -81,10 +75,10 @@ fun AppStartupIntents(
                             }
                         }
                     } else {
-                        onRuntimeError(JuggleExceptionUser(getString(Res.string.error_mobile_load_shared_pattern)))
+                        onError(JuggleExceptionUser(getString(Res.string.error_mobile_load_shared_pattern)))
                     }
                 } catch (e: Exception) {
-                    onRuntimeError(
+                    onError(
                         JuggleExceptionInternal(
                             getString(
                                 Res.string.error_mobile_loading_pattern,
@@ -143,11 +137,11 @@ fun AppStartupIntents(
                         }
 
                         else -> {
-                            onRuntimeError(JuggleExceptionUser(getString(Res.string.error_invalid_jml)))
+                            onError(JuggleExceptionUser(getString(Res.string.error_invalid_jml)))
                         }
                     }
                 } catch (e: JuggleExceptionUser) {
-                    onRuntimeError(
+                    onError(
                         JuggleExceptionUser(
                             getString(
                                 Res.string.error_mobile_reading_imported_file,
@@ -156,7 +150,7 @@ fun AppStartupIntents(
                         )
                     )
                 } catch (e: Throwable) {
-                    onRuntimeError(e)
+                    onError(e)
                 } finally {
                     viewModel.isProcessing = false
                     onJmlContentHandled()

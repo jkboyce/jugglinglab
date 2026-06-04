@@ -41,6 +41,8 @@ import org.jetbrains.compose.resources.getString
 class AppViewModel(
     val localFilesDir: Path?
 ) {
+    var onError: ((Throwable) -> Unit)? = null
+
     //--------------------------------------------------------------------------
     // App State Variables
     //--------------------------------------------------------------------------
@@ -75,7 +77,6 @@ class AppViewModel(
 
     // error messages and busy spinner
     var asyncErrorMessage by mutableStateOf<String?>(null)
-    var startupErrorMessage by mutableStateOf<String?>(null)
     var isProcessing by mutableStateOf(false)
 
     //--------------------------------------------------------------------------
@@ -91,15 +92,15 @@ class AppViewModel(
                     favoritesHashCodes =
                         favoritesList.model.filter { it.canAnimate }.map { it.jlHashCode }
                             .toSet()
-                } catch (e: Exception) {
-                    asyncErrorMessage =
-                        getString(Res.string.error_mobile_saving, e.message ?: "")
+                } catch (e: Throwable) {
+                    val message = getString(Res.string.error_mobile_saving, e.message ?: "")
+                    onError?.invoke(JuggleExceptionInternal(message))
                 }
             }
         }
     }
 
-    suspend fun loadFavoritesList(onError: (Throwable) -> Unit, onSuccess: () -> Unit) {
+    suspend fun loadFavoritesList(onSuccess: () -> Unit) {
         try {
             if (localFilesDir != null) {
                 val path = localFilesDir / "Favorites.jml"
@@ -120,17 +121,11 @@ class AppViewModel(
                     .map { it.jlHashCode }.toSet()
                 onSuccess()
             } else {
-                onError(JuggleExceptionInternal(getString(Res.string.error_mobile_local_storage)))
+                onError?.invoke(JuggleExceptionInternal(getString(Res.string.error_mobile_local_storage)))
             }
-        } catch (e: Exception) {
-            onError(
-                JuggleExceptionInternal(
-                    getString(
-                        Res.string.error_mobile_loading_favorites,
-                        e.message ?: ""
-                    )
-                )
-            )
+        } catch (e: Throwable) {
+            val message = getString(Res.string.error_mobile_loading_favorites, e.message ?: "")
+            onError?.invoke(JuggleExceptionInternal(message))
         }
     }
 
@@ -158,9 +153,9 @@ class AppViewModel(
                 hasLoadedPatternList = true
                 patternListScrollState = LazyListState()
             }
-        } catch (e: Exception) {
-            asyncErrorMessage =
-                getString(Res.string.error_mobile_reading_imported_file, e.message ?: "")
+        } catch (e: Throwable) {
+            //val message = getString(Res.string.error_mobile_reading_imported_file, e.message ?: "")
+            onError?.invoke(e)
         } finally {
             isProcessing = false
         }
@@ -172,9 +167,9 @@ class AppViewModel(
             scope.launch {
                 try {
                     jmlStorageRepository.saveList(path, patternList)
-                } catch (e: Exception) {
-                    asyncErrorMessage =
-                        getString(Res.string.error_mobile_saving, e.message ?: "")
+                } catch (e: Throwable) {
+                    //val message = getString(Res.string.error_mobile_saving, e.message ?: "")
+                    onError?.invoke(e)
                 }
             }
         }
@@ -196,6 +191,8 @@ class AppViewModel(
                 }
                 favoritesList.model.add(displaySize, newRecord)
                 saveFavoritesList(scope)
+            } catch (e: Throwable) {
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }
@@ -212,6 +209,8 @@ class AppViewModel(
                     favoritesList.model.removeAt(index)
                     saveFavoritesList(scope)
                 }
+            } catch (e: Throwable) {
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }
@@ -225,9 +224,9 @@ class AppViewModel(
                 val tempPl = JmlPatternList()
                 tempPl.insertPattern(pattern, prefs, 0)
                 addToFavoritesRecord(tempPl.model[0], scope)
-            } catch (e: Exception) {
-                asyncErrorMessage =
-                    getString(Res.string.error_mobile_adding_favorites, e.message ?: "")
+            } catch (e: Throwable) {
+                //val message = getString(Res.string.error_mobile_adding_favorites, e.message ?: "")
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }
@@ -241,9 +240,9 @@ class AppViewModel(
                 val tempPl = JmlPatternList()
                 tempPl.insertPattern(pattern, prefs, 0)
                 removeFromFavoritesRecord(tempPl.model[0], scope)
-            } catch (e: Exception) {
-                asyncErrorMessage =
-                    getString(Res.string.error_mobile_saving, e.message ?: "")
+            } catch (e: Throwable) {
+                // val message = getString(Res.string.error_mobile_saving, e.message ?: "")
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }
@@ -264,9 +263,9 @@ class AppViewModel(
                     val htmlText = getString(Res.string.gui_mobile_share_html, url, title)
                     jlShareUrl(url, subject = subject, htmlText = htmlText)
                 }
-            } catch (e: Exception) {
-                asyncErrorMessage =
-                    getString(Res.string.error_mobile_sharing, e.message ?: "")
+            } catch (e: Throwable) {
+                //val message = getString(Res.string.error_mobile_sharing, e.message ?: "")
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }
@@ -286,9 +285,9 @@ class AppViewModel(
                     mimeType = "application/xml",
                     subject = getString(Res.string.gui_mobile_share_subject, title)
                 )
-            } catch (e: Exception) {
-                asyncErrorMessage =
-                    getString(Res.string.error_mobile_exporting, e.message ?: "")
+            } catch (e: Throwable) {
+                //val message = getString(Res.string.error_mobile_exporting, e.message ?: "")
+                onError?.invoke(e)
             } finally {
                 isProcessing = false
             }

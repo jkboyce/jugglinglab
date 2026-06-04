@@ -82,7 +82,7 @@ class AnimationController(
     var onCameraChange: ((List<Double>) -> Unit)? = null
     var onSimpleMouseClick: (() -> Unit)? = null
 
-    fun updateLayout(layout: AnimationLayout) {
+    fun updateLayout(layout: AnimationLayout?) {
         currentLayout = layout
     }
 

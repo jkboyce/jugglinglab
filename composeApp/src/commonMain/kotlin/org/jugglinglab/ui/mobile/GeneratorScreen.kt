@@ -90,13 +90,13 @@ fun GeneratorScreen(
                             .collect { record ->
                                 patternList.addLine(-1, record)
                             }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         onError(e)
                     } finally {
                         onBusyChange(false)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 onError(e)
                 onBusyChange(false)
             }

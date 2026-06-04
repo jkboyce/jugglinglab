@@ -18,7 +18,6 @@ import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.prop.Prop
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
-import org.jugglinglab.util.JuggleExceptionUser
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -68,7 +67,6 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 import org.jetbrains.compose.resources.stringResource
 
-@Suppress("AssignedValueIsNeverRead")
 @Composable
 fun AnimationViewCombined(
     state: PatternAnimationState,
@@ -266,7 +264,8 @@ fun AnimationViewCombined(
                         scrollState = ladderScrollState,
                         modifier = Modifier
                             .fillMaxHeight()
-                            .width(currentWidth)
+                            .width(currentWidth),
+                        onError = onError
                     )
                 }
             }
@@ -351,7 +350,8 @@ fun AnimationViewCombined(
                         zoom = ladderZoom,
                         onZoomChange = { ladderZoom = it },
                         scrollState = ladderScrollState,
-                        modifier = Modifier.weight(ladderWeight)
+                        modifier = Modifier.weight(ladderWeight),
+                        onError = onError
                     )
                 }
             }
@@ -468,10 +468,10 @@ private fun AnimationViewMenus(
             }
 
             val layout = animationController.currentLayout
-            val showRestart = (state.zoom != 1.0) ||
+            val showRestart = (layout != null) && ((state.zoom != 1.0) ||
                 (state.cameraAngle != state.initialCameraAngle()) ||
-                (state.selectedItemHashCode != 0 && layout != null &&
-                (layout.eventPoints.isNotEmpty() || layout.posPoints.isNotEmpty()))
+                (state.selectedItemHashCode != 0 &&
+                (layout.eventPoints.isNotEmpty() || layout.posPoints.isNotEmpty())))
 
             if (showRestart) {
                 IconButton(onClick = { animationController.restartJuggle() }) {
@@ -508,9 +508,9 @@ private fun AnimationViewMenus(
                                 pattern = state.undoList[state.undoIndex],
                                 coldRestart = false
                             )
-                        } catch (jeu: JuggleExceptionUser) {
+                        } catch (e: Throwable) {
                             // pattern was animated before so user error should not occur
-                            onError(JuggleExceptionInternal(jeu, state.pattern))
+                            onError(JuggleExceptionInternal(e, state.pattern))
                         }
                     }
                 }
@@ -527,9 +527,9 @@ private fun AnimationViewMenus(
                                 pattern = state.undoList[state.undoIndex],
                                 coldRestart = false
                             )
-                        } catch (jeu: JuggleExceptionUser) {
+                        } catch (e: Throwable) {
                             // pattern was animated before so user error should not occur
-                            onError(JuggleExceptionInternal(jeu, state.pattern))
+                            onError(JuggleExceptionInternal(e, state.pattern))
                         }
                     }
                 }
@@ -657,7 +657,7 @@ private fun AnimationViewMenus(
                     try {
                         state.update(pattern = state.pattern.withInvertedTime())
                         state.addCurrentToUndoList()
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         onError(e)
                     }
                 }

@@ -63,6 +63,7 @@ import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.flowOf
 import okio.Path
 import org.jetbrains.compose.resources.stringResource
+import kotlin.time.Duration.Companion.milliseconds
 
 @Composable
 fun App(
@@ -118,6 +119,7 @@ fun App(
             crashReporter.recordThrowable(t)
         }
     }
+    viewModel.onError = handleRuntimeError
 
     // Walkthrough Coordination
 
@@ -163,7 +165,7 @@ fun App(
         startJmlContent = startJmlContent,
         onUrlHandled = onUrlHandled,
         onJmlContentHandled = onJmlContentHandled,
-        onRuntimeError = handleRuntimeError
+        onError = handleRuntimeError
     )
 
     // Visual Hierarchy
@@ -294,14 +296,6 @@ fun App(
                         )
                     }
 
-                    val currentStartupErrorMessage = viewModel.startupErrorMessage
-                    if (currentStartupErrorMessage != null) {
-                        JlErrorDialog(
-                            errorMessage = currentStartupErrorMessage,
-                            onDismiss = { kotlin.system.exitProcess(0) }
-                        )
-                    }
-
                     val currentAsyncErrorMessage = viewModel.asyncErrorMessage
                     if (currentAsyncErrorMessage != null) {
                         JlErrorDialog(
@@ -314,7 +308,7 @@ fun App(
                     LaunchedEffect(viewModel.isProcessing) {
                         if (viewModel.isProcessing) {
                             // 200ms delay to show the busy spinner
-                            kotlinx.coroutines.delay(200)
+                            kotlinx.coroutines.delay(200.milliseconds)
                             showSpinner = true
                         } else {
                             showSpinner = false

@@ -72,7 +72,8 @@ fun LadderDiagramView(
     textMeasurer: TextMeasurer = rememberTextMeasurer(),
     zoom: Float = 1f,
     onZoomChange: (Float) -> Unit = {},
-    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState()
+    scrollState: androidx.compose.foundation.ScrollState = rememberScrollState(),
+    onError: (Throwable) -> Unit
 ) {
     val coordinator = LocalWalkthroughCoordinator.current
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -104,25 +105,35 @@ fun LadderDiagramView(
             val canvasHeightPx = (heightPx * localZoom).toInt()
             val newLayout = if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS ||
                 state.pattern.numberOfPaths > LadderDiagramLayout.MAX_PATHS
-            )
+            ) {
                 null
-            else
-                LadderDiagramLayout(state.pattern, widthPx, canvasHeightPx, density)
+            } else {
+                try {
+                    LadderDiagramLayout(state.pattern, widthPx, canvasHeightPx, density)
+                } catch (e: Throwable) {
+                    onError(e)
+                    null
+                }
+            }
             // pass updated layout to containing panel for mouse handling
             onLayoutUpdate(newLayout)
             newLayout
         }
 
         if (layout == null) {
-            val text = if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS)
+            val text = if (state.pattern.numberOfJugglers > LadderDiagramLayout.MAX_JUGGLERS) {
                 jlGetStringResource(
                     Res.string.gui_too_many_jugglers,
                     LadderDiagramLayout.MAX_JUGGLERS
-                ) else
+                )
+            } else if (state.pattern.numberOfPaths > LadderDiagramLayout.MAX_PATHS) {
                 jlGetStringResource(
                     Res.string.gui_too_many_paths,
                     LadderDiagramLayout.MAX_PATHS
                 )
+            } else {
+                "Ladder unavailable"
+            }
             val textLayoutResult = textMeasurer.measure(
                 text = text,
                 style = TextStyle(color = messageColor, fontSize = 13.sp)
@@ -504,30 +515,17 @@ fun LadderDiagramView(
                 }
 
                 // 6. Events and transitions
-                for (item in layout.eventItems) {
-                    val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
-                    val rectSize =
-                        Size((item.xHigh - item.xLow).toFloat(), (item.yHigh - item.yLow).toFloat())
-
-                    if (item.type == LadderItem.TYPE_EVENT) {
-                        drawOval(eventColor, topLeft, rectSize)
-
-                        if (item.jlHashCode == activeItemHash) {
-                            drawRect(
-                                selectionColor,
-                                topLeft.minus(Offset(1f, 1f)),
-                                Size(rectSize.width + 2, rectSize.height + 2),
-                                style = strokeSelected
+                try {
+                    for (item in layout.eventItems) {
+                        val topLeft = Offset(item.xLow.toFloat(), item.yLow.toFloat())
+                        val rectSize =
+                            Size(
+                                (item.xHigh - item.xLow).toFloat(),
+                                (item.yHigh - item.yLow).toFloat()
                             )
-                        }
-                    } else {
-                        if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
-                            val tr = item.event.transitions[item.transNum]
-                            val propnum = state.propForPath[tr.path - 1]
-                            val propColor = state.pattern.getProp(propnum).getEditorColor()
 
-                            drawOval(propColor, topLeft, rectSize)
-                            drawOval(eventColor, topLeft, rectSize, style = strokeStandard)
+                        if (item.type == LadderItem.TYPE_EVENT) {
+                            drawOval(eventColor, topLeft, rectSize)
 
                             if (item.jlHashCode == activeItemHash) {
                                 drawRect(
@@ -537,8 +535,28 @@ fun LadderDiagramView(
                                     style = strokeSelected
                                 )
                             }
+                        } else {
+                            if (item.yLow >= layout.borderTop || item.yHigh <= height + layout.borderTop) {
+                                val tr = item.event.transitions[item.transNum]
+                                val propnum = state.propForPath[tr.path - 1]
+                                val propColor = state.pattern.getProp(propnum).getEditorColor()
+
+                                drawOval(propColor, topLeft, rectSize)
+                                drawOval(eventColor, topLeft, rectSize, style = strokeStandard)
+
+                                if (item.jlHashCode == activeItemHash) {
+                                    drawRect(
+                                        selectionColor,
+                                        topLeft.minus(Offset(1f, 1f)),
+                                        Size(rectSize.width + 2, rectSize.height + 2),
+                                        style = strokeSelected
+                                    )
+                                }
+                            }
                         }
                     }
+                } catch (e: Throwable) {
+                    onError(e)
                 }
 
                 // 7. Tracker

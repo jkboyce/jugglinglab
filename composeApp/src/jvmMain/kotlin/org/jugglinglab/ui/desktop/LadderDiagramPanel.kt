@@ -109,7 +109,8 @@ class LadderDiagramPanel(
                 textMeasurer = textMeasurer,
                 zoom = zoom,
                 onZoomChange = { zoom = it },
-                scrollState = scrollState
+                scrollState = scrollState,
+                onError = { jlHandleFatalException(it) }
             )
         }
     }
