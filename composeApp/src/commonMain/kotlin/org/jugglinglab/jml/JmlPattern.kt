@@ -126,17 +126,17 @@ data class JmlPattern(
             if (done[i]) continue
 
             val cycle = perm.cycleOf(i + 1).toMutableList()
-            for (j in 0..<cycle.size) {
-                done[cycle[j] - 1] = true
-                cycle[j] = propAssignment[cycle[j] - 1]
+            for ((j, element) in cycle.withIndex()) {
+                done[element - 1] = true
+                cycle[j] = propAssignment[element - 1]
             }
             // find the period `cperiod` of the current cycle
             for (cperiod in 1..cycle.size) {
                 if (cycle.size % cperiod != 0) continue
 
                 var matches = true
-                for (k in 0..<cycle.size) {
-                    if (cycle[k] != cycle[(k + cperiod) % cycle.size]) {
+                for ((k, element) in cycle.withIndex()) {
+                    if (element != cycle[(k + cperiod) % cycle.size]) {
                         matches = false
                         break
                     }
@@ -1081,7 +1081,7 @@ data class PatternBuilder(
             val holdingLocation = arrayOfNulls<Pair<Int, Int>?>(numberOfPaths)
 
             for (image in pat.eventSequence()) {
-                if (image.event.t > pat.loopStartTime + timeWindow) {
+                if (image.event.t > pat.loopEndTime + timeWindow) {
                     // last check: were there any paths that had ONLY holds? If
                     // so then re-scan and fix holds for those paths
                     for (i in 0..<numberOfPaths) {
