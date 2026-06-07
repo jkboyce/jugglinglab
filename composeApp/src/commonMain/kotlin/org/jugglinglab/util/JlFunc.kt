@@ -394,3 +394,10 @@ expect fun jlShareFile(
 expect fun jlPlayCatchSound(volume: Float = 1f)
 
 expect fun jlPlayBounceSound(volume: Float = 1f)
+
+//------------------------------------------------------------------------------
+// Helper for back navigation
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+expect fun BackHandler(enabled: Boolean = true, onBack: () -> Unit)

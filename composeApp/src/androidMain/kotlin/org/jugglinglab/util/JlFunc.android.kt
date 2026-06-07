@@ -229,3 +229,12 @@ actual fun jlPlayBounceSound(volume: Float) {
         soundPool.play(bounceSoundId, volume, volume, 0, 0, 1f)
     }
 }
+
+//------------------------------------------------------------------------------
+// Helper for back navigation
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
+    androidx.activity.compose.BackHandler(enabled = enabled, onBack = onBack)
+}

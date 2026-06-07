@@ -16,6 +16,7 @@ import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.ui.components.JlErrorDialog
 import org.jugglinglab.util.crashReporter
 import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -49,6 +50,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.movableContentOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -97,6 +99,8 @@ fun App(
     // Navigation Setup
 
     val navController = rememberNavController()
+    val customBackStack = remember { mutableStateListOf("Info") }
+
     val navigateTo = { newView: String ->
         val targetRoute = if (newView == "FileChooser") {
             viewModel.hasLoadedPatternList = false
@@ -104,8 +108,26 @@ fun App(
         } else {
             newView
         }
+        if (customBackStack.isEmpty() || customBackStack.last() != targetRoute) {
+            customBackStack.add(targetRoute)
+            if (customBackStack.size > 20) {
+                customBackStack.removeAt(0)
+            }
+        }
         navController.navigate(targetRoute) {
-            launchSingleTop = true
+            popUpTo(navController.currentDestination?.route ?: "Info") {
+                inclusive = true
+            }
+        }
+    }
+
+    BackHandler(enabled = customBackStack.size > 1) {
+        customBackStack.removeAt(customBackStack.lastIndex)
+        val previousRoute = customBackStack.last()
+        navController.navigate(previousRoute) {
+            popUpTo(navController.currentDestination?.route ?: "Info") {
+                inclusive = true
+            }
         }
     }
 
@@ -157,7 +179,7 @@ fun App(
 
     AppStartupIntents(
         viewModel = viewModel,
-        navController = navController,
+        navigateTo = navigateTo,
         walkthroughCoordinator = walkthroughCoordinator,
         onboardingCompleted = onboardingCompleted,
         isMigrationDialogShown = isMigrationDialogShown,

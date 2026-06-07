@@ -19,7 +19,6 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.navigation.NavController
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -28,7 +27,7 @@ import org.jetbrains.compose.resources.getString
 @Composable
 fun AppStartupIntents(
     viewModel: AppViewModel,
-    navController: NavController,
+    navigateTo: (String) -> Unit,
     walkthroughCoordinator: WalkthroughCoordinator,
     onboardingCompleted: Boolean,
     isMigrationDialogShown: Boolean,
@@ -70,9 +69,7 @@ fun AppStartupIntents(
                         )
                         viewModel.state.addCurrentToUndoList()
                         withContext(Dispatchers.Main) {
-                            navController.navigate("Animation") {
-                                launchSingleTop = true
-                            }
+                            navigateTo("Animation")
                         }
                     } else {
                         onError(JuggleExceptionUser(getString(Res.string.error_mobile_load_shared_pattern)))
@@ -110,9 +107,7 @@ fun AppStartupIntents(
                             viewModel.animationController.restartJuggle(pattern = pat)
                             viewModel.state.addCurrentToUndoList()
                             withContext(Dispatchers.Main) {
-                                navController.navigate("Animation") {
-                                    launchSingleTop = true
-                                }
+                                navigateTo("Animation")
                             }
                         }
 
@@ -130,9 +125,7 @@ fun AppStartupIntents(
                             viewModel.patternListPath = null
                             viewModel.patternListScrollState = LazyListState()
                             withContext(Dispatchers.Main) {
-                                navController.navigate("PatternList") {
-                                    launchSingleTop = true
-                                }
+                                navigateTo("PatternList")
                             }
                         }
 

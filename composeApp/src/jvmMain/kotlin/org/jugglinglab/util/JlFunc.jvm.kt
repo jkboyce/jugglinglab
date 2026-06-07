@@ -447,3 +447,12 @@ actual fun jlPlayBounceSound(volume: Float) {
         }
     }
 }
+
+//------------------------------------------------------------------------------
+// Helper for back navigation
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
+    // No-op on JVM/Desktop
+}
