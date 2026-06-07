@@ -39,7 +39,6 @@ import androidx.compose.ui.unit.sp
 import okio.Path
 import org.jetbrains.compose.resources.stringResource
 
-@Suppress("KotlinConstantConditions")
 @Composable
 fun PatternListView(
     patternList: JmlPatternList,
@@ -215,6 +214,7 @@ fun PatternListView(
                         patternList = patternList,
                         state = state,
                         isEditable = isEditable,
+                        isFavoritesList = isFavoritesList,
                         modifier = Modifier.walkthroughTarget(
                             key = "pattern_list_line",
                             condition = index == 3
@@ -271,6 +271,7 @@ private fun PatternListItem(
     patternList: JmlPatternList,
     state: PatternAnimationState,
     isEditable: Boolean,
+    isFavoritesList: Boolean,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     onPatternListModified: () -> Unit,
@@ -369,19 +370,21 @@ private fun PatternListItem(
                     HorizontalDivider()
                 }
                 if (inFavorites) {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
-                        onClick = {
-                            showMenu = false
-                            onRemoveFromFavorites(record)
-                        },
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
-                            )
-                        }
-                    )
+                    if (!isFavoritesList) {
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
+                            onClick = {
+                                showMenu = false
+                                onRemoveFromFavorites(record)
+                            },
+                            trailingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
+                                )
+                            }
+                        )
+                    }
                 } else {
                     DropdownMenuItem(
                         text = { Text(stringResource(Res.string.gui_mobile_add_to_favorites)) },
@@ -423,14 +426,16 @@ private fun PatternListItem(
                 if (!isBlankLine || canAnimate) {
                     HorizontalDivider()
                 }
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.gui_mobile_insert_current_pattern)) },
-                    onClick = {
-                        showMenu = false
-                        patternList.insertPattern(state.pattern, state.prefs, index)
-                        onPatternListModified()
-                    }
-                )
+                if (!isFavoritesList) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.gui_mobile_insert_current_pattern)) },
+                        onClick = {
+                            showMenu = false
+                            patternList.insertPattern(state.pattern, state.prefs, index)
+                            onPatternListModified()
+                        }
+                    )
+                }
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.gui_mobile_plpopup_insert_text___)) },
                     onClick = {
