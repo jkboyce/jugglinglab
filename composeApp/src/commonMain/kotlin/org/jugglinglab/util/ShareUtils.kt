@@ -85,8 +85,11 @@ fun decodeShareUrl(url: String): Pair<JmlPattern?, AnimationPrefs?> {
 
 private fun gzipCompress(input: ByteArray): ByteArray {
     val buffer = Buffer()
-    GzipSink(buffer).use { sink ->
+    val sink = GzipSink(buffer)
+    try {
         sink.write(Buffer().apply { write(input) }, input.size.toLong())
+    } finally {
+        sink.close()
     }
     return buffer.readByteArray()
 }

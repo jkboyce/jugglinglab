@@ -659,7 +659,7 @@ class BouncePath : Path() {
                     // three real roots
                     val theta = acos(r / sqrt(q * q * q)) / 3.0
                     val k = -2.0 * sqrt(q)
-                    val p = 2.0 * Math.PI / 3.0
+                    val p = 2.0 * PI / 3.0
 
                     result[0] = k * cos(theta) - coef[2] / 3.0
                     result[1] = k * cos(theta + p) - coef[2] / 3.0

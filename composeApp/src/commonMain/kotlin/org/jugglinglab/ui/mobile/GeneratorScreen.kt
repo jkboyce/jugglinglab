@@ -16,16 +16,16 @@ import org.jugglinglab.generator.SiteswapTransitioner
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.ui.common.*
-import org.jugglinglab.util.JuggleExceptionInterrupted
+import org.jugglinglab.util.JuggleExceptionDone
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.buffer
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 
 @Composable
 fun GeneratorScreen(
@@ -43,9 +43,9 @@ fun GeneratorScreen(
     onNavigateTo: (String) -> Unit,
     onBusyChange: (Boolean) -> Unit,
     onError: (Throwable) -> Unit,
-    onGeneratorThreadChange: (Thread?) -> Unit = {}
+    coroutineScope: kotlinx.coroutines.CoroutineScope,
+    onGeneratorJobChange: (Job?) -> Unit = {}
 ) {
-    val coroutineScope = rememberCoroutineScope()
 
     GeneratorControlCombined(
         isBusy = isBusy,
@@ -60,7 +60,7 @@ fun GeneratorScreen(
                 onPatternListScrollStateChange(LazyListState())
                 onNavigateTo("PatternList")
                 onBusyChange(true)
-                coroutineScope.launch {
+                val job = coroutineScope.launch {
                     try {
                         channelFlow {
                             val genTarget = object : GeneratorTarget {
@@ -81,30 +81,29 @@ fun GeneratorScreen(
                                     )
                                 }
                             }
-                            try {
-                                onGeneratorThreadChange(Thread.currentThread())
-                                generator.runGenerator(
-                                    genTarget,
-                                    MAX_PATTERNS,
-                                    MAX_TIME_SEC
-                                )
-                            } finally {
-                                onGeneratorThreadChange(null)
-                            }
+                            generator.runGenerator(
+                                genTarget,
+                                MAX_PATTERNS,
+                                MAX_TIME_SEC
+                            )
                         }
                             .buffer(Channel.UNLIMITED)
                             .flowOn(Dispatchers.Default)
                             .collect { record ->
                                 patternList.addLine(-1, record)
                             }
-                    } catch (_: JuggleExceptionInterrupted) {
-                        // ignore expected interruption
+                    } catch (e: JuggleExceptionDone) {
+                        onError(e)
+                    } catch (_: kotlin.coroutines.cancellation.CancellationException) {
+                        // ignore expected cancellation or interruption
                     } catch (e: Throwable) {
                         onError(e)
                     } finally {
                         onBusyChange(false)
+                        onGeneratorJobChange(null)
                     }
                 }
+                onGeneratorJobChange(job)
             } catch (e: Throwable) {
                 onError(e)
                 onBusyChange(false)
@@ -120,7 +119,7 @@ fun GeneratorScreen(
                 onPatternListScrollStateChange(LazyListState())
                 onNavigateTo("PatternList")
                 onBusyChange(true)
-                coroutineScope.launch {
+                val job = coroutineScope.launch {
                     try {
                         channelFlow {
                             val genTarget = object : GeneratorTarget {
@@ -141,31 +140,30 @@ fun GeneratorScreen(
                                     )
                                 }
                             }
-                            try {
-                                onGeneratorThreadChange(Thread.currentThread())
-                                transitioner.runTransitioner(
-                                    genTarget,
-                                    MAX_PATTERNS,
-                                    MAX_TIME_SEC
-                                )
-                            } finally {
-                                onGeneratorThreadChange(null)
-                            }
+                            transitioner.runTransitioner(
+                                genTarget,
+                                MAX_PATTERNS,
+                                MAX_TIME_SEC
+                            )
                         }
                             .buffer(Channel.UNLIMITED)
                             .flowOn(Dispatchers.Default)
                             .collect { record ->
                                 patternList.addLine(-1, record)
                             }
-                    } catch (_: JuggleExceptionInterrupted) {
-                        // ignore expected interruption
-                    } catch (e: Exception) {
+                    } catch (e: JuggleExceptionDone) {
+                        onError(e)
+                    } catch (_: kotlin.coroutines.cancellation.CancellationException) {
+                        // ignore expected cancellation or interruption
+                    } catch (e: Throwable) {
                         onError(e)
                     } finally {
                         onBusyChange(false)
+                        onGeneratorJobChange(null)
                     }
                 }
-            } catch (e: Exception) {
+                onGeneratorJobChange(job)
+            } catch (e: Throwable) {
                 onError(e)
                 onBusyChange(false)
             }

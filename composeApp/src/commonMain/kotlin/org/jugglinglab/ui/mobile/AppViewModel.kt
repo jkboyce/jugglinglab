@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Job
 import okio.Path
 import org.jetbrains.compose.resources.getString
 
@@ -74,7 +75,7 @@ class AppViewModel(
     val generatorState = SiteswapGeneratorState()
     val transitionerState = SiteswapTransitionerState()
     val combinedState = GeneratorControlCombinedState()
-    var generatorThread: Thread? = null
+    var generatorJob: Job? = null
 
     // display messages and busy spinner
     var asyncStoppedMessage by mutableStateOf<String?>(null)
@@ -86,9 +87,9 @@ class AppViewModel(
     //--------------------------------------------------------------------------
 
     fun stopGenerator() {
-        generatorThread?.let {
-            it.interrupt()
-            generatorThread = null
+        generatorJob?.let {
+            it.cancel()
+            generatorJob = null
         }
     }
 

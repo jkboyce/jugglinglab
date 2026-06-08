@@ -10,6 +10,7 @@
 package org.jugglinglab.core
 
 import org.jugglinglab.jml.JmlPatternList
+import org.jugglinglab.util.jlFileSystem
 import okio.FileSystem
 import okio.Path
 
@@ -25,7 +26,7 @@ interface JmlStorageRepository {
     fun initializeFavorites(favoritesPath: Path, defaultContent: String)
 }
 
-class OkioJmlStorageRepository(private val fileSystem: FileSystem = FileSystem.SYSTEM) : JmlStorageRepository {
+class OkioJmlStorageRepository(private val fileSystem: FileSystem = jlFileSystem) : JmlStorageRepository {
     override fun saveList(path: Path, list: JmlPatternList) {
         fileSystem.write(path) {
             val sb = StringBuilder()

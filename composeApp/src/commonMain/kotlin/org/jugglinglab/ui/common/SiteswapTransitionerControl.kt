@@ -82,7 +82,6 @@ fun SiteswapTransitionerControl(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp)
-            .imePadding()
             .onPreviewKeyEvent {
                 if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
                     onConfirm(params())

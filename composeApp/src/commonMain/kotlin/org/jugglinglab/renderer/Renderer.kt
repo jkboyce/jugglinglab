@@ -36,6 +36,7 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.PI
 
 class Renderer {
     var backgroundColor: Color = Color.White
@@ -76,8 +77,8 @@ class Renderer {
 
     init {
         for (i in 0..<polysides) {
-            headCos[i] = cos(i.toDouble() * 2.0 * Math.PI / polysides)
-            headSin[i] = sin(i.toDouble() * 2.0 * Math.PI / polysides)
+            headCos[i] = cos(i.toDouble() * 2.0 * PI / polysides)
+            headSin[i] = sin(i.toDouble() * 2.0 * PI / polysides)
         }
     }
 
@@ -196,8 +197,8 @@ class Renderer {
 
     private fun calculateCameraMatrix() {
         m = JlMatrix.shiftMatrix(-cameraCenter!!.x, -cameraCenter!!.y, -cameraCenter!!.z)
-        m.transform(JlMatrix.rotateMatrix(0.0, Math.PI - cameraAngle[0], 0.0))
-        m.transform(JlMatrix.rotateMatrix(0.5 * Math.PI - cameraAngle[1], 0.0, 0.0))
+        m.transform(JlMatrix.rotateMatrix(0.0, PI - cameraAngle[0], 0.0))
+        m.transform(JlMatrix.rotateMatrix(0.5 * PI - cameraAngle[1], 0.0, 0.0))
         m.transform(JlMatrix.shiftMatrix(cameraCenter!!.x, cameraCenter!!.y, cameraCenter!!.z))
 
         m.transform(JlMatrix.scaleMatrix(1.0, -1.0, 1.0))

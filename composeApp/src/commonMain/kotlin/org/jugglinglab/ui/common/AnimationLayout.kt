@@ -21,6 +21,8 @@ import org.jugglinglab.renderer.Renderer
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.jlIsMobile
+import org.jugglinglab.util.toRadians
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.sin
@@ -129,7 +131,8 @@ class AnimationLayout(
                 val dl = 1.0 / Coordinate.distance(c, c2)
 
                 val ca = ren.cameraAngle
-                val theta = ca[0] + Math.toRadians(state.pattern.layout.getJugglerAngle(ev2.juggler, ev2.t))
+                val theta =
+                    ca[0] + (state.pattern.layout.getJugglerAngle(ev2.juggler, ev2.t)).toRadians()
                 val phi = ca[1]
 
                 val dlc = dl * cos(phi)
@@ -154,15 +157,13 @@ class AnimationLayout(
 
                 if (ev2 == activeEvent) {
                     showXzDragControl =
-                        (anglediff(phi - Math.PI / 2) < Math.toRadians(XZ_CONTROL_SHOW_DEG) &&
-                            (anglediff(theta) < Math.toRadians(XZ_CONTROL_SHOW_DEG) || anglediff(
-                                theta - Math.PI
-                            ) < Math.toRadians(XZ_CONTROL_SHOW_DEG)))
+                        (anglediff(phi - PI / 2) < XZ_CONTROL_SHOW_DEG.toRadians()) &&
+                            (anglediff(theta) < XZ_CONTROL_SHOW_DEG.toRadians() ||
+                                anglediff(theta - PI) < XZ_CONTROL_SHOW_DEG.toRadians())
                     showYDragControl =
-                        !(anglediff(phi - Math.PI / 2) < Math.toRadians(Y_CONTROL_SHOW_DEG) &&
-                            (anglediff(theta) < Math.toRadians(Y_CONTROL_SHOW_DEG) || anglediff(
-                                theta - Math.PI
-                            ) < Math.toRadians(Y_CONTROL_SHOW_DEG)))
+                        !(anglediff(phi - PI / 2) < Y_CONTROL_SHOW_DEG.toRadians() &&
+                            (anglediff(theta) < Y_CONTROL_SHOW_DEG.toRadians() ||
+                                anglediff(theta - PI) < Y_CONTROL_SHOW_DEG.toRadians()))
                 }
             }
         }
@@ -187,14 +188,15 @@ class AnimationLayout(
                 handpathPoints[i][j][1] = point.y.toDouble()
                 handpathIsHold[j] = state.pattern.layout.isHandHolding(
                     activeEvent.juggler,
-                    activeEvent.hand, t + 0.0001)
+                    activeEvent.hand, t + 0.0001
+                )
             }
         }
     }
 
     private fun createPositionView(activePosition: JmlPosition) {
         posPoints = Array(2) { Array(POS_CONTROL_POINTS.size) { DoubleArray(2) } }
-        showGrid = (state.cameraAngle[1] < Math.toRadians(GRID_SHOW_DEG))
+        showGrid = (state.cameraAngle[1] < GRID_SHOW_DEG.toRadians())
 
         for (i in 0..<(if (state.prefs.stereo) 2 else 1)) {
             val ren = if (i == 0) renderer1 else renderer2
@@ -206,7 +208,7 @@ class AnimationLayout(
             val dl = 1.0 / Coordinate.distance(c, c2)
 
             val ca = ren.cameraAngle
-            val theta = ca[0] + Math.toRadians(activePosition.angle)
+            val theta = ca[0] + (activePosition.angle).toRadians()
             val phi = ca[1]
 
             val dlc = dl * cos(phi)
@@ -227,19 +229,19 @@ class AnimationLayout(
             }
 
             showAngleDragControl =
-                (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - ANGLE_CONTROL_SHOW_DEG))
+                (anglediff(phi - PI / 2) > (90 - ANGLE_CONTROL_SHOW_DEG).toRadians())
             showXyDragControl =
-                (anglediff(phi - Math.PI / 2) > Math.toRadians(90 - XY_CONTROL_SHOW_DEG))
+                (anglediff(phi - PI / 2) > (90 - XY_CONTROL_SHOW_DEG).toRadians())
             showZDragControl =
-                (anglediff(phi - Math.PI / 2) < Math.toRadians(90 - Z_CONTROL_SHOW_DEG))
+                (anglediff(phi - PI / 2) < (90 - Z_CONTROL_SHOW_DEG).toRadians())
         }
     }
 
     companion object {
         fun anglediff(delta: Double): Double {
             var delta = delta
-            while (delta > Math.PI) delta -= 2 * Math.PI
-            while (delta <= -Math.PI) delta += 2 * Math.PI
+            while (delta > PI) delta -= 2 * PI
+            while (delta <= -PI) delta += 2 * PI
             return abs(delta)
         }
 

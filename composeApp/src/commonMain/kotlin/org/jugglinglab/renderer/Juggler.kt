@@ -12,6 +12,7 @@ import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.toRadians
 import kotlin.math.*
 
 object Juggler {
@@ -61,7 +62,7 @@ object Juggler {
             val righthand = JlVector(coord1.x, coord1.z + LOWER_HAND_HEIGHT, coord1.y)
 
             pat.layout.getJugglerPosition(juggler, time, coord2)
-            val angle = Math.toRadians(pat.layout.getJugglerAngle(juggler, time))
+            val angle = (pat.layout.getJugglerAngle(juggler, time)).toRadians()
             val s = sin(angle)
             val c = cos(angle)
 

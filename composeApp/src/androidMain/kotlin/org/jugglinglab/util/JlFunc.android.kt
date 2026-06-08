@@ -88,6 +88,14 @@ actual val jlIsDesktop: Boolean = false
 
 actual val jlIsMobile: Boolean = true
 
+actual fun jlCurrentTimeMillis(): Long = System.currentTimeMillis()
+
+actual fun jlExitProcess(status: Int) {
+    kotlin.system.exitProcess(status)
+}
+
+actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
+
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------

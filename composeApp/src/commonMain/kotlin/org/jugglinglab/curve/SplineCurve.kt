@@ -579,8 +579,8 @@ class SplineCurve : Curve() {
             }
 
             // copies to avoid modifying originals
-            val m = Array(n) { a[it].clone() }
-            val x = b.clone()
+            val m = Array(n) { a[it].copyOf() }
+            val x = b.copyOf()
 
             for (i in 0..<n) {
                 // pivot selection

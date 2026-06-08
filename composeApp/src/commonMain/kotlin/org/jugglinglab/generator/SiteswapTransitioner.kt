@@ -16,9 +16,13 @@ import org.jugglinglab.util.JuggleExceptionDone
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionInterrupted
 import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.jlCharForDigit
+import org.jugglinglab.util.jlCurrentTimeMillis
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlIsWindows
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlin.math.max
 import kotlin.math.min
 
@@ -78,20 +82,20 @@ class SiteswapTransitioner : Transitioner() {
         allocateWorkspace()
     }
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runTransitioner(t: GeneratorTarget): Int {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    override suspend fun runTransitioner(t: GeneratorTarget): Int {
         return runTransitioner(t, -1, -1.0) // negative values --> no limits
     }
 
     @Suppress("SimplifyBooleanWithConstants")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runTransitioner(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    override suspend fun runTransitioner(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
         this.maxNum = maxNum
         patternsFound = 0
         this.maxTime = maxTime
         if (maxTime > 0 || Constants.DEBUG_TRANSITIONS) {
             maxTimeMillis = (1000.0 * maxTime).toLong()
-            startTimeMillis = System.currentTimeMillis()
+            startTimeMillis = jlCurrentTimeMillis()
             loopCounter = 0
         }
 
@@ -130,8 +134,10 @@ class SiteswapTransitioner : Transitioner() {
             return num
         } finally {
             if (Constants.DEBUG_TRANSITIONS) {
-                val millis = System.currentTimeMillis() - startTimeMillis
-                System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000)
+                val millis = jlCurrentTimeMillis() - startTimeMillis
+                val secs = millis / 1000
+                val ms = (millis % 1000).toString().padStart(3, '0')
+                println("time elapsed: $secs.$ms s")
             }
         }
     }
@@ -293,8 +299,8 @@ class SiteswapTransitioner : Transitioner() {
 
     // Find the shortest return transition from `to` back to `from`.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun findReturnTrans(): String {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    private suspend fun findReturnTrans(): String {
         if (lReturn == 0) {
             return ""
         }
@@ -342,8 +348,8 @@ class SiteswapTransitioner : Transitioner() {
     //
     // Returns the number of transitions found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun findTrans(
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    private suspend fun findTrans(
         fromSt: Array<Array<IntArray>>,
         toSt: Array<Array<IntArray>>,
         l: Int,
@@ -383,12 +389,12 @@ class SiteswapTransitioner : Transitioner() {
     //
     // Returns the number of transitions found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun recurse(pos: Int, j: Int, h: Int): Int {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    private suspend fun recurse(pos: Int, j: Int, h: Int): Int {
         var pos = pos
         var j = j
         var h = h
-        if (Thread.interrupted()) {
+        if (!currentCoroutineContext().isActive) {
             throw JuggleExceptionInterrupted()
         }
 
@@ -396,7 +402,7 @@ class SiteswapTransitioner : Transitioner() {
         if (maxTime > 0) {
             if (++loopCounter > LOOP_COUNTER_MAX) {
                 loopCounter = 0
-                if ((System.currentTimeMillis() - startTimeMillis) > maxTimeMillis) {
+                if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
                     val message = jlGetStringResource(
                         Res.string.gui_generator_timeout,
                         maxTime.toInt()
@@ -751,7 +757,7 @@ class SiteswapTransitioner : Transitioner() {
             }
             // if we ended with an unneeded separator, remove it
             if (!sb.isEmpty() && sb[sb.length - 1] == '/') {
-                sb.deleteCharAt(sb.length - 1)
+                sb.deleteAt(sb.length - 1)
             }
             if (j < jugglers - 1) {
                 sb.append('|')
@@ -952,7 +958,7 @@ class SiteswapTransitioner : Transitioner() {
             val isPass = (mhnt.targetJuggler != mhnt.juggler)
 
             if (beats < 36) {
-                sb.append(Character.forDigit(beats, 36).lowercaseChar())
+                sb.append(jlCharForDigit(beats, 36).lowercaseChar())
             } else {
                 sb.append('?') // wildcard will parse but not animate
             }
@@ -1000,12 +1006,11 @@ class SiteswapTransitioner : Transitioner() {
         for (j in 0..<jugglers) {
             for (h in 0..1) {
                 if (indexes - 1 >= 0) {
-                    System.arraycopy(
-                        state[pos][j][h],
-                        1,
+                    state[pos][j][h].copyInto(
                         state[pos + 1][j][h],
                         0,
-                        indexes - 1
+                        1,
+                        indexes
                     )
                 }
                 state[pos + 1][j][h][indexes - 1] = 0
@@ -1171,10 +1176,12 @@ class SiteswapTransitioner : Transitioner() {
                 val sst = SiteswapTransitioner()
                 sst.initTransitioner(args)
 
-                if (sst.noLimitsFlag) {
-                    sst.runTransitioner(target)
-                } else {
-                    sst.runTransitioner(target, TRANS_MAX_PATTERNS, TRANS_MAX_TIME)
+                kotlinx.coroutines.runBlocking {
+                    if (sst.noLimitsFlag) {
+                        sst.runTransitioner(target)
+                    } else {
+                        sst.runTransitioner(target, TRANS_MAX_PATTERNS, TRANS_MAX_TIME)
+                    }
                 }
             } catch (e: JuggleExceptionDone) {
                 println(e.message)

@@ -246,7 +246,7 @@ class RingProp : Prop() {
         var pymax = 0
 
         for (i in 0..<POLYSIDES) {
-            val theta = i.toDouble() * 2 * Math.PI / POLYSIDES.toDouble()
+            val theta = i.toDouble() * 2 * PI / POLYSIDES.toDouble()
             val x = width.toDouble() * cos(theta) * 0.5
             val y = height.toDouble() * sin(theta) * 0.5
             px[i] = (ca * x - sa * y + 0.5).toInt()
@@ -295,7 +295,7 @@ class RingProp : Prop() {
 
         val innerPath = Path()
         for (i in 0..<POLYSIDES) {
-            val theta = i.toDouble() * 2.0 * Math.PI / POLYSIDES.toDouble()
+            val theta = i.toDouble() * 2.0 * PI / POLYSIDES.toDouble()
             val x = insideWidth.toDouble() * cos(theta) * 0.5
             val y = insideHeight.toDouble() * sin(theta) * 0.5
             px[i] = (ca * x - sa * y + 0.5).toInt() - pxmin

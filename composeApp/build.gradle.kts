@@ -67,6 +67,7 @@ kotlin {
             implementation(libs.compose.material.icons.extended)
             api(libs.androidx.datastore.preferences.core)
             implementation(libs.jetbrains.navigation.compose)
+            implementation(libs.okio)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -246,7 +247,11 @@ tasks.withType<JavaExec>().configureEach {
     val osArch = System.getProperty("os.arch").lowercase()
     val isMac = osName.contains("mac")
     val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
-    val classifier = if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains("win")) "win32-x86-64" else "linux-x86-64"
+    val classifier =
+        if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains(
+                "win"
+            )
+        ) "win32-x86-64" else "linux-x86-64"
 
     systemProperty("java.library.path", "${project.rootDir}/bin/ortools-lib/ortools-$classifier")
 }

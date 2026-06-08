@@ -6,7 +6,7 @@
 
 package org.jugglinglab.notation.ssparser
 
-class SiteswapTreeItem(var type: Int) : Cloneable {
+class SiteswapTreeItem(var type: Int) {
     var children: MutableList<SiteswapTreeItem> = mutableListOf()
 
     // variables that the parser determines:
@@ -46,7 +46,7 @@ class SiteswapTreeItem(var type: Int) : Cloneable {
     val numberOfChildren: Int
         get() = children.size
 
-    public override fun clone(): Any {
+    fun clone(): Any {
         val result = SiteswapTreeItem(type)
         result.repeats = repeats
         result.switchrepeat = switchrepeat

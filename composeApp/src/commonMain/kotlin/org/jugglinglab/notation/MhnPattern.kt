@@ -193,7 +193,6 @@ abstract class MhnPattern : Pattern() {
 
     // Write out configuration parameters in a standard order.
 
-    @Throws(JuggleExceptionInternal::class)
     override fun toCanonicalString(forHashCode: Boolean): String {
         if (config == null) return ""
         var result = ""
@@ -704,7 +703,7 @@ abstract class MhnPattern : Pattern() {
     // Convert from juggling matrix representation to JML
     //--------------------------------------------------------------------------
 
-    @Throws(JuggleExceptionInternal::class)
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun asJmlPattern(): JmlPattern {
         if (bpsSet <= 0) {
             // signal that we should calculate bps

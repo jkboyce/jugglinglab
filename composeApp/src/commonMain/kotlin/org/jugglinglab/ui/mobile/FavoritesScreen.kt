@@ -14,6 +14,7 @@ import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.jlExitProcess
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -123,7 +124,7 @@ fun FavoritesScreen(
                         if (jmlStorageRepository.exists(path)) {
                             jmlStorageRepository.delete(path)
                         }
-                        kotlin.system.exitProcess(0)
+                        jlExitProcess(0)
                     } catch (e: Exception) {
                         onError(
                             JuggleExceptionInternal(
@@ -136,7 +137,7 @@ fun FavoritesScreen(
                     }
                 }
             } else {
-                kotlin.system.exitProcess(0)
+                jlExitProcess(0)
             }
         }
     )

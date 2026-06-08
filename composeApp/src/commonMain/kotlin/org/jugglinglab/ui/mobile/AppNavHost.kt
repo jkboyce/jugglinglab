@@ -138,7 +138,8 @@ fun AppNavHost(
                 onNavigateTo = { navigateTo(it) },
                 onBusyChange = { viewModel.isProcessing = it },
                 onError = handleRuntimeError,
-                onGeneratorThreadChange = { viewModel.generatorThread = it }
+                coroutineScope = coroutineScope,
+                onGeneratorJobChange = { viewModel.generatorJob = it }
             )
         }
 

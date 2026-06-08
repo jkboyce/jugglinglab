@@ -22,6 +22,7 @@ firebaseCrashlytics = "20.0.6"
 firebase-bom = "34.14.0"
 google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.7"
+okio = "3.9.1"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -51,6 +52,7 @@ ortools-native-win32-x86 = { module = "com.google.ortools:ortools-win32-x86-64",
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
 firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebase-bom" }
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

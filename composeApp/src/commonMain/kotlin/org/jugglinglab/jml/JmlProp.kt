@@ -13,7 +13,6 @@ data class JmlProp (
     val type: String,
     val mod: String?
 ) {
-    @get:Throws(JuggleExceptionUser::class)
     val prop: Prop by lazy {
         Prop.newProp(type).apply { initProp(mod) }
     }

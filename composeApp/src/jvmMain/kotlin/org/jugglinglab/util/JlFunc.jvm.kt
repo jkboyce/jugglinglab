@@ -17,13 +17,13 @@ import androidx.compose.ui.graphics.toComposeImageBitmap
 import org.jetbrains.skia.Image
 import java.awt.*
 import java.awt.event.ActionEvent
-import java.net.URI
-import java.text.*
 import java.io.IOException
 import java.io.PrintWriter
 import java.io.StringWriter
+import java.net.URI
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.text.*
 import java.util.Locale
 import java.util.prefs.Preferences
 import javax.imageio.ImageIO
@@ -259,6 +259,14 @@ val jlIsSwing: Boolean by lazy {
     val isCompose = System.getProperty("JL_compose_ui")
     !(isCompose?.equals("true", ignoreCase = true) ?: false)
 }
+
+actual fun jlCurrentTimeMillis(): Long = System.currentTimeMillis()
+
+actual fun jlExitProcess(status: Int) {
+    exitProcess(status)
+}
+
+actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files

@@ -19,6 +19,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.sqrt
+import kotlin.math.PI
 
 //------------------------------------------------------------------------------
 // Mathematical conveniences
@@ -49,6 +50,10 @@ fun jlIsNearLine(x: Int, y: Int, x1: Int, y1: Int, x2: Int, y2: Int, slop: Int):
     d = abs(d) / sqrt(((x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1)).toDouble())
     return d.toInt() <= slop
 }
+
+fun Double.toRadians(): Double = this * PI / 180.0
+
+fun Double.toDegrees(): Double = this * 180.0 / PI
 
 //------------------------------------------------------------------------------
 // Helpers for string processing
@@ -136,12 +141,13 @@ private fun tryParseRepeat(str: String, fromPos: Int): IntArray? {
             --depth
             if (depth == 0) {
                 // see if we match the form '^(int)...' after the closing parenthesis
+                val sub = str.substring(pos + 1)
                 val regex = Regex("^\\s*\\^\\s*(\\d+).*")
-                val match = regex.matchEntire(str.substring(pos + 1)) ?: return null
+                val match = regex.matchEntire(sub) ?: return null
 
                 val repeats = match.groupValues[1].toInt()
-                val group1Range = match.groups[1]!!.range
-                val resumeStart = group1Range.last + 1 + pos + 1
+                val digitsStart = sub.indexOf(match.groupValues[1])
+                val resumeStart = digitsStart + match.groupValues[1].length + pos + 1
                 return intArrayOf(pos, repeats, resumeStart)
             }
         }
@@ -194,6 +200,17 @@ fun jlCompareVersions(v1: String, v2: String): Int {
 
     // If prefixes are equal, the longer version string is greater
     return components1.size.compareTo(components2.size)
+}
+
+// Convert a digit to a single character, for siteswap output.
+
+fun jlCharForDigit(digit: Int, radix: Int): Char {
+    if (digit !in 0..<radix) return '\u0000'
+    return if (digit < 10) {
+        '0' + digit
+    } else {
+        'a' + (digit - 10)
+    }
 }
 
 //------------------------------------------------------------------------------
@@ -249,6 +266,13 @@ val jlIsLinux: Boolean by lazy {
 val jlIsAndroid: Boolean by lazy {
     jlIsMobile && jlCurrentPlatform.lowercase().startsWith("android")
 }
+
+// Timing and execution.
+expect fun jlCurrentTimeMillis(): Long
+
+expect val jlFileSystem: okio.FileSystem
+
+expect fun jlExitProcess(status: Int)
 
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files
@@ -323,14 +347,63 @@ fun jlErrorIfNotSanitized(fname: String) {
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
 
-// Load a string resource.
+// Drop-in replacement for java.lang.String.format()
+
+private fun jlFormatString(format: String, vararg args: Any?): String {
+    var result = format
+    // 1. Replace indexed placeholders like %1$s, %2$d, etc.
+    for (i in args.indices) {
+        val index = i + 1
+        val valueStr = args[i]?.toString() ?: "null"
+        val regex = Regex("%$index\\$[-+]?[0-9]*\\.?[0-9]*[a-zA-Z]")
+        result = result.replace(regex, valueStr)
+    }
+
+    // 2. Replace sequential placeholders like %s, %d, %f, etc.
+    var argIndex = 0
+    val sb = StringBuilder()
+    var pos = 0
+    val length = result.length
+    while (pos < length) {
+        val ch = result[pos]
+        if (ch == '%' && pos + 1 < length) {
+            val nextCh = result[pos + 1]
+            if (nextCh == '%') {
+                sb.append('%')
+                pos += 2
+                continue
+            }
+
+            var scan = pos + 1
+            while (scan < length && (result[scan].isDigit() || result[scan] == '.' || result[scan] == '-' || result[scan] == '+')) {
+                scan++
+            }
+            if (scan < length && (result[scan] == 's' || result[scan] == 'd' || result[scan] == 'f' || result[scan] == 'g' || result[scan] == 'x')) {
+                if (argIndex < args.size) {
+                    val value = args[argIndex++]
+                    sb.append(value?.toString() ?: "null")
+                } else {
+                    sb.append("%" + result.substring(pos + 1, scan + 1))
+                }
+                pos = scan + 1
+            } else {
+                sb.append('%')
+                pos++
+            }
+        } else {
+            sb.append(ch)
+            pos++
+        }
+    }
+    return sb.toString()
+}
 
 fun jlGetStringResource(key: StringResource, vararg args: Any?): String {
     val message = runBlocking { getString(key) }
     return if (args.isEmpty()) {
         message
     } else {
-        message.format(*args)
+        jlFormatString(message, *args)
     }
 }
 

@@ -38,8 +38,12 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionInterrupted
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlBinomial
+import org.jugglinglab.util.jlCurrentTimeMillis
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlCharForDigit
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.isActive
 import kotlin.math.max
 import kotlin.math.min
 
@@ -81,8 +85,8 @@ class SiteswapGenerator : Generator() {
     }
 
     @Suppress("SimplifyBooleanWithConstants")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runGenerator(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    override suspend fun runGenerator(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
         if (config.groundflag == 1 && config.groundStateLength > config.ht) {
             return 0
         }
@@ -92,7 +96,7 @@ class SiteswapGenerator : Generator() {
         this.maxTime = maxTime
         if (maxTime > 0 || Constants.DEBUG_GENERATOR) {
             maxTimeMillis = (1000.0 * maxTime).toLong()
-            startTimeMillis = System.currentTimeMillis()
+            startTimeMillis = jlCurrentTimeMillis()
             loopCounter = 0
         }
 
@@ -120,8 +124,10 @@ class SiteswapGenerator : Generator() {
         } finally {
             target?.completed()
             if (Constants.DEBUG_GENERATOR) {
-                val millis = System.currentTimeMillis() - startTimeMillis
-                System.out.printf("time elapsed: %d.%03d s%n", millis / 1000, millis % 1000)
+                val millis = jlCurrentTimeMillis() - startTimeMillis
+                val secs = millis / 1000
+                val ms = (millis % 1000).toString().padStart(3, '0')
+                println("time elapsed: $secs.$ms s")
             }
         }
     }
@@ -171,9 +177,9 @@ class SiteswapGenerator : Generator() {
     // Do this by generating all possible starting states recursively, then
     // calling findCycles() to find the loops for each one.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun findPatterns(ballsPlaced: Int, minValue: Int, minTo: Int): Int {
-        if (Thread.interrupted()) {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    private suspend fun findPatterns(ballsPlaced: Int, minValue: Int, minTo: Int): Int {
+        if (!currentCoroutineContext().isActive) {
             throw JuggleExceptionInterrupted()
         }
 
@@ -307,15 +313,15 @@ class SiteswapGenerator : Generator() {
     //
     // Returns the number of cycles found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun findCycles(beat: Int, minThrow: Int, minHand: Int, sb: StringBuilder): Int {
-        if (Thread.interrupted()) {
+    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    private suspend fun findCycles(beat: Int, minThrow: Int, minHand: Int, sb: StringBuilder): Int {
+        if (!currentCoroutineContext().isActive) {
             throw JuggleExceptionInterrupted()
         }
         if (maxTime > 0) {
             if (loopCounter++ > LOOP_COUNTER_MAX) {
                 loopCounter = 0
-                if ((System.currentTimeMillis() - startTimeMillis) > maxTimeMillis) {
+                if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
                     val message = jlGetStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
                     throw JuggleExceptionDone(message)
                 }
@@ -613,7 +619,7 @@ class SiteswapGenerator : Generator() {
                     }
                 }
             }
-            assert(ballsThrown <= config.hands)
+            check(ballsThrown <= config.hands)
 
             // figure out where the jugglers would throw objects on this beat
             // in the "base" ground state pattern
@@ -960,8 +966,8 @@ class SiteswapGenerator : Generator() {
     // to beat2 mod rhythm_period.
 
     private fun compareThrows(beat1: Int, beat2: Int): Int {
-        assert(beat1 >= 0 && beat1 <= config.lMax)
-        assert(beat2 >= 0 && beat2 <= config.lMax)
+        check(beat1 >= 0 && beat1 <= config.lMax)
+        check(beat2 >= 0 && beat2 <= config.lMax)
 
         val value1 = throwValue[beat1]
         val to1 = throwTo[beat1]
@@ -1034,7 +1040,7 @@ class SiteswapGenerator : Generator() {
         if (value > 35) {
             sb.append('{').append(value).append('}')
         } else {
-            sb.append(Character.forDigit(value, 36).lowercaseChar())
+            sb.append(jlCharForDigit(value, 36).lowercaseChar())
         }
     }
 
@@ -1415,7 +1421,9 @@ class SiteswapGenerator : Generator() {
             try {
                 val ssg = SiteswapGenerator()
                 ssg.initGenerator(args)
-                ssg.runGenerator(target)
+                kotlinx.coroutines.runBlocking {
+                    ssg.runGenerator(target)
+                }
             } catch (e: Exception) {
                 val message = jlGetStringResource(Res.string.error) + ": " + e.message
                 println(message)

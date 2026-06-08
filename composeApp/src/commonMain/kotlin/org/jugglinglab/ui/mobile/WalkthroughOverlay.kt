@@ -21,8 +21,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.*
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -98,27 +98,25 @@ fun WalkthroughOverlay(
             Box(modifier = modifier.fillMaxSize()) {
                 // Spotlight draw & border
                 Canvas(modifier = Modifier.fillMaxSize()) {
-                    @Suppress("DEPRECATION")
-                    with(drawContext.canvas.nativeCanvas) {
-                        val checkpoint = saveLayer(null, null)
+                    val canvas = drawContext.canvas
+                    canvas.saveLayer(Rect(Offset.Zero, size), Paint())
 
-                        drawRect(
-                            color = Color.Black.copy(alpha = 0.45f),
-                            size = size
+                    drawRect(
+                        color = Color.Black.copy(alpha = 0.45f),
+                        size = size
+                    )
+
+                    if (highlightRect != null) {
+                        drawRoundRect(
+                            color = Color.Transparent,
+                            topLeft = Offset(highlightRect.left, highlightRect.top),
+                            size = Size(highlightRect.width, highlightRect.height),
+                            cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
+                            blendMode = BlendMode.Clear
                         )
-
-                        if (highlightRect != null) {
-                            drawRoundRect(
-                                color = Color.Transparent,
-                                topLeft = Offset(highlightRect.left, highlightRect.top),
-                                size = Size(highlightRect.width, highlightRect.height),
-                                cornerRadius = CornerRadius(8.dp.toPx(), 8.dp.toPx()),
-                                blendMode = BlendMode.Clear
-                            )
-                        }
-
-                        restoreToCount(checkpoint)
                     }
+
+                    canvas.restore()
 
                     if (highlightRect != null) {
                         drawRoundRect(

@@ -167,7 +167,6 @@ data class JmlPattern(
         edited
     }
 
-    @get:Throws(JuggleExceptionUser::class)
     val isColorable: Boolean by lazy {
         props.all { it.prop.isColorable }
     }
@@ -333,7 +332,6 @@ data class JmlPattern(
     // Physical pattern layout, for animation
     //--------------------------------------------------------------------------
 
-    @get:Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     val layout: LaidoutPattern by lazy {
         try {
             assertValid()
@@ -493,7 +491,6 @@ data class JmlPattern(
         JmlDefs.jmlSuffix.forEach { wr.append(it).append('\n') }
     }
 
-    @get:Throws(JuggleExceptionInternal::class)
     val rootNode: JmlNode?
         get() {
             try {

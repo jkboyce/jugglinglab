@@ -39,11 +39,12 @@ import javax.swing.*
 import javax.swing.filechooser.FileNameExtensionFilter
 import kotlin.math.max
 import org.jetbrains.compose.resources.StringResource
+import kotlinx.coroutines.Job
 
 class PatternListWindow(
     windowTitle: String? = null,
     val patternList: JmlPatternList = JmlPatternList(),
-    var generatorThread: Thread? = null
+    var generatorJob: Job? = null
 ) : JFrame(), ActionListener {
     val patternListPanel = PatternListPanel(
         patternList = patternList,
@@ -66,7 +67,7 @@ class PatternListWindow(
             patternList.title = windowTitle
         }
         setTitle(patternList.title)
-        if (generatorThread != null) {
+        if (generatorJob != null) {
             setTitle("$title (running)")
         }
         setContentsClean()
@@ -116,7 +117,7 @@ class PatternListWindow(
     fun onGeneratorDone() {
         setContentsClean()
         setTitle(patternList.title)
-        generatorThread = null
+        generatorJob = null
     }
 
     //--------------------------------------------------------------------------
@@ -387,10 +388,10 @@ class PatternListWindow(
     //--------------------------------------------------------------------------
 
     override fun dispose() {
-        if (generatorThread != null) {
-            generatorThread?.interrupt()
+        if (generatorJob != null) {
+            generatorJob?.cancel()
             setContentsClean()
-            generatorThread = null
+            generatorJob = null
         }
 
         if (lastCleanJlHashCode != jlHashCode) {

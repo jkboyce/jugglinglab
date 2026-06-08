@@ -23,17 +23,6 @@ open class JuggleExceptionUser : JuggleException {
     constructor(s: String) : super(s)
 }
 
-// This exception type is not raised in response to any error condition. It is
-// used as a mechanism to abort from tasks.
-
-class JuggleExceptionDone : JuggleExceptionUser {
-    constructor(s: String) : super(s)
-}
-
-class JuggleExceptionInterrupted : JuggleExceptionUser {
-    constructor() : super()
-}
-
 // This exception type is for errors that in principle should never occur (i.e.,
 // no user action should be able to trigger these). We typically respond to
 // these with the dialog box at jlHandleFatalException().
@@ -55,4 +44,13 @@ open class JuggleExceptionInternal : JuggleException {
         this.wrapped = e
         this.pattern = pattern
     }
+}
+
+// This exception type is not raised in response to any error condition. It is
+// used as a mechanism to abort from tasks.
+
+class JuggleExceptionDone(s: String) : kotlin.coroutines.cancellation.CancellationException(s)
+
+class JuggleExceptionInterrupted : kotlin.coroutines.cancellation.CancellationException {
+    constructor() : super("Generator interrupted")
 }

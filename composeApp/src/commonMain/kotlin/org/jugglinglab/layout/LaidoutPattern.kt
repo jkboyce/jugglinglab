@@ -28,6 +28,7 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.Permutation
 import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.toRadians
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.sin
@@ -476,12 +477,12 @@ class LaidoutPattern(val pat: JmlPattern) {
                 } else {
                     var r = 70.0
                     val theta = 360 / pat.numberOfJugglers.toDouble()
-                    if (r * sin(Math.toRadians(0.5 * theta)) < 65) {
-                        r = 65 / sin(Math.toRadians(0.5 * theta))
+                    if (r * sin((0.5 * theta).toRadians()) < 65) {
+                        r = 65 / sin((0.5 * theta).toRadians())
                     }
                     positions[0].setCoordinate(
-                        r * cos(Math.toRadians(theta * (i - 1).toDouble())),
-                        r * sin(Math.toRadians(theta * (i - 1).toDouble())),
+                        r * cos((theta * (i - 1).toDouble()).toRadians()),
+                        r * sin((theta * (i - 1).toDouble()).toRadians()),
                         100.0
                     )
                     angles[0].setCoordinate(90 + theta * (i - 1).toDouble(), 0.0, 0.0)
@@ -916,7 +917,7 @@ class LaidoutPattern(val pat: JmlPattern) {
     fun convertLocalToGlobal(lc: Coordinate, juggler: Int, time: Double): Coordinate {
         val origin = Coordinate()
         getJugglerPosition(juggler, time, origin)
-        val angle = Math.toRadians(getJugglerAngle(juggler, time))
+        val angle = (getJugglerAngle(juggler, time)).toRadians()
         lc.y += Juggler.PATTERN_Y
 
         return Coordinate(
@@ -931,7 +932,7 @@ class LaidoutPattern(val pat: JmlPattern) {
     fun convertGlobalToLocal(gc: Coordinate?, juggler: Int, t: Double): Coordinate {
         val origin = Coordinate()
         getJugglerPosition(juggler, t, origin)
-        val angle = Math.toRadians(getJugglerAngle(juggler, t))
+        val angle = (getJugglerAngle(juggler, t)).toRadians()
         val c2 = Coordinate.sub(gc, origin)
 
         val lc =

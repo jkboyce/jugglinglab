@@ -23,7 +23,6 @@ import org.jugglinglab.notation.Pattern
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.JuggleExceptionDone
-import org.jugglinglab.util.JuggleExceptionInterrupted
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlConstraints
 import org.jugglinglab.util.jlGetStringResource
@@ -33,6 +32,7 @@ import java.awt.*
 import java.awt.event.ActionEvent
 import javax.swing.*
 import javax.swing.event.ChangeEvent
+import kotlinx.coroutines.*
 
 class ApplicationPanelSwing(
     private val parentFrame: JFrame?,
@@ -158,45 +158,65 @@ class ApplicationPanelSwing(
         transButton = JButton(jlGetStringResource(Res.string.gui_run)).apply {
             setDefaultCapable(true)
             addActionListener {
-                val t: Thread =
-                    object : Thread() {
-                        override fun run() {
-                            transButton!!.setEnabled(false)
-                            var pw: PatternListWindow? = null
-                            try {
-                                trans.initTransitioner(transControl.params)
-                                val title =
-                                    trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
-                                val pwot = GeneratorTargetPatternList(pw.patternListPanel)
-                                trans.runTransitioner(pwot, MAX_PATTERNS, MAX_TIME_SEC)
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                            } catch (ex: JuggleExceptionDone) {
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                                val parentComponent = pw ?: plp
-                                jlHandleUserMessage(
-                                    parentComponent,
-                                    jlGetStringResource(Res.string.gui_generator_stopped_title),
-                                    ex.message
-                                )
-                            } catch (_: JuggleExceptionInterrupted) {
-                                // System.out.println("generator thread quit");
-                            } catch (ex: JuggleExceptionUser) {
-                                pw?.dispose()
-                                jlHandleUserException(this@ApplicationPanelSwing, ex.message)
-                            } catch (e: Exception) {
-                                pw?.dispose()
-                                jlHandleFatalException(e)
+                coroutineScope.launch {
+                    withContext(Dispatchers.Main) {
+                        transButton!!.setEnabled(false)
+                    }
+                    var pw: PatternListWindow? = null
+                    try {
+                        trans.initTransitioner(transControl.params)
+                        var pwot: GeneratorTargetPatternList? = null
+                        withContext(Dispatchers.Main) {
+                            val title =
+                                trans.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
+                            val window = PatternListWindow(windowTitle = title, generatorJob = null)
+                            pw = window
+                            pwot = GeneratorTargetPatternList(window.patternListPanel)
+                        }
+                        val generatorJob = async(Dispatchers.Default) {
+                            trans.runTransitioner(pwot!!, MAX_PATTERNS, MAX_TIME_SEC)
+                        }
+                        if (pw != null) {
+                            withContext(Dispatchers.Main) {
+                                pw.generatorJob = generatorJob
+                                pw.setTitle("${pw.patternList.title} (running)")
                             }
-
+                        }
+                        generatorJob.await()
+                        withContext(Dispatchers.Main) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                        }
+                    } catch (ex: JuggleExceptionDone) {
+                        withContext(Dispatchers.Main) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                            val parentComponent = pw ?: plp
+                            jlHandleUserMessage(
+                                parentComponent,
+                                jlGetStringResource(Res.string.gui_generator_stopped_title),
+                                ex.message
+                            )
+                        }
+                    } catch (_: CancellationException) {
+                        // User cancelled
+                    } catch (e: Throwable) {
+                        withContext(Dispatchers.Main) {
+                            pw?.dispose()
+                            if (e is JuggleExceptionUser)
+                                jlHandleUserException(this@ApplicationPanelSwing, e.message)
+                            else
+                                jlHandleFatalException(e)
+                        }
+                    } finally {
+                        withContext(Dispatchers.Main) {
+                            pw?.onGeneratorDone()
                             transButton!!.setEnabled(true)
                         }
                     }
-                t.start()
+                }
             }
         }
 
@@ -227,47 +247,67 @@ class ApplicationPanelSwing(
 
         genButton = JButton(jlGetStringResource(Res.string.gui_run)).apply {
             addActionListener {
-                val t: Thread =
-                    object : Thread() {
-                        override fun run() {
-                            genBusy!!.isVisible = true
-                            genButton!!.setEnabled(false)
-                            var pw: PatternListWindow? = null
-                            try {
-                                gen.initGenerator(genControl.params)
-                                val title =
-                                    gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
-                                pw = PatternListWindow(windowTitle = title, generatorThread = this)
-                                val pwot = GeneratorTargetPatternList(pw.patternListPanel)
-                                gen.runGenerator(pwot, MAX_PATTERNS, MAX_TIME_SEC)
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                            } catch (ex: JuggleExceptionDone) {
-                                if (plp != null) {
-                                    jtp!!.setSelectedComponent(plp)
-                                }
-                                val parentComponent = pw ?: plp
-                                jlHandleUserMessage(
-                                    parentComponent,
-                                    jlGetStringResource(Res.string.gui_generator_stopped_title),
-                                    ex.message
-                                )
-                            } catch (_: JuggleExceptionInterrupted) {
-                                // System.out.println("generator thread quit");
-                            } catch (ex: JuggleExceptionUser) {
-                                pw?.dispose()
-                                jlHandleUserException(this@ApplicationPanelSwing, ex.message)
-                            } catch (e: Exception) {
-                                pw?.dispose()
-                                jlHandleFatalException(e)
+                coroutineScope.launch {
+                    withContext(Dispatchers.Main) {
+                        genBusy!!.isVisible = true
+                        genButton!!.setEnabled(false)
+                    }
+                    var pw: PatternListWindow? = null
+                    try {
+                        gen.initGenerator(genControl.params)
+                        var gtpl: GeneratorTargetPatternList? = null
+                        withContext(Dispatchers.Main) {
+                            val title =
+                                gen.notationName + " " + jlGetStringResource(Res.string.gui_patterns)
+                            val window = PatternListWindow(windowTitle = title, generatorJob = null)
+                            pw = window
+                            gtpl = GeneratorTargetPatternList(window.patternListPanel)
+                        }
+                        val generatorJob = async(Dispatchers.Default) {
+                            gen.runGenerator(gtpl!!, MAX_PATTERNS, MAX_TIME_SEC)
+                        }
+                        if (pw != null) {
+                            withContext(Dispatchers.Main) {
+                                pw.generatorJob = generatorJob
+                                pw.setTitle("${pw.patternList.title} (running)")
                             }
-
+                        }
+                        generatorJob.await()
+                        withContext(Dispatchers.Main) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                        }
+                    } catch (ex: JuggleExceptionDone) {
+                        withContext(Dispatchers.Main) {
+                            if (plp != null) {
+                                jtp!!.setSelectedComponent(plp)
+                            }
+                            val parentComponent = pw ?: plp
+                            jlHandleUserMessage(
+                                parentComponent,
+                                jlGetStringResource(Res.string.gui_generator_stopped_title),
+                                ex.message
+                            )
+                        }
+                    } catch (_: CancellationException) {
+                        // User cancelled
+                    } catch (e: Throwable) {
+                        withContext(Dispatchers.Main) {
+                            pw?.dispose()
+                            if (e is JuggleExceptionUser)
+                                jlHandleUserException(this@ApplicationPanelSwing, e.message)
+                            else
+                                jlHandleFatalException(e)
+                        }
+                    } finally {
+                        withContext(Dispatchers.Main) {
+                            pw?.onGeneratorDone()
                             genBusy!!.isVisible = false
                             genButton!!.setEnabled(true)
                         }
                     }
-                t.start()
+                }
             }
         }
 

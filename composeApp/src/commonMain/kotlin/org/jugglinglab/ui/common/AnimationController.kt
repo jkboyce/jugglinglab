@@ -20,10 +20,13 @@ import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.jlIsNearLine
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlIsMobile
+import org.jugglinglab.util.toDegrees
+import org.jugglinglab.util.toRadians
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.geometry.Offset
+import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.atan2
 import kotlin.math.cos
@@ -285,7 +288,7 @@ class AnimationController(
                             dragging = true
                             draggingLeft = (i == 0)
                             deltaX = 0; deltaY = 0
-                            startAngle = Math.toRadians(activePosition.angle)
+                            startAngle = (activePosition.angle).toRadians()
 
                             // record pixel coordinates of x and y unit vectors
                             // in juggler's frame, at start of angle drag
@@ -334,15 +337,15 @@ class AnimationController(
                 val newAngle = startAngle + deltaAngle
                 if (anglediff(newAngle) < SNAP_ANGLE / 2) {
                     deltaAngle = -startAngle
-                } else if (anglediff(newAngle + 0.5 * Math.PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle - 0.5 * Math.PI
-                } else if (anglediff(newAngle + Math.PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle + Math.PI
-                } else if (anglediff(newAngle + 1.5 * Math.PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle + 0.5 * Math.PI
+                } else if (anglediff(newAngle + 0.5 * PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle - 0.5 * PI
+                } else if (anglediff(newAngle + PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle + PI
+                } else if (anglediff(newAngle + 1.5 * PI) < SNAP_ANGLE / 2) {
+                    deltaAngle = -startAngle + 0.5 * PI
                 }
 
-                var finalAngle = Math.toDegrees(startAngle + deltaAngle)
+                var finalAngle = (startAngle + deltaAngle).toDegrees()
                 while (finalAngle > 360) finalAngle -= 360.0
                 while (finalAngle < 0) finalAngle += 360.0
 
@@ -430,10 +433,10 @@ class AnimationController(
             // across platforms
             ca0 += dx.toDouble() * 0.02 / density
             ca1 -= dy.toDouble() * 0.02 / density
-            if (ca1 < Math.toRadians(0.0001)) ca1 = Math.toRadians(0.0001)
-            if (ca1 > Math.toRadians(179.9999)) ca1 = Math.toRadians(179.9999)
-            while (ca0 < 0) ca0 += 2.0 * Math.PI
-            while (ca0 >= 2.0 * Math.PI) ca0 -= 2.0 * Math.PI
+            if (ca1 < 0.0001.toRadians()) ca1 = 0.0001.toRadians()
+            if (ca1 > 179.9999.toRadians()) ca1 = 179.9999.toRadians()
+            while (ca0 < 0) ca0 += 2.0 * PI
+            while (ca0 >= 2.0 * PI) ca0 -= 2.0 * PI
 
             dragCameraAngle = listOf(ca0, ca1)
             state.update(cameraAngle = snapCamera(dragCameraAngle))
@@ -492,11 +495,11 @@ class AnimationController(
         result[1] = ca[1]
 
         if (result[1] < SNAP_ANGLE) {
-            result[1] = Math.toRadians(0.0001)
-        } else if (anglediff(Math.toRadians(90.0) - result[1]) < SNAP_ANGLE) {
-            result[1] = Math.toRadians(90.0)
-        } else if (result[1] > (Math.toRadians(180.0) - SNAP_ANGLE)) {
-            result[1] = Math.toRadians(179.9999)
+            result[1] = 0.0001.toRadians()
+        } else if (anglediff(0.5 * PI - result[1]) < SNAP_ANGLE) {
+            result[1] = 0.5 * PI
+        } else if (result[1] > (PI - SNAP_ANGLE)) {
+            result[1] = 179.9999.toRadians()
         }
 
         var a = 0.0
@@ -505,29 +508,27 @@ class AnimationController(
         val activePosition = AnimationLayout.getActivePosition(state)
 
         if (activeEventImage != null) {
-            a = -Math.toRadians(
-                state.pattern.layout.getJugglerAngle(
+            a = (-state.pattern.layout.getJugglerAngle(
                     activeEventImage.first.juggler, activeEventImage.first.t
-                )
-            )
+                )).toRadians()
         } else if (activePosition != null) {
             a = 0.0
         } else if (state.pattern.numberOfJugglers == 1) {
-            a = -Math.toRadians(state.pattern.layout.getJugglerAngle(1, state.time))
+            a = (-state.pattern.layout.getJugglerAngle(1, state.time)).toRadians()
         } else {
             snapHorizontal = false
         }
 
         if (snapHorizontal) {
-            while (a < 0) a += Math.toRadians(360.0)
-            while (a >= Math.toRadians(360.0)) a -= Math.toRadians(360.0)
+            while (a < 0) a += 2 * PI
+            while (a >= 2 * PI) a -= 2 * PI
 
             if (anglediff(a - result[0]) < SNAP_ANGLE) result[0] = a
-            else if (anglediff(a + 0.5 * Math.PI - result[0]) < SNAP_ANGLE) result[0] =
-                a + 0.5 * Math.PI
-            else if (anglediff(a + Math.PI - result[0]) < SNAP_ANGLE) result[0] = a + Math.PI
-            else if (anglediff(a + 1.5 * Math.PI - result[0]) < SNAP_ANGLE) result[0] =
-                a + 1.5 * Math.PI
+            else if (anglediff(a + 0.5 * PI - result[0]) < SNAP_ANGLE) result[0] =
+                a + 0.5 * PI
+            else if (anglediff(a + PI - result[0]) < SNAP_ANGLE) result[0] = a + PI
+            else if (anglediff(a + 1.5 * PI - result[0]) < SNAP_ANGLE) result[0] =
+                a + 1.5 * PI
         }
         return result.toList()
     }
@@ -598,7 +599,7 @@ class AnimationController(
                     val det = dx[0] * dy[1] - dx[1] * dy[0]
                     val a = (dy[1] * deltaX - dy[0] * deltaY) / det
                     val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
-                    val angle = Math.toRadians(activePosition.angle)
+                    val angle = (activePosition.angle).toRadians()
                     c.x += a * cos(angle) - b * sin(angle)
                     c.y += a * sin(angle) + b * cos(angle)
 
@@ -651,15 +652,15 @@ class AnimationController(
         private val FACE_XZ: IntArray = intArrayOf(0, 1, 2, 3)
         private val FACE_XY: IntArray = intArrayOf(0, 1, 2, 3)
 
-        private val SNAP_ANGLE: Double = Math.toRadians(8.0)
+        private val SNAP_ANGLE: Double = 8.0.toRadians()
 
         const val MAX_ZOOM: Double = 8.0
         const val MIN_ZOOM: Double = 0.25
 
         fun anglediff(delta: Double): Double {
             var d = delta
-            while (d > Math.PI) d -= 2 * Math.PI
-            while (d <= -Math.PI) d += 2 * Math.PI
+            while (d > PI) d -= 2 * PI
+            while (d <= -PI) d += 2 * PI
             return abs(d)
         }
 

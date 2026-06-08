@@ -178,8 +178,7 @@ fun AnimationViewCombined(
         if (isLandscape) {
             Row(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .safeDrawingPadding()
+                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -272,8 +271,7 @@ fun AnimationViewCombined(
         } else {
             Column(
                 modifier = Modifier
-                    .background(MaterialTheme.colorScheme.primaryContainer)
-                    .safeDrawingPadding()
+                    .background(MaterialTheme.colorScheme.background)
                     .fillMaxSize(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {

@@ -10,6 +10,7 @@
 package org.jugglinglab.core
 
 import org.jugglinglab.jml.JmlPattern
+import org.jugglinglab.util.toRadians
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
@@ -202,16 +203,16 @@ class PatternAnimationState(
     fun initialCameraAngle(): List<Double> {
         val ca = DoubleArray(2)
         if (prefs.defaultCameraAngle != null) {
-            ca[0] = Math.toRadians(prefs.defaultCameraAngle!![0])
+            ca[0] = (prefs.defaultCameraAngle!![0]).toRadians()
             val theta = min(179.9999, max(0.0001, prefs.defaultCameraAngle!![1]))
-            ca[1] = Math.toRadians(theta)
+            ca[1] = theta.toRadians()
         } else {
             if (pattern.numberOfJugglers == 1) {
-                ca[0] = Math.toRadians(0.0)
-                ca[1] = Math.toRadians(90.0)
+                ca[0] = 0.0.toRadians()
+                ca[1] = 90.0.toRadians()
             } else {
-                ca[0] = Math.toRadians(340.0)
-                ca[1] = Math.toRadians(70.0)
+                ca[0] = 340.0.toRadians()
+                ca[1] = 70.0.toRadians()
             }
         }
         return ca.toList()

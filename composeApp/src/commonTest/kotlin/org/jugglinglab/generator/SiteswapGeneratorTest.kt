@@ -16,7 +16,9 @@ class SiteswapGeneratorTest {
         val patterns = ArrayList<String>()
         SiteswapGenerator().apply {
             initGenerator(input.split(" "))
-            runGenerator(GeneratorTargetBasic(listTarget = patterns))
+            kotlinx.coroutines.runBlocking {
+                runGenerator(GeneratorTargetBasic(listTarget = patterns))
+            }
         }
         return patterns
     }
@@ -103,7 +105,9 @@ class SiteswapGeneratorTest {
             SiteswapGenerator().apply {
                 initGenerator("3 5 6 -se -f".split(" "))
                 // The full testcase has 55 patterns. Let's limit it to 10.
-                runGenerator(GeneratorTargetBasic(listTarget = patterns), maxNum = 10)
+                kotlinx.coroutines.runBlocking {
+                    runGenerator(GeneratorTargetBasic(listTarget = patterns), maxNum = 10)
+                }
             }
         } catch (_: org.jugglinglab.util.JuggleExceptionDone) {
             // expected termination exception
