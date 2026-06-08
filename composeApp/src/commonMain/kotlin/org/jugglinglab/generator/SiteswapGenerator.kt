@@ -58,11 +58,12 @@ class SiteswapGenerator : Generator() {
     private lateinit var connections: BooleanArray
     private lateinit var startingSeq: String
     private lateinit var endingSeq: String
-    private var maxNum: Int = 0 // maximum number of patterns to print
-    private var maxTime: Double = 0.0 // maximum number of seconds
+    private var maxNum: Int = -1 // maximum number of patterns to print
+    private var patternsFound: Int = 0 // total patterns found during execution
+    private var maxTime: Double = -1.0 // maximum number of seconds
     private var maxTimeMillis: Long = 0 // maximum number of milliseconds
     private var startTimeMillis: Long = 0 // start time of run, in milliseconds
-    private var loopCounter: Int = 0 // gen_loop() counter for checking timeout
+    private var loopCounter: Int = 0 // counter for checking timeout
 
     // other state variables
     private var target: GeneratorTarget? = null
@@ -81,15 +82,16 @@ class SiteswapGenerator : Generator() {
 
     @Suppress("SimplifyBooleanWithConstants")
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runGenerator(t: GeneratorTarget, maxNum: Int, secs: Double): Int {
+    override fun runGenerator(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
         if (config.groundflag == 1 && config.groundStateLength > config.ht) {
             return 0
         }
 
         this.maxNum = maxNum
-        maxTime = secs
+        patternsFound = 0
+        this.maxTime = maxTime
         if (maxTime > 0 || Constants.DEBUG_GENERATOR) {
-            maxTimeMillis = (1000.0 * secs).toLong()
+            maxTimeMillis = (1000.0 * maxTime).toLong()
             startTimeMillis = System.currentTimeMillis()
             loopCounter = 0
         }
@@ -375,6 +377,11 @@ class SiteswapGenerator : Generator() {
                 if (config.numflag != 2) {
                     outputPattern(sb.toString())
                 }
+                patternsFound++
+                if (maxNum >= 0 && maxNum == patternsFound) {
+                    val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                    throw JuggleExceptionDone(message)
+                }
                 sb.setLength(originalLength)
                 1
             } else {
@@ -409,11 +416,6 @@ class SiteswapGenerator : Generator() {
                     findCycles(beat, 1, 0, sb)
                 }
                 ++holes[k][ti]
-
-                if (maxNum in 0..num) {
-                    val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
-                    throw JuggleExceptionDone(message)
-                }
                 ++k
             }
             k = 0

@@ -14,8 +14,10 @@ import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.core.ThemeSetting
 import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.ui.components.JlErrorDialog
+import org.jugglinglab.ui.components.JlStoppedDialog
 import org.jugglinglab.util.crashReporter
 import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.JuggleExceptionDone
 import org.jugglinglab.util.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -134,11 +136,19 @@ fun App(
     // Error Handling
 
     val handleRuntimeError: (Throwable) -> Unit = { t ->
-        if (t is JuggleExceptionUser) {
-            viewModel.asyncErrorMessage = t.message
-        } else {
-            viewModel.asyncErrorMessage = "Internal error: ${t.message}"
-            crashReporter.recordThrowable(t)
+        when (t) {
+            is JuggleExceptionDone -> {
+                viewModel.asyncStoppedMessage = t.message
+            }
+
+            is JuggleExceptionUser -> {
+                viewModel.asyncErrorMessage = t.message
+            }
+
+            else -> {
+                viewModel.asyncErrorMessage = "Internal error: ${t.message}"
+                crashReporter.recordThrowable(t)
+            }
         }
     }
     viewModel.onError = handleRuntimeError
@@ -315,6 +325,14 @@ fun App(
                             hasLoadedPatternList = viewModel.hasLoadedPatternList,
                             maxW = maxW,
                             maxH = maxH
+                        )
+                    }
+
+                    val currentAsyncStoppedMessage = viewModel.asyncStoppedMessage
+                    if (currentAsyncStoppedMessage != null) {
+                        JlStoppedDialog(
+                            message = currentAsyncStoppedMessage,
+                            onDismiss = { viewModel.asyncStoppedMessage = null }
                         )
                     }
 

@@ -42,8 +42,6 @@ kotlin {
         androidResources {
             enable = true
         }
-
-        withHostTest {}
     }
 
     jvm()
@@ -136,6 +134,8 @@ compose.desktop {
 
 // Custom task to generate ANTLR sources for siteswap parser
 val generateKotlinGrammarSource = tasks.register<AntlrKotlinTask>("generateKotlinGrammarSource") {
+    description = "Generates siteswap parser from ANTLR4 sources"
+
     // ANTLR .g4 files are under composeApp/antlr
     source = fileTree(layout.projectDirectory.dir("antlr")) {
         include("**/*.g4")

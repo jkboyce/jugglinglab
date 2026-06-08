@@ -54,6 +54,23 @@ fun JlErrorDialog(
 }
 
 @Composable
+fun JlStoppedDialog(
+    message: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(Res.string.gui_generator_stopped_title)) },
+        text = { Text(message) },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text(stringResource(Res.string.gui_ok))
+            }
+        },
+    )
+}
+
+@Composable
 fun JlActionRowDefaultsRun(
     onDefaults: () -> Unit,
     onRun: () -> Unit,

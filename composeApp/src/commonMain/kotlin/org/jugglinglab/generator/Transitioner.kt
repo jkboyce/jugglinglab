@@ -32,7 +32,7 @@ abstract class Transitioner {
 
     // run the transitioner with bounds on space and time
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun runTransitioner(t: GeneratorTarget, numLimit: Int, secsLimit: Double): Int
+    abstract fun runTransitioner(t: GeneratorTarget, maxNum: Int = -1, maxTime: Double = -1.0): Int
 
     companion object {
         // The built-in transitioners

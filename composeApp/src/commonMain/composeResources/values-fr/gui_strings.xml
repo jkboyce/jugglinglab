@@ -150,7 +150,7 @@
     <string name="gui_continue">Continuer</string>
     <string name="gui_generator_stopped_title">Générateur arrêté</string>
     <string name="gui_generator_timeout">Limite de %1$d secondes dépassée</string>
-    <string name="gui_generator_spacelimit">Limite de %1$d figures dépassée</string>
+    <string name="gui_generator_spacelimit">Limite de %1$d figures atteinte</string>
     <string name="gui_generator_patterns_1">1 figure</string>
     <string name="gui_generator_patterns_ne1">%1$d figures</string>
     <string name="gui_pattern_list_tab">Liste des figures</string>

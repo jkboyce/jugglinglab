@@ -74,14 +74,23 @@ class AppViewModel(
     val generatorState = SiteswapGeneratorState()
     val transitionerState = SiteswapTransitionerState()
     val combinedState = GeneratorControlCombinedState()
+    var generatorThread: Thread? = null
 
-    // error messages and busy spinner
+    // display messages and busy spinner
+    var asyncStoppedMessage by mutableStateOf<String?>(null)
     var asyncErrorMessage by mutableStateOf<String?>(null)
     var isProcessing by mutableStateOf(false)
 
     //--------------------------------------------------------------------------
     // Helper Methods
     //--------------------------------------------------------------------------
+
+    fun stopGenerator() {
+        generatorThread?.let {
+            it.interrupt()
+            generatorThread = null
+        }
+    }
 
     fun saveFavoritesList(scope: CoroutineScope) {
         val path = localFilesDir?.let { it / "Favorites.jml" }

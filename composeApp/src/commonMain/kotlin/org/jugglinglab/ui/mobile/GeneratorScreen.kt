@@ -16,6 +16,7 @@ import org.jugglinglab.generator.SiteswapTransitioner
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.ui.common.*
+import org.jugglinglab.util.JuggleExceptionInterrupted
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -41,7 +42,8 @@ fun GeneratorScreen(
     combinedState: GeneratorControlCombinedState,
     onNavigateTo: (String) -> Unit,
     onBusyChange: (Boolean) -> Unit,
-    onError: (Throwable) -> Unit
+    onError: (Throwable) -> Unit,
+    onGeneratorThreadChange: (Thread?) -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -79,17 +81,24 @@ fun GeneratorScreen(
                                     )
                                 }
                             }
-                            generator.runGenerator(
-                                genTarget,
-                                MAX_PATTERNS,
-                                MAX_TIME_SEC
-                            )
+                            try {
+                                onGeneratorThreadChange(Thread.currentThread())
+                                generator.runGenerator(
+                                    genTarget,
+                                    MAX_PATTERNS,
+                                    MAX_TIME_SEC
+                                )
+                            } finally {
+                                onGeneratorThreadChange(null)
+                            }
                         }
                             .buffer(Channel.UNLIMITED)
                             .flowOn(Dispatchers.Default)
                             .collect { record ->
                                 patternList.addLine(-1, record)
                             }
+                    } catch (_: JuggleExceptionInterrupted) {
+                        // ignore expected interruption
                     } catch (e: Throwable) {
                         onError(e)
                     } finally {
@@ -132,17 +141,24 @@ fun GeneratorScreen(
                                     )
                                 }
                             }
-                            transitioner.runTransitioner(
-                                genTarget,
-                                MAX_PATTERNS,
-                                MAX_TIME_SEC
-                            )
+                            try {
+                                onGeneratorThreadChange(Thread.currentThread())
+                                transitioner.runTransitioner(
+                                    genTarget,
+                                    MAX_PATTERNS,
+                                    MAX_TIME_SEC
+                                )
+                            } finally {
+                                onGeneratorThreadChange(null)
+                            }
                         }
                             .buffer(Channel.UNLIMITED)
                             .flowOn(Dispatchers.Default)
                             .collect { record ->
                                 patternList.addLine(-1, record)
                             }
+                    } catch (_: JuggleExceptionInterrupted) {
+                        // ignore expected interruption
                     } catch (e: Exception) {
                         onError(e)
                     } finally {

@@ -150,7 +150,7 @@
     <string name="gui_continue">Continue</string>
     <string name="gui_generator_stopped_title">Generator stopped</string>
     <string name="gui_generator_timeout">Limit of %1$d seconds exceeded</string>
-    <string name="gui_generator_spacelimit">Limit of %1$d patterns exceeded</string>
+    <string name="gui_generator_spacelimit">Limit of %1$d patterns reached</string>
     <string name="gui_generator_patterns_1">1 pattern</string>
     <string name="gui_generator_patterns_ne1">%1$d patterns</string>
     <string name="gui_pattern_list_tab">Pattern list</string>

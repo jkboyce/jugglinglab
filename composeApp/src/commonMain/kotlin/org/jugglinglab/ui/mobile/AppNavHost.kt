@@ -78,7 +78,12 @@ fun AppNavHost(
                 listState = viewModel.patternListScrollState,
                 onListStateChange = { viewModel.patternListScrollState = it },
                 hasLoadedPatternList = viewModel.hasLoadedPatternList,
-                onHasLoadedChange = { viewModel.hasLoadedPatternList = it },
+                onHasLoadedChange = { hasLoaded ->
+                    if (!hasLoaded) {
+                        viewModel.stopGenerator()
+                    }
+                    viewModel.hasLoadedPatternList = hasLoaded
+                },
                 localFilesDir = localFilesDir,
                 onNavigateTo = { navigateTo(it) },
                 onBusyChange = { viewModel.isProcessing = it },
@@ -132,7 +137,8 @@ fun AppNavHost(
                 combinedState = viewModel.combinedState,
                 onNavigateTo = { navigateTo(it) },
                 onBusyChange = { viewModel.isProcessing = it },
-                onError = handleRuntimeError
+                onError = handleRuntimeError,
+                onGeneratorThreadChange = { viewModel.generatorThread = it }
             )
         }
 

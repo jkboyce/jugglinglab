@@ -150,7 +150,7 @@
     <string name="gui_continue">Continuar</string>
     <string name="gui_generator_stopped_title">Gerador terminado</string>
     <string name="gui_generator_timeout">Limite de %1$d segundos excedido</string>
-    <string name="gui_generator_spacelimit">Limite de %1$d padrões excedido</string>
+    <string name="gui_generator_spacelimit">Limite de %1$d padrões atingido</string>
     <string name="gui_generator_patterns_1">1 padrão</string>
     <string name="gui_generator_patterns_ne1">%1$d padrões</string>
     <string name="gui_pattern_list_tab">Lista de padrões</string>

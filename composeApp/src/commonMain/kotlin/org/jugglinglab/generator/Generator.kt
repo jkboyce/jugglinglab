@@ -29,7 +29,7 @@ abstract class Generator {
     // run the generator with bounds on space and time; negative numbers mean
     // no limits
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun runGenerator(t: GeneratorTarget, maxNum: Int = -1, secs: Double = -1.0): Int
+    abstract fun runGenerator(t: GeneratorTarget, maxNum: Int = -1, maxTime: Double = -1.0): Int
 
     companion object {
         // The built-in generators

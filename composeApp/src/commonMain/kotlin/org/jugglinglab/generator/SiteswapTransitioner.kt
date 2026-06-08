@@ -54,11 +54,12 @@ class SiteswapTransitioner : Transitioner() {
     private lateinit var asyncHandRight: Array<BooleanArray>
     private lateinit var siteswapPrev: SiteswapPattern
     private var targetMaxFilledIndex: Int = 0
-    private var maxNum: Int = 0 // maximum number of transitions to find
-    private var maxTime: Double = 0.0 // maximum number of seconds
+    private var maxNum: Int = -1 // maximum number of transitions to find
+    private var patternsFound: Int = 0 // total transitions found during execution
+    private var maxTime: Double = -1.0 // maximum number of seconds
     private var maxTimeMillis: Long = 0 // maximum number of milliseconds
     private var startTimeMillis: Long = 0 // start time of run, in milliseconds
-    private var loopCounter: Int = 0 // gen_loop() counter for checking timeout
+    private var loopCounter: Int = 0 // counter for checking timeout
 
     // other state variables
     private var target: GeneratorTarget? = null
@@ -84,11 +85,12 @@ class SiteswapTransitioner : Transitioner() {
 
     @Suppress("SimplifyBooleanWithConstants")
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun runTransitioner(t: GeneratorTarget, numLimit: Int, secsLimit: Double): Int {
-        maxNum = numLimit
-        maxTime = secsLimit
+    override fun runTransitioner(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
+        this.maxNum = maxNum
+        patternsFound = 0
+        this.maxTime = maxTime
         if (maxTime > 0 || Constants.DEBUG_TRANSITIONS) {
-            maxTimeMillis = (1000.0 * secsLimit).toLong()
+            maxTimeMillis = (1000.0 * maxTime).toLong()
             startTimeMillis = System.currentTimeMillis()
             loopCounter = 0
         }
@@ -429,6 +431,11 @@ class SiteswapTransitioner : Transitioner() {
                         println("got a pattern")
                     }
                     outputPattern()
+                    patternsFound++
+                    if (maxNum >= 0 && maxNum == patternsFound) {
+                        val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                        throw JuggleExceptionDone(message)
+                    }
                     return 1
                 } else {
                     return 0
@@ -500,11 +507,6 @@ class SiteswapTransitioner : Transitioner() {
 
                     if (!findAll && num > 0) {
                         return num
-                    }
-
-                    if (maxNum in 1..num) {
-                        val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
-                        throw JuggleExceptionDone(message)
                     }
                 }
             }
