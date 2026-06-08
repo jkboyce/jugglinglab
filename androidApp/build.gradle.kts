@@ -27,6 +27,7 @@ kotlin {
     dependencies {
         implementation(projects.composeApp)
         implementation(libs.androidx.activity.compose)
+        implementation(libs.androidx.fragment)
         implementation(libs.compose.uiToolingPreview)
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
@@ -45,7 +46,7 @@ android {
         applicationId = "com.jonglen7.jugglinglab"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 11
+        versionCode = 12
         versionName = "1.7.3"
     }
     packaging {
