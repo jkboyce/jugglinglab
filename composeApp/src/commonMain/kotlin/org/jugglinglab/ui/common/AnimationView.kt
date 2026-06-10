@@ -228,7 +228,6 @@ fun AnimationView(
             if (!state.isPaused) {
                 val startTime = withFrameNanos { it }
                 var lastFrameTime = startTime
-                val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
 
                 // animation loop
                 while (true) {
@@ -242,12 +241,14 @@ fun AnimationView(
 
                         if (newTime >= state.pattern.loopEndTime) {
                             val overflow = newTime - state.pattern.loopEndTime
+                            val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
                             newTime = state.pattern.loopStartTime + (overflow % loopDuration)
                             state.advancePropForPath()
                         }
 
                         var oldTime = state.time
                         if (newTime < oldTime) {
+                            val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
                             oldTime -= loopDuration
                         }
                         if (state.prefs.catchSound) {
@@ -350,7 +351,7 @@ fun AnimationView(
                         renderer1.drawAxes(textMeasurer, this)
                     }
                 }
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 coroutineScope.launch {
                     onError(e)
                 }

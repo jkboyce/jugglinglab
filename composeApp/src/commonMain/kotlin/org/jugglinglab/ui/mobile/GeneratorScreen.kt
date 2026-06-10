@@ -46,7 +46,6 @@ fun GeneratorScreen(
     coroutineScope: kotlinx.coroutines.CoroutineScope,
     onGeneratorJobChange: (Job?) -> Unit = {}
 ) {
-
     GeneratorControlCombined(
         isBusy = isBusy,
         onGeneratorConfirm = { params ->
@@ -93,9 +92,10 @@ fun GeneratorScreen(
                                 patternList.addLine(-1, record)
                             }
                     } catch (e: JuggleExceptionDone) {
+                        // generator hit a limit and stopped prematurely; notify the user
                         onError(e)
                     } catch (_: kotlin.coroutines.cancellation.CancellationException) {
-                        // ignore expected cancellation or interruption
+                        // ignore user-initiated cancellation or interruption
                     } catch (e: Throwable) {
                         onError(e)
                     } finally {

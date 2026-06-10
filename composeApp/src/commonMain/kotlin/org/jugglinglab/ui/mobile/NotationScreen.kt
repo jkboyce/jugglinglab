@@ -46,7 +46,7 @@ fun NotationScreen(
                     withContext(Dispatchers.Main) {
                         onNavigateToAnimation()
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     onError(e)
                 } finally {
                     onBusyChange(false)

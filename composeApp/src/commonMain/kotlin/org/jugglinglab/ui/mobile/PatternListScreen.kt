@@ -61,7 +61,7 @@ fun PatternListScreen(
                         withContext(Dispatchers.Main) {
                             onNavigateTo("Animation")
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         onError(e)
                     } finally {
                         onBusyChange(false)
@@ -92,6 +92,8 @@ fun PatternListScreen(
                         onPathChange(path)
                         onHasLoadedChange(true)
                         onListStateChange(LazyListState())
+                    } catch (e: Throwable) {
+                        onError(e)
                     } finally {
                         onBusyChange(false)
                     }
@@ -124,7 +126,7 @@ fun PatternListScreen(
                         withContext(Dispatchers.Main) {
                             onNavigateTo("Animation")
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         onError(e)
                     } finally {
                         onBusyChange(false)
@@ -183,7 +185,7 @@ fun PatternListScreen(
                                     }
                                     savePatternList()
                                 }
-                            } catch (e: Exception) {
+                            } catch (e: Throwable) {
                                 onError(e)
                             }
                         }
@@ -243,7 +245,7 @@ fun PatternListScreen(
                             onHasLoadedChange(false)
                             onListStateChange(LazyListState())
                             onNavigateTo("FileChooser")
-                        } catch (e: Exception) {
+                        } catch (e: Throwable) {
                             onError(
                                 JuggleExceptionInternal(
                                     getString(

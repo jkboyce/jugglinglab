@@ -163,7 +163,7 @@ fun JmlFileChooser(
                                 onError(JuggleExceptionInternal("Invalid JML file type"))
                             }
                         }
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         val message = if (e is JuggleExceptionUser) e.message
                             ?: "Unknown User Error" else e.message ?: "Unknown Error"
                         onError(JuggleExceptionInternal("Error reading file: $message"))
@@ -221,7 +221,7 @@ fun JmlFileChooser(
                                             onError(JuggleExceptionUser("Invalid JML file type"))
                                         }
                                     }
-                                } catch (e: Exception) {
+                                } catch (e: Throwable) {
                                     val message = if (e is JuggleExceptionUser) e.message
                                         ?: "Unknown User Error" else e.message ?: "Unknown Error"
                                     onError(JuggleExceptionUser("Error reading file: $message"))

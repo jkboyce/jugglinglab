@@ -44,7 +44,7 @@ fun CoroutineScope.exportListHelper(
                 mimeType = "application/xml",
                 subject = getString(Res.string.gui_mobile_share_subject, listHeading)
             )
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             onError(
                 JuggleExceptionInternal(
                     getString(
@@ -85,7 +85,7 @@ fun CoroutineScope.sharePatternHelper(
                     }
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             onError(
                 JuggleExceptionInternal(
                     getString(
@@ -123,7 +123,7 @@ fun CoroutineScope.exportPatternHelper(
                     )
                 }
             }
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             onError(
                 JuggleExceptionInternal(
                     getString(

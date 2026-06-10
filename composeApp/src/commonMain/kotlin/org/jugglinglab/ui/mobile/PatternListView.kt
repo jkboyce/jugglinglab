@@ -38,6 +38,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import okio.Path
 import org.jetbrains.compose.resources.stringResource
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun PatternListView(
@@ -281,6 +284,7 @@ private fun PatternListItem(
     onSharePattern: (PatternRecord) -> Unit,
     onExportPattern: (PatternRecord) -> Unit
 ) {
+    val coroutineScope = rememberCoroutineScope()
     var showMenu by remember { mutableStateOf(false) }
 
     val isBlankLine = JmlPatternList.BLANK_AT_END && index == patternList.model.size - 1
@@ -431,8 +435,12 @@ private fun PatternListItem(
                         text = { Text(stringResource(Res.string.gui_mobile_insert_current_pattern)) },
                         onClick = {
                             showMenu = false
-                            patternList.insertPattern(state.pattern, state.prefs, index)
-                            onPatternListModified()
+                            coroutineScope.launch {
+                                withContext(Dispatchers.Default) {
+                                    patternList.insertPattern(state.pattern, state.prefs, index)
+                                }
+                                onPatternListModified()
+                            }
                         }
                     )
                 }

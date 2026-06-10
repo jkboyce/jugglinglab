@@ -67,7 +67,7 @@ fun FavoritesScreen(
                     withContext(Dispatchers.Main) {
                         onNavigateTo("Animation")
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     onError(e)
                 } finally {
                     onBusyChange(false)
@@ -125,7 +125,7 @@ fun FavoritesScreen(
                             jmlStorageRepository.delete(path)
                         }
                         jlExitProcess(0)
-                    } catch (e: Exception) {
+                    } catch (e: Throwable) {
                         onError(
                             JuggleExceptionInternal(
                                 getString(

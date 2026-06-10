@@ -229,6 +229,7 @@ open class ApplicationPanel(
                     }
                     generatorJob.await()
                 } catch (ex: JuggleExceptionDone) {
+                    // generator hit a limit and stopped prematurely; notify the user
                     withContext(Dispatchers.Main) {
                         val parentComponent = pw ?: plp
                         jlHandleUserMessage(
@@ -238,7 +239,7 @@ open class ApplicationPanel(
                         )
                     }
                 } catch (_: CancellationException) {
-                    // Handled by finally block
+                    // user cancelled the generator
                 } catch (e: Throwable) {
                     withContext(Dispatchers.Main) {
                         pw?.dispose()
@@ -300,7 +301,6 @@ open class ApplicationPanel(
                         )
                     }
                 } catch (_: CancellationException) {
-                    // Handled by finally block
                 } catch (e: Throwable) {
                     withContext(Dispatchers.Main) {
                         pw?.dispose()

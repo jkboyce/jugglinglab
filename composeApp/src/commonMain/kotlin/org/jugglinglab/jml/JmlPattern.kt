@@ -333,13 +333,7 @@ data class JmlPattern(
     //--------------------------------------------------------------------------
 
     val layout: LaidoutPattern by lazy {
-        try {
-            assertValid()
-        } catch (jeu: JuggleExceptionUser) {
-            // treat errors as internal errors here; errors during user input
-            // or file load will already be caught by now
-            throw JuggleExceptionInternal(jeu.message!!, this)
-        }
+        assertValid()
         LaidoutPattern(this)
     }
 

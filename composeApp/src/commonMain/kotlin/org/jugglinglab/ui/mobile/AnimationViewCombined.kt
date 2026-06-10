@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -367,6 +366,8 @@ fun AnimationViewCombined(
                     withContext(Dispatchers.Main) {
                         animationController.restartJuggle(prefs = newPrefs)
                     }
+                } catch (e: Throwable) {
+                    onError(e)
                 } finally {
                     onBusy(false)
                 }
@@ -382,6 +383,8 @@ fun AnimationViewCombined(
                         animationController.restartJuggle(pattern = newPat)
                         state.addCurrentToUndoList()
                     }
+                } catch (e: Throwable) {
+                    onError(e)
                 } finally {
                     onBusy(false)
                 }
@@ -399,6 +402,8 @@ fun AnimationViewCombined(
                         animationController.restartJuggle(pattern = newPat, coldRestart = false)
                         state.addCurrentToUndoList()
                     }
+                } catch (e: Throwable) {
+                    onError(e)
                 } finally {
                     onBusy(false)
                 }
@@ -435,10 +440,13 @@ private fun AnimationViewMenus(
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isColorPropsMenuExpanded by remember { mutableStateOf(false) }
 
-    val inFavorites = remember(state.pattern, state.prefs, favoritesHashCodes) {
-        val tempPl = JmlPatternList()
-        tempPl.insertPattern(state.pattern, state.prefs, 0)
-        favoritesHashCodes.contains(tempPl.model[0].jlHashCode)
+    var inFavorites by remember { mutableStateOf(false) }
+    LaunchedEffect(state.pattern, state.prefs, favoritesHashCodes) {
+        inFavorites = withContext(Dispatchers.Default) {
+            val tempPl = JmlPatternList()
+            tempPl.insertPattern(state.pattern, state.prefs, 0)
+            favoritesHashCodes.contains(tempPl.model[0].jlHashCode)
+        }
     }
 
     Box(modifier = modifier) {
@@ -636,7 +644,7 @@ private fun AnimationViewMenus(
                 text = { Text(stringResource(Res.string.gui_swap_hands)) },
                 onClick = {
                     isMenuExpanded = false
-                    state.update(pattern = state.pattern.withInvertedXaxis(false))
+                    state.update(pattern = state.pattern.withInvertedXaxis(flipXCoordinate = false))
                     state.addCurrentToUndoList()
                 }
             )
@@ -685,6 +693,8 @@ private fun AnimationViewMenus(
                                 )
                                 state.addCurrentToUndoList()
                             }
+                        } catch (e: Throwable) {
+                            onError(e)
                         } finally {
                             onBusy(false)
                         }
@@ -706,6 +716,8 @@ private fun AnimationViewMenus(
                                 )
                                 state.addCurrentToUndoList()
                             }
+                        } catch (e: Throwable) {
+                            onError(e)
                         } finally {
                             onBusy(false)
                         }
@@ -738,6 +750,8 @@ private fun AnimationViewMenus(
                                     )
                                     state.addCurrentToUndoList()
                                 }
+                            } catch (e: Throwable) {
+                                onError(e)
                             } finally {
                                 onBusy(false)
                             }
