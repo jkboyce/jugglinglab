@@ -123,6 +123,7 @@ fun AppStartupIntents(
                             }
                             viewModel.isPatternListEditable = true
                             viewModel.patternListPath = null
+                            viewModel.hasLoadedPatternList = true
                             viewModel.patternListScrollState = LazyListState()
                             withContext(Dispatchers.Main) {
                                 navigateTo("PatternList")

@@ -12,6 +12,7 @@ package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.getString
 import kotlinx.coroutines.runBlocking
@@ -250,10 +251,11 @@ expect val jlAboutBoxPlatform: String
 expect val jlCurrentVersion: String
 
 expect val jlIsDesktop: Boolean
-
 expect val jlIsMobile: Boolean
+expect val jlIsAndroid: Boolean
+expect val jlIsIos: Boolean
 
-// Platform type shortcuts.
+// Desktop platform shortcuts.
 val jlIsMacOs: Boolean by lazy {
     jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("mac os x")
 }
@@ -262,9 +264,6 @@ val jlIsWindows: Boolean by lazy {
 }
 val jlIsLinux: Boolean by lazy {
     jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("linux")
-}
-val jlIsAndroid: Boolean by lazy {
-    jlIsMobile && jlCurrentPlatform.lowercase().startsWith("android")
 }
 
 // Timing and execution.
@@ -452,12 +451,16 @@ expect fun jlShareUrl(url: String, subject: String? = null, htmlText: String? = 
 // `filename` is the suggested filename (e.g. "pattern.jml").
 // `mimeType` is the MIME type (e.g. "application/xml").
 // `subject`  is used as the email subject line.
+// `bodyText` is used as the plain-text email body.
+// `htmlText` is used as the rich-text/HTML email body.
 
 expect fun jlShareFile(
     content: String,
     filename: String,
     mimeType: String,
-    subject: String? = null
+    subject: String? = null,
+    bodyText: String? = null,
+    htmlText: String? = null
 )
 
 //------------------------------------------------------------------------------
@@ -469,8 +472,10 @@ expect fun jlPlayCatchSound(volume: Float = 1f)
 expect fun jlPlayBounceSound(volume: Float = 1f)
 
 //------------------------------------------------------------------------------
-// Helper for back navigation
+// Helpers for back navigation
 //------------------------------------------------------------------------------
 
 @androidx.compose.runtime.Composable
 expect fun BackHandler(enabled: Boolean = true, onBack: () -> Unit)
+
+expect fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier

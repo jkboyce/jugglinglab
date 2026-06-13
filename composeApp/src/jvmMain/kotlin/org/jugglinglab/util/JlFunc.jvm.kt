@@ -14,6 +14,7 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.Constants
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
+import androidx.compose.ui.Modifier
 import org.jetbrains.skia.Image
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -246,8 +247,9 @@ actual val jlAboutBoxPlatform: String by lazy {
 actual val jlCurrentVersion: String = Constants.VERSION
 
 actual val jlIsDesktop: Boolean = true
-
 actual val jlIsMobile: Boolean = false
+actual val jlIsAndroid: Boolean = false
+actual val jlIsIos: Boolean = false
 
 // Running from the command line?
 val jlIsCli: Boolean by lazy {
@@ -385,7 +387,14 @@ actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
     // Not used on desktop
 }
 
-actual fun jlShareFile(content: String, filename: String, mimeType: String, subject: String?) {
+actual fun jlShareFile(
+    content: String,
+    filename: String,
+    mimeType: String,
+    subject: String?,
+    bodyText: String?,
+    htmlText: String?
+) {
     // Not used on desktop
 }
 
@@ -457,10 +466,15 @@ actual fun jlPlayBounceSound(volume: Float) {
 }
 
 //------------------------------------------------------------------------------
-// Helper for back navigation
+// Helpers for back navigation
 //------------------------------------------------------------------------------
 
 @androidx.compose.runtime.Composable
 actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
     // No-op on JVM/Desktop
+}
+
+actual fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier {
+    // No-op on JVM/Desktop
+    return this
 }

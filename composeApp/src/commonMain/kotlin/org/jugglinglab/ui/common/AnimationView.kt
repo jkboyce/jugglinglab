@@ -379,6 +379,10 @@ private suspend fun PointerInputScope.handlePointerEvents(
         var zoomLastDistance = 0f
         var wasZoomingThisGesture = false
 
+        // ignore gestures that start within 30px of left or right edge
+        // (i.e., navigational swipes)
+        var ignoreGesture = false
+
         while (true) {
             val event = awaitPointerEvent()
             val changes = event.changes
@@ -414,33 +418,35 @@ private suspend fun PointerInputScope.handlePointerEvents(
             val pressed = changes.filter { it.pressed }
 
             if (pressed.size >= 2) {
-                if (!isZooming) {
-                    try {
-                        onRelease(true)  // cancel any active drag without triggering a click
-                    } catch (e: Exception) {
-                        onError(e)
-                    }
-                    isZooming = true
-                    wasZoomingThisGesture = true
-                    zoomLastDistance = 0f
-                }
-
-                val p1 = pressed[0]
-                val p2 = pressed[1]
-                val currentDistance = (p1.position - p2.position).getDistance()
-
-                if (zoomLastDistance > 0f) {
-                    val zoomFactor = currentDistance / zoomLastDistance
-                    if (zoomFactor != 1.0f) {
+                if (!ignoreGesture) {
+                    if (!isZooming) {
                         try {
-                            onZoom(zoomFactor)
+                            onRelease(true)  // cancel any active drag without triggering a click
                         } catch (e: Exception) {
                             onError(e)
                         }
+                        isZooming = true
+                        wasZoomingThisGesture = true
+                        zoomLastDistance = 0f
                     }
+
+                    val p1 = pressed[0]
+                    val p2 = pressed[1]
+                    val currentDistance = (p1.position - p2.position).getDistance()
+
+                    if (zoomLastDistance > 0f) {
+                        val zoomFactor = currentDistance / zoomLastDistance
+                        if (zoomFactor != 1.0f) {
+                            try {
+                                onZoom(zoomFactor)
+                            } catch (e: Exception) {
+                                onError(e)
+                            }
+                        }
+                    }
+                    zoomLastDistance = currentDistance
+                    changes.forEach { it.consume() }
                 }
-                zoomLastDistance = currentDistance
-                changes.forEach { it.consume() }
             } else if (pressed.size == 1) {
                 val change = pressed.first()
                 val offset = change.position
@@ -455,30 +461,39 @@ private suspend fun PointerInputScope.handlePointerEvents(
                         change.consume()
                     } else {
                         if (change.changedToDown()) {
-                            try {
-                                onPress(offset)
-                            } catch (e: Exception) {
-                                onError(e)
+                            val edgeThreshold = 30f * density
+                            ignoreGesture = offset.x < edgeThreshold || offset.x > (size.width - edgeThreshold)
+                            if (!ignoreGesture) {
+                                try {
+                                    onPress(offset)
+                                } catch (e: Exception) {
+                                    onError(e)
+                                }
+                                change.consume()
                             }
-                            change.consume()
                         } else if (change.positionChanged()) {
-                            try {
-                                onDrag(offset, density)
-                            } catch (e: Exception) {
-                                onError(e)
+                            if (!ignoreGesture) {
+                                try {
+                                    onDrag(offset, density)
+                                } catch (e: Exception) {
+                                    onError(e)
+                                }
+                                change.consume()
                             }
-                            change.consume()
                         }
                     }
                 }
             } else {
                 isZooming = false
                 if (changes.any { it.changedToUp() }) {
-                    try {
-                        onRelease(wasZoomingThisGesture)
-                    } catch (e: Exception) {
-                        onError(e)
+                    if (!ignoreGesture) {
+                        try {
+                            onRelease(wasZoomingThisGesture)
+                        } catch (e: Exception) {
+                            onError(e)
+                        }
                     }
+                    ignoreGesture = false
                     wasZoomingThisGesture = false
                     changes.forEach { it.consume() }
                 } else {

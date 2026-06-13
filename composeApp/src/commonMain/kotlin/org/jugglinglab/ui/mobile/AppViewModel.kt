@@ -24,10 +24,6 @@ import org.jugglinglab.ui.common.AnimationController
 import org.jugglinglab.ui.common.SiteswapGeneratorState
 import org.jugglinglab.ui.common.SiteswapTransitionerState
 import org.jugglinglab.util.JuggleExceptionInternal
-import org.jugglinglab.util.buildShareUrl
-import org.jugglinglab.util.jlShareFile
-import org.jugglinglab.util.jlShareUrl
-import org.jugglinglab.util.jlSanitizeFilename
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -191,13 +187,13 @@ class AppViewModel(
             try {
                 val displaySize =
                     if (JmlPatternList.BLANK_AT_END) favoritesList.model.size - 1 else favoritesList.model.size
-                var newRecord = record
+                var newRecord = record.copy(display = record.display.trim())
                 if (!(record.notation?.equals("jml", ignoreCase = true) ?: true)) {
                     // rewrite animation parameters in canonical ordering
                     val newAnim =
                         Pattern.newPattern(record.notation).fromString(record.anim!!)
                             .toCanonicalString()
-                    newRecord = record.copy(anim = newAnim)
+                    newRecord = newRecord.copy(anim = newAnim)
                 }
                 favoritesList.model.add(displaySize, newRecord)
                 saveFavoritesList(scope)
@@ -260,48 +256,21 @@ class AppViewModel(
     }
 
     fun onShare(scope: CoroutineScope) {
-        scope.launch(Dispatchers.Default) {
-            isProcessing = true
-            try {
-                val url = buildShareUrl(state.pattern, state.prefs)
-                if (url.encodeToByteArray().size > 2000) {
-                    asyncErrorMessage = getString(Res.string.error_mobile_pattern_too_long)
-                } else {
-                    val title = state.pattern.title?.takeIf { it.isNotBlank() }
-                        ?: getString(Res.string.gui_pattern).lowercase()
-                    val subject = getString(Res.string.gui_mobile_share_subject, title)
-                    val htmlText = getString(Res.string.gui_mobile_share_html, url, title)
-                    jlShareUrl(url, subject = subject, htmlText = htmlText)
-                }
-            } catch (e: Throwable) {
-                //val message = getString(Res.string.error_mobile_sharing, e.message ?: "")
-                onError?.invoke(e)
-            } finally {
-                isProcessing = false
-            }
-        }
+        scope.shareCurrentPatternHelper(
+            pattern = state.pattern,
+            prefs = state.prefs,
+            onBusyChange = { isProcessing = it },
+            onError = { onError?.invoke(it) }
+        )
     }
 
     // Export the currently animated pattern as a .jml file.
     fun onExport(scope: CoroutineScope) {
-        scope.launch(Dispatchers.Default) {
-            isProcessing = true
-            try {
-                val title = state.pattern.title?.takeIf { it.isNotBlank() }
-                    ?: getString(Res.string.gui_pattern).lowercase()
-                jlShareFile(
-                    content = state.pattern.toString(),
-                    filename = jlSanitizeFilename("$title.jml"),
-                    mimeType = "application/xml",
-                    subject = getString(Res.string.gui_mobile_share_subject, title)
-                )
-            } catch (e: Throwable) {
-                //val message = getString(Res.string.error_mobile_exporting, e.message ?: "")
-                onError?.invoke(e)
-            } finally {
-                isProcessing = false
-            }
-        }
+        scope.exportCurrentPatternHelper(
+            pattern = state.pattern,
+            onBusyChange = { isProcessing = it },
+            onError = { onError?.invoke(it) }
+        )
     }
 }
 

@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory
 import android.os.Build
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.Modifier
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
@@ -85,8 +86,9 @@ actual val jlCurrentVersion: String by lazy {
 }
 
 actual val jlIsDesktop: Boolean = false
-
 actual val jlIsMobile: Boolean = true
+actual val jlIsAndroid: Boolean = true
+actual val jlIsIos: Boolean = false
 
 actual fun jlCurrentTimeMillis(): Long = System.currentTimeMillis()
 
@@ -154,36 +156,47 @@ actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
     context.startActivity(chooser)
 }
 
-actual fun jlShareFile(content: String, filename: String, mimeType: String, subject: String?) {
+@SuppressLint("ObsoleteSdkInt")
+actual fun jlShareFile(
+    content: String,
+    filename: String,
+    mimeType: String,
+    subject: String?,
+    bodyText: String?,
+    htmlText: String?
+) {
     val context = AndroidContext.get() ?: return
-    try {
-        // Write content to a file in the app's cache directory.
-        val shareDir = java.io.File(context.cacheDir, "shares")
-        shareDir.mkdirs()
-        val file = java.io.File(shareDir, filename)
-        file.writeText(content)
 
-        // Obtain a content:// URI via FileProvider (required since API 24).
-        val uri = androidx.core.content.FileProvider.getUriForFile(
-            context,
-            "${context.packageName}.fileprovider",
-            file
-        )
+    // Write content to a file in the app's cache directory.
+    val shareDir = java.io.File(context.cacheDir, "shares")
+    shareDir.mkdirs()
+    val file = java.io.File(shareDir, filename)
+    file.writeText(content)
 
-        val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
-            type = mimeType
-            putExtra(android.content.Intent.EXTRA_STREAM, uri)
-            if (subject != null) {
-                putExtra(android.content.Intent.EXTRA_SUBJECT, subject)
-            }
-            addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    // Obtain a content:// URI via FileProvider (required since API 24).
+    val uri = androidx.core.content.FileProvider.getUriForFile(
+        context,
+        "${context.packageName}.fileprovider",
+        file
+    )
+
+    val sendIntent = android.content.Intent(android.content.Intent.ACTION_SEND).apply {
+        type = mimeType
+        putExtra(android.content.Intent.EXTRA_STREAM, uri)
+        if (subject != null) {
+            putExtra(android.content.Intent.EXTRA_SUBJECT, subject)
         }
-        val chooser = android.content.Intent.createChooser(sendIntent, "Export file")
-        chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(chooser)
-    } catch (_: Exception) {
-        // Silently ignore — nothing useful we can do without a UI reference here.
+        if (bodyText != null) {
+            putExtra(android.content.Intent.EXTRA_TEXT, bodyText)
+        }
+        if (htmlText != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            putExtra(android.content.Intent.EXTRA_HTML_TEXT, htmlText)
+        }
+        addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
     }
+    val chooser = android.content.Intent.createChooser(sendIntent, "Export file")
+    chooser.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+    context.startActivity(chooser)
 }
 
 //------------------------------------------------------------------------------
@@ -239,10 +252,15 @@ actual fun jlPlayBounceSound(volume: Float) {
 }
 
 //------------------------------------------------------------------------------
-// Helper for back navigation
+// Helpers for back navigation
 //------------------------------------------------------------------------------
 
 @androidx.compose.runtime.Composable
 actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
     androidx.activity.compose.BackHandler(enabled = enabled, onBack = onBack)
+}
+
+actual fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier {
+    // No-op on Android; back is initiated by back button
+    return this
 }

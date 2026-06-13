@@ -19,6 +19,7 @@ import org.jugglinglab.util.crashReporter
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.JuggleExceptionDone
 import org.jugglinglab.util.BackHandler
+import org.jugglinglab.util.backGestureHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -75,8 +76,10 @@ fun App(
     localFilesDir: Path? = null,
     startUrl: String? = null,
     startJmlContent: String? = null,
+    startError: String? = null,
     onUrlHandled: () -> Unit = {},
     onJmlContentHandled: () -> Unit = {},
+    onStartErrorHandled: () -> Unit = {},
     isMigrationDialogShown: Boolean = false,
 ) {
     // Theme Settings
@@ -102,36 +105,45 @@ fun App(
 
     val navController = rememberNavController()
     val customBackStack = remember { mutableStateListOf("Info") }
+    var isBackNavigating by remember { mutableStateOf(false) }
 
     val navigateTo = { newView: String ->
+        isBackNavigating = false
         val targetRoute = if (newView == "FileChooser") {
             viewModel.hasLoadedPatternList = false
             "PatternList"
         } else {
             newView
         }
-        if (customBackStack.isEmpty() || customBackStack.last() != targetRoute) {
-            customBackStack.add(targetRoute)
-            if (customBackStack.size > 20) {
-                customBackStack.removeAt(0)
+        if (navController.currentDestination?.route != targetRoute) {
+            if (customBackStack.isEmpty() || customBackStack.last() != targetRoute) {
+                customBackStack.add(targetRoute)
+                if (customBackStack.size > 20) {
+                    customBackStack.removeAt(0)
+                }
             }
-        }
-        navController.navigate(targetRoute) {
-            popUpTo(navController.currentDestination?.route ?: "Info") {
-                inclusive = true
+            navController.navigate(targetRoute) {
+                popUpTo(navController.currentDestination?.route ?: "Info") {
+                    inclusive = true
+                }
             }
         }
     }
 
-    BackHandler(enabled = customBackStack.size > 1) {
-        customBackStack.removeAt(customBackStack.lastIndex)
-        val previousRoute = customBackStack.last()
-        navController.navigate(previousRoute) {
-            popUpTo(navController.currentDestination?.route ?: "Info") {
-                inclusive = true
+    val goBack = {
+        if (customBackStack.size > 1) {
+            isBackNavigating = true
+            customBackStack.removeAt(customBackStack.lastIndex)
+            val previousRoute = customBackStack.last()
+            navController.navigate(previousRoute) {
+                popUpTo(navController.currentDestination?.route ?: "Info") {
+                    inclusive = true
+                }
             }
         }
     }
+
+    BackHandler(enabled = customBackStack.size > 1, onBack = goBack)
 
     // Error Handling
 
@@ -152,6 +164,13 @@ fun App(
         }
     }
     viewModel.onError = handleRuntimeError
+
+    LaunchedEffect(startError) {
+        if (startError != null) {
+            handleRuntimeError(JuggleExceptionUser(startError))
+            onStartErrorHandled()
+        }
+    }
 
     // Walkthrough Coordination
 
@@ -203,7 +222,11 @@ fun App(
     // Visual Hierarchy
 
     MaterialTheme(colorScheme = colorScheme) {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Surface(
+            modifier = Modifier.fillMaxSize()
+                .backGestureHandler(enabled = customBackStack.size > 1, onBack = goBack),
+            color = MaterialTheme.colorScheme.background
+        ) {
             CompositionLocalProvider(LocalWalkthroughCoordinator provides walkthroughCoordinator) {
                 BoxWithConstraints(
                     modifier = Modifier.fillMaxSize()
@@ -287,6 +310,7 @@ fun App(
                                 localFilesDir = localFilesDir,
                                 navigateTo = navigateTo,
                                 handleRuntimeError = handleRuntimeError,
+                                isBackNavigating = isBackNavigating,
                                 modifier = modifier
                             )
                         }

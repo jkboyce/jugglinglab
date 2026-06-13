@@ -163,6 +163,7 @@ fun PatternListScreen(
             onDuplicateClick = {
                 onIsEditableChange(true)
                 onPathChange(null)
+                patternList.title += " copy"
                 onHasLoadedChange(true)
             },
             onSaveAsClick = { filename ->
@@ -177,12 +178,11 @@ fun PatternListScreen(
                                 jlErrorIfNotSanitized(finalName)
                                 val path = localFilesDir / finalName
                                 if (jmlStorageRepository.exists(path)) {
-                                    onError(JuggleExceptionUser(getString(Res.string.error_mobile_file_exists)))
+                                    val message = getString(Res.string.error_mobile_file_exists)
+                                    onError(JuggleExceptionUser(message))
                                 } else {
                                     onPathChange(path)
-                                    if (patternList.title == null) {
-                                        patternList.title = finalName.removeSuffix(".jml")
-                                    }
+                                    patternList.title = finalName.removeSuffix(".jml")
                                     savePatternList()
                                 }
                             } catch (e: Throwable) {
@@ -190,7 +190,8 @@ fun PatternListScreen(
                             }
                         }
                     } else {
-                        onError(JuggleExceptionInternal(getString(Res.string.error_mobile_local_storage)))
+                        val message = getString(Res.string.error_mobile_local_storage)
+                        onError(JuggleExceptionInternal(message))
                     }
                 }
             },
@@ -206,31 +207,27 @@ fun PatternListScreen(
                                 jlErrorIfNotSanitized(finalName)
                                 val newPath = localFilesDir / finalName
                                 if (jmlStorageRepository.exists(newPath) && newPath != patternListPath) {
-                                    onError(JuggleExceptionUser(getString(Res.string.error_mobile_file_exists)))
+                                    val message = getString(Res.string.error_mobile_file_exists)
+                                    onError(JuggleExceptionUser(message))
                                 } else if (newPath != patternListPath) {
-                                    val oldName = patternListPath.name.removeSuffix(".jml")
                                     jmlStorageRepository.renameFile(patternListPath, newPath)
                                     onPathChange(newPath)
-                                    if (patternList.title == oldName) {
-                                        patternList.title = finalName.removeSuffix(".jml")
-                                    }
+                                    patternList.title = finalName.removeSuffix(".jml")
                                     savePatternList()
                                 }
                             } catch (e: JuggleExceptionUser) {
                                 onError(e)
                             } catch (e: Throwable) {
-                                onError(
-                                    JuggleExceptionInternal(
-                                        getString(
-                                            Res.string.error_mobile_renaming_file,
-                                            e.message ?: ""
-                                        )
-                                    )
+                                val message = getString(
+                                    Res.string.error_mobile_renaming_file,
+                                    e.message ?: ""
                                 )
+                                onError(JuggleExceptionInternal(message))
                             }
                         }
                     } else {
-                        onError(JuggleExceptionInternal(getString(Res.string.error_mobile_local_storage)))
+                        val message = getString(Res.string.error_mobile_local_storage)
+                        onError(JuggleExceptionInternal(message))
                     }
                 }
             },
@@ -246,14 +243,11 @@ fun PatternListScreen(
                             onListStateChange(LazyListState())
                             onNavigateTo("FileChooser")
                         } catch (e: Throwable) {
-                            onError(
-                                JuggleExceptionInternal(
-                                    getString(
-                                        Res.string.error_mobile_deleting_file,
-                                        e.message ?: ""
-                                    )
-                                )
+                            val message = getString(
+                                Res.string.error_mobile_deleting_file,
+                                e.message ?: ""
                             )
+                            onError(JuggleExceptionInternal(message))
                         }
                     }
                 }
