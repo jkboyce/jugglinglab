@@ -82,13 +82,21 @@ class SiteswapTransitioner : Transitioner() {
         allocateWorkspace()
     }
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     override suspend fun runTransitioner(t: GeneratorTarget): Int {
         return runTransitioner(t, -1, -1.0) // negative values --> no limits
     }
 
     @Suppress("SimplifyBooleanWithConstants")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     override suspend fun runTransitioner(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
         this.maxNum = maxNum
         patternsFound = 0
@@ -299,7 +307,11 @@ class SiteswapTransitioner : Transitioner() {
 
     // Find the shortest return transition from `to` back to `from`.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     private suspend fun findReturnTrans(): String {
         if (lReturn == 0) {
             return ""
@@ -348,7 +360,11 @@ class SiteswapTransitioner : Transitioner() {
     //
     // Returns the number of transitions found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     private suspend fun findTrans(
         fromSt: Array<Array<IntArray>>,
         toSt: Array<Array<IntArray>>,
@@ -389,7 +405,11 @@ class SiteswapTransitioner : Transitioner() {
     //
     // Returns the number of transitions found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     private suspend fun recurse(pos: Int, j: Int, h: Int): Int {
         var pos = pos
         var j = j
@@ -439,7 +459,8 @@ class SiteswapTransitioner : Transitioner() {
                     outputPattern()
                     patternsFound++
                     if (maxNum >= 0 && maxNum == patternsFound) {
-                        val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                        val message =
+                            jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
                         throw JuggleExceptionDone(message)
                     }
                     return 1
@@ -503,7 +524,7 @@ class SiteswapTransitioner : Transitioner() {
 
                     if (Constants.DEBUG_TRANSITIONS) {
                         val sb = ".  ".repeat(pos) +
-                            mhnt
+                                mhnt
                         println(sb)
                     }
 
@@ -1153,7 +1174,8 @@ class SiteswapTransitioner : Transitioner() {
         fun runTransitionerCLI(args: List<String>, target: GeneratorTargetBasic?) {
             if (args.size < 2) {
                 val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
-                val copyright = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+                val copyright =
+                    jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
                 var output = "Juggling Lab ${version.lowercase()}\n"
                 output += "$copyright\n"
                 output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
@@ -1185,7 +1207,7 @@ class SiteswapTransitioner : Transitioner() {
                 }
             } catch (e: JuggleExceptionDone) {
                 println(e.message)
-            } catch (e: Exception) {
+            } catch (e: Throwable) {
                 val message = jlGetStringResource(Res.string.error) + ": " + e.message
                 println(message)
             }

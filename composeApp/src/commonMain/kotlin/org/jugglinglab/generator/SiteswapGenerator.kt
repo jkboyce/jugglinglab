@@ -22,9 +22,10 @@
 //   Include flag modified and the -simple flag added on 2/92
 //   Extra check (for speed) added to gen_loops() on 01/19/98
 //   Bug fix to find_start_end() on 02/18/99
+//   Converted to a non-recursive algorithm on 06/13/26
 //------------------------------------------------------------------------------
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 1991-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 @file:Suppress("KotlinConstantConditions", "EmptyRange")
@@ -52,6 +53,7 @@ class SiteswapGenerator : Generator() {
     private lateinit var config: SiteswapGeneratorConfig
 
     // working variables, initialized at runtime
+    private lateinit var searchFrame: Array<SearchFrame>
     private lateinit var state: Array<Array<IntArray>>
     private var lTarget: Int = 0
     private lateinit var throwsLeft: Array<IntArray>
@@ -85,7 +87,11 @@ class SiteswapGenerator : Generator() {
     }
 
     @Suppress("SimplifyBooleanWithConstants")
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
     override suspend fun runGenerator(t: GeneratorTarget, maxNum: Int, maxTime: Double): Int {
         if (config.groundflag == 1 && config.groundStateLength > config.ht) {
             return 0
@@ -94,10 +100,10 @@ class SiteswapGenerator : Generator() {
         this.maxNum = maxNum
         patternsFound = 0
         this.maxTime = maxTime
+        loopCounter = 0
         if (maxTime > 0 || Constants.DEBUG_GENERATOR) {
             maxTimeMillis = (1000.0 * maxTime).toLong()
             startTimeMillis = jlCurrentTimeMillis()
-            loopCounter = 0
         }
 
         try {
@@ -106,7 +112,7 @@ class SiteswapGenerator : Generator() {
             var num = 0
             lTarget = config.lMin
             while (lTarget <= config.lMax) {
-                num += findPatterns(0, 0, 0)
+                num += findPatterns()
                 lTarget += config.rhythmPeriod
             }
 
@@ -140,6 +146,12 @@ class SiteswapGenerator : Generator() {
     // other incidental variables.
 
     private fun allocateWorkspace() {
+        // Array of SearchFrames for the iterative DFS algorithm
+        // on each beat: at most (config.hands * config.maxOccupancy) throws,
+        // with one frame each, plus a frame in state==2 to end the beat
+        val maxDepth = config.lMax * (config.hands * config.maxOccupancy + 1)
+        searchFrame = Array(maxDepth) { SearchFrame() }
+
         // last index below is not `config.ht` because of findStartEnd()
         state =
             Array(config.lMax + 1) { Array(config.hands) { IntArray(config.groundStateLength) } }
@@ -174,263 +186,410 @@ class SiteswapGenerator : Generator() {
 
     // Generate all patterns.
     //
-    // Do this by generating all possible starting states recursively, then
+    // Do this by generating all possible starting states iteratively, then
     // calling findCycles() to find the loops for each one.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
-    private suspend fun findPatterns(ballsPlaced: Int, minValue: Int, minTo: Int): Int {
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
+    private suspend fun findPatterns(): Int {
         if (!currentCoroutineContext().isActive) {
             throw JuggleExceptionInterrupted()
         }
 
-        // check if we're done making the state
-        if (ballsPlaced == config.n || config.groundflag == 1) {
-            if (config.groundflag == 1) {
-                // find only ground state patterns
-                for (i in 0..<config.hands) {
-                    for (j in 0..<config.ht) {
-                        state[0][i][j] = config.groundState[i][j]
-                    }
-                }
-            } else if (config.groundflag == 2 && compareStates(state[0], config.groundState) == 0) {
-                // don't find ground state patterns
-                return 0
-            }
-
-            // At this point our state is completed.  Check to see if it's
-            // valid. (Position X must be at least as large as position X+L,
-            // where L = pattern length.) Also set up the initial multiplexing
-            // filter frame, if needed.
-            for (i in 0..<config.hands) {
-                var j = 0
-
-                while (j < config.ht) {
-                    val k = state[0][i][j]
-
-                    if (config.mpflag != 0 && k == 0) {
-                        mpFilter[0][i][j][TYPE] = MP_EMPTY
-                    } else {
-                        if (config.mpflag != 0) {
-                            mpFilter[0][i][j][VALUE] = j + 1
-                            mpFilter[0][i][j][FROM] = i
-                            mpFilter[0][i][j][TYPE] = MP_LOWER_BOUND
-                        }
-
-                        var m = j
-                        var q: Int
-
-                        while ((lTarget.let { m += it; m }) < config.ht) {
-                            if ((state[0][i][m].also { q = it }) > k) {
-                                return 0 // die (invalid state for this value of `l`)
-                            }
-                            if (config.mpflag != 0 && q != 0) {
-                                if (q < k && j > config.holdthrow[i]) {
-                                    return 0 // different throws into same hand
-                                }
-                                mpFilter[0][i][j][VALUE] = m + 1 // new bound
-                            }
-                        }
-                    }
-                    ++j
-                }
-
-                if (config.mpflag != 0) {
-                    while (j < config.slotSize) {
-                        mpFilter[0][i][j][TYPE] = MP_EMPTY // clear rest of slot
-                        ++j
-                    }
-                }
-            }
-
-            if (config.numflag != 2 && config.sequenceFlag) {
-                findStartEnd()
-            }
-
-            if (Constants.DEBUG_GENERATOR) {
-                println("Starting findCycles() from state:")
-                config.printState(state[0])
-            }
-
-            for (h in 0..<config.hands) {
-                for (ti in 0..<lTarget + config.ht) {
-                    // calculate the number of throws we can make into a
-                    // particular (hand, target index) combo
-                    // maximum number of holes we have to fill...
-                    var numHoles: Int = if (ti < lTarget) {
-                        config.multiplex * config.rhythmRepunit[h][ti % config.rhythmPeriod]
-                    } else {
-                        state[0][h][ti - lTarget]
-                    }
-
-                    // ...less those filled by throws before beat 0
-                    if (ti < config.ht) {
-                        numHoles -= state[0][h][ti]
-                    }
-
-                    holes[h][ti] = numHoles
-                }
-            }
-
-            startBeat(0)
-            return findCycles(0, 1, 0, StringBuilder())  // find patterns thru state
-        }
-
-        if (ballsPlaced == 0) {  // startup, clear state
+        if (config.groundflag == 1) {
+            // find only ground state patterns
             for (i in 0..<config.hands) {
                 for (j in 0..<config.ht) {
-                    state[0][i][j] = 0
+                    state[0][i][j] = config.groundState[i][j]
                 }
+            }
+            return processCompletedState()
+        }
+
+        // Initialize state[0] to all zeros
+        for (i in 0..<config.hands) {
+            for (j in 0..<config.ht) {
+                state[0][i][j] = 0
             }
         }
 
-        var num = 0
+        val numBalls = config.n
+        if (numBalls == 0) {
+            return processCompletedState()
+        }
 
-        var j = minTo // ensures each state is generated only once
-        for (i in minValue..<config.ht) {
-            while (j < config.hands) {
+        val maxPos = config.ht * config.hands
+        val pos = IntArray(numBalls)
+        var b = 0
+        var totalPatterns = 0
+
+        // Initialize pos[0]
+        pos[0] = 0
+
+        while (true) {
+            if (!currentCoroutineContext().isActive) {
+                throw JuggleExceptionInterrupted()
+            }
+
+            if (pos[b] < maxPos) {
+                val p = pos[b]
+                val i = p / config.hands
+                val j = p % config.hands
+
                 if (state[0][j][i] < rhythm(0, j, i)) {
-                    state[0][j][i] = state[0][j][i] + 1
+                    state[0][j][i]++
                     if (i < lTarget || state[0][j][i] <= state[0][j][i - lTarget]) {
-                        num += findPatterns(ballsPlaced + 1, i, j) // next ball
+                        // This placement is valid. Note that a state with value
+                        // at [j][i] greater than its value at [j][i - lTarget]
+                        // cannot be part of a period `lTarget` pattern.
+                        if (b == numBalls - 1) {
+                            // All balls placed! Process state and add patterns
+                            totalPatterns += processCompletedState()
+
+                            // Now backtrack: undo the placement and try next position
+                            state[0][j][i]--
+                            pos[b]++
+                        } else {
+                            // Move to next ball level and start searching from
+                            // the position of the previous ball
+                            b++
+                            pos[b] = pos[b - 1]
+                        }
+                    } else {
+                        // Undo and try next position
+                        state[0][j][i]--
+                        pos[b]++
                     }
-                    state[0][j][i] = state[0][j][i] - 1
+                } else {
+                    // Cannot place ball here: try next position
+                    pos[b]++
+                }
+            } else {
+                // No more options for ball b. Backtrack!
+                if (b == 0) {
+                    // Done searching
+                    break
+                }
+                b--
+                // Undo the placement of the previous level (which is now the current level b)
+                val prevP = pos[b]
+                val prevI = prevP / config.hands
+                val prevJ = prevP % config.hands
+                state[0][prevJ][prevI]--
+                // Try next position for this ball
+                pos[b]++
+            }
+        }
+        return totalPatterns
+    }
+
+    // Helper to initiate the search from a given starting state.
+    //
+    // Returns the number of patterns found.
+
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
+    private suspend fun processCompletedState(): Int {
+        if (config.groundflag == 2 && compareStates(state[0], config.groundState) == 0) {
+            // don't find ground state patterns
+            return 0
+        }
+
+        // At this point our state is completed.  Set up the initial
+        // multiplexing filter frame, if needed.
+        for (i in 0..<config.hands) {
+            var j = 0
+
+            while (j < config.ht) {
+                val k = state[0][i][j]
+
+                if (config.mpflag != 0 && k == 0) {
+                    mpFilter[0][i][j][TYPE] = MP_EMPTY
+                } else {
+                    if (config.mpflag != 0) {
+                        mpFilter[0][i][j][VALUE] = j + 1
+                        mpFilter[0][i][j][FROM] = i
+                        mpFilter[0][i][j][TYPE] = MP_LOWER_BOUND
+                    }
+
+                    var m = j
+                    var q: Int
+
+                    while ((lTarget.let { m += it; m }) < config.ht) {
+                        if ((state[0][i][m].also { q = it }) > k) {
+                            return 0 // die (invalid state for this value of `l`)
+                        }
+                        if (config.mpflag != 0 && q != 0) {
+                            if (q < k && j > config.holdthrow[i]) {
+                                return 0 // different throws into same hand
+                            }
+                            mpFilter[0][i][j][VALUE] = m + 1 // new bound
+                        }
+                    }
                 }
                 ++j
             }
-            j = 0
+
+            if (config.mpflag != 0) {
+                while (j < config.slotSize) {
+                    mpFilter[0][i][j][TYPE] = MP_EMPTY // clear rest of slot
+                    ++j
+                }
+            }
         }
 
-        return num
+        if (config.numflag != 2 && config.sequenceFlag) {
+            findStartEnd()
+        }
+
+        if (Constants.DEBUG_GENERATOR) {
+            println("Starting findCycles() from state:")
+            config.printState(state[0])
+        }
+
+        for (h in 0..<config.hands) {
+            for (ti in 0..<lTarget + config.ht) {
+                // calculate the number of throws we can make into a
+                // particular (hand, target index) combo
+                // maximum number of holes we have to fill...
+                var numHoles: Int = if (ti < lTarget) {
+                    config.multiplex * config.rhythmRepunit[h][ti % config.rhythmPeriod]
+                } else {
+                    state[0][h][ti - lTarget]
+                }
+
+                // ...less those filled by throws before beat 0
+                if (ti < config.ht) {
+                    numHoles -= state[0][h][ti]
+                }
+
+                holes[h][ti] = numHoles
+            }
+        }
+
+        startBeat(0)
+        return findCycles()  // find patterns thru state
     }
 
-    // Generate cycles in the state graph, starting from some given state.
-    //
-    // Inputs:
-    // pos: Int              // beat number in pattern that we're constructing
-    // min_throw: Int        // lowest we can throw this time
-    // min_hand: Int         // lowest hand we can throw to this time
-    // sb: StringBuilder     // for accumulating string representation as we go
+    // Generate cycles in the state graph, starting from state[0].
     //
     // Returns the number of cycles found.
 
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
-    private suspend fun findCycles(beat: Int, minThrow: Int, minHand: Int, sb: StringBuilder): Int {
-        if (!currentCoroutineContext().isActive) {
-            throw JuggleExceptionInterrupted()
-        }
-        if (maxTime > 0) {
+    @Throws(
+        JuggleExceptionUser::class,
+        JuggleExceptionInternal::class,
+        kotlin.coroutines.cancellation.CancellationException::class
+    )
+    private suspend fun findCycles(): Int {
+        val sb = StringBuilder()
+        var sp = 0
+        var frame = searchFrame[sp]
+        frame.beat = 0
+        frame.hand = -1
+        frame.slot = -1
+        frame.startBufferLength = sb.length
+        frame.minThrow = 1
+        frame.minHand = 0
+        frame.throwValue = 1
+        frame.targetHand = 0
+        frame.num = 0
+        frame.status = 0
+
+        var latestReturnValue = 0
+        var childReturned = false
+
+        while (sp >= 0) {
             if (loopCounter++ > LOOP_COUNTER_MAX) {
                 loopCounter = 0
-                if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
-                    val message = jlGetStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
-                    throw JuggleExceptionDone(message)
+                if (!currentCoroutineContext().isActive) {
+                    throw JuggleExceptionInterrupted()
+                }
+                if (maxTime > 0) {
+                    if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
+                        val message =
+                            jlGetStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
+                        throw JuggleExceptionDone(message)
+                    }
                 }
             }
-        }
 
-        // invariant: always reset `sb` to its original length when we return
-        // from this function
-        val originalLength = sb.length
+            frame = searchFrame[sp]
 
-        var h = 0
-        while (throwsLeft[beat][h] == 0) {
-            ++h
-            if (h < config.hands) {
-                continue
-            }
-
-            // done assigning throws on this beat, for all hands
-            outputBeat(beat, sb)
-
-            // conditions that may cause search to backtrack
-            if (!areThrowsValid(beat, sb.toString())) {
-                sb.setLength(originalLength)
-                return 0
-            }
-            if (config.mpflag != 0 && !isMultiplexingValid(beat)) {
-                sb.setLength(originalLength)
-                return 0
-            }
-            calculateState(beat + 1)
-            if (!isStateValid(beat + 1)) {
-                sb.setLength(originalLength)
-                return 0
-            }
-
-            if (Constants.DEBUG_GENERATOR) {
-                val sb2 = StringBuilder()
-                sb2.append(".  ".repeat(beat)) // Indent for debugging
-                sb2.append(sb.substring(originalLength))
-                println(sb2)
-            }
-
-            if (beat + 1 < lTarget) {
-                // continue recursively to next beat
-                startBeat(beat + 1)
-                val patCount = findCycles(beat + 1, 1, 0, sb)
-                sb.setLength(originalLength)
-                return patCount
-            }
-
-            // at the target length
-            val isValid =
-                (compareStates(state[0], state[lTarget]) == 0 && isPatternValid(sb.toString()))
-
-            return if (isValid) {
-                if (Constants.DEBUG_GENERATOR) {
-                    println("got a pattern: $sb")
-                }
-                if (config.numflag != 2) {
-                    outputPattern(sb.toString())
-                }
-                patternsFound++
-                if (maxNum >= 0 && maxNum == patternsFound) {
-                    val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
-                    throw JuggleExceptionDone(message)
-                }
-                sb.setLength(originalLength)
-                1
-            } else {
-                sb.setLength(originalLength)
-                0
-            }
-        }
-
-        // have a throw to assign, iterate over possibilities
-        --throwsLeft[beat][h]
-
-        val slot = throwsLeft[beat][h]
-        var k = minHand
-        var num = 0
-
-        for (j in minThrow..config.ht) {
-            val ti = beat + j  // target beat for throw
-
-            while (k < config.hands) {
-                if (holes[k][ti] == 0) {
-                    // no space at target position
-                    ++k
+            if (childReturned) {
+                // do needed cleanup
+                childReturned = false
+                if (frame.status == 1) {
+                    val ti = frame.beat + frame.throwValue
+                    val k = frame.targetHand
+                    holes[k][ti]++
+                    frame.num += latestReturnValue
+                    frame.targetHand++
+                } else if (frame.status == 2) {
+                    sb.setLength(frame.startBufferLength)
+                    sp--
+                    childReturned = true
                     continue
                 }
-
-                --holes[k][ti]
-                throwTo[beat][h][slot] = k
-                throwValue[beat][h][slot] = j
-                num += if (slot != 0) {
-                    findCycles(beat, j, k, sb)  // enforces ordering on multiplexed throws
-                } else {
-                    findCycles(beat, 1, 0, sb)
-                }
-                ++holes[k][ti]
-                ++k
             }
-            k = 0
+
+            if (frame.status == 0) {
+                var h = 0
+                while (h < config.hands && throwsLeft[frame.beat][h] == 0) {
+                    h++
+                }
+                frame.hand = h
+
+                if (h == config.hands) {
+                    // Done assigning throws on this beat, for all hands
+                    outputBeat(frame.beat, sb)
+
+                    if (!areThrowsValid(frame.beat, sb.toString())) {
+                        sb.setLength(frame.startBufferLength)
+                        latestReturnValue = 0
+                        sp--
+                        childReturned = true
+                        continue
+                    }
+                    if (config.mpflag != 0 && !isMultiplexingValid(frame.beat)) {
+                        sb.setLength(frame.startBufferLength)
+                        latestReturnValue = 0
+                        sp--
+                        childReturned = true
+                        continue
+                    }
+                    calculateState(frame.beat + 1)
+                    if (!isStateValid(frame.beat + 1)) {
+                        sb.setLength(frame.startBufferLength)
+                        latestReturnValue = 0
+                        sp--
+                        childReturned = true
+                        continue
+                    }
+
+                    if (Constants.DEBUG_GENERATOR) {
+                        val sb2 = StringBuilder()
+                        sb2.append(".  ".repeat(frame.beat)) // Indent for debugging
+                        sb2.append(sb.substring(frame.startBufferLength))
+                        println(sb2)
+                    }
+
+                    if (frame.beat + 1 < lTarget) {
+                        // continue to next beat
+                        startBeat(frame.beat + 1)
+                        frame.status = 2
+                        
+                        sp++
+                        val child = searchFrame[sp]
+                        child.beat = frame.beat + 1
+                        child.hand = -1
+                        child.slot = -1
+                        child.startBufferLength = sb.length
+                        child.minThrow = 1
+                        child.minHand = 0
+                        child.throwValue = 1
+                        child.targetHand = 0
+                        child.num = 0
+                        child.status = 0
+                        continue
+                    }
+
+                    // at the target length
+                    val isValid = (compareStates(state[0], state[lTarget]) == 0 && isPatternValid(sb.toString()))
+
+                    val result = if (isValid) {
+                        if (Constants.DEBUG_GENERATOR) {
+                            println("got a pattern: $sb")
+                        }
+                        if (config.numflag != 2) {
+                            outputPattern(sb.toString())
+                        }
+                        patternsFound++
+                        if (maxNum >= 0 && maxNum == patternsFound) {
+                            val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                            throw JuggleExceptionDone(message)
+                        }
+                        1
+                    } else {
+                        0
+                    }
+                    sb.setLength(frame.startBufferLength)
+                    latestReturnValue = result
+                    sp--
+                    childReturned = true
+                    continue
+                } else {
+                    throwsLeft[frame.beat][h]--
+                    frame.slot = throwsLeft[frame.beat][h]
+                    frame.throwValue = frame.minThrow
+                    frame.targetHand = frame.minHand
+                    frame.status = 1
+                }
+            }
+
+            if (frame.status == 1) {
+                var foundChoice = false
+                val beat = frame.beat
+                val hand = frame.hand
+                val slot = frame.slot
+
+                while (frame.throwValue <= config.ht) {
+                    val targetBeat = beat + frame.throwValue
+                    while (frame.targetHand < config.hands) {
+                        val targetHand = frame.targetHand
+                        if (holes[targetHand][targetBeat] == 0) {
+                            frame.targetHand++
+                            continue
+                        }
+
+                        // Found a valid choice!
+                        --holes[targetHand][targetBeat]
+                        throwTo[beat][hand][slot] = targetHand
+                        throwValue[beat][hand][slot] = frame.throwValue
+
+                        val nextMinThrow = if (slot != 0) frame.throwValue else 1
+                        val nextMinHand = if (slot != 0) targetHand else 0
+
+                        foundChoice = true
+                        
+                        sp++
+                        val child = searchFrame[sp]
+                        child.beat = beat
+                        child.hand = -1
+                        child.slot = -1
+                        child.startBufferLength = sb.length
+                        child.minThrow = nextMinThrow
+                        child.minHand = nextMinHand
+                        child.throwValue = nextMinThrow
+                        child.targetHand = nextMinHand
+                        child.num = 0
+                        child.status = 0
+                        break
+                    }
+                    if (foundChoice) {
+                        break
+                    }
+                    frame.throwValue++
+                    frame.targetHand = 0
+                }
+
+                if (!foundChoice) {
+                    // Both loops completed! Clean up and return
+                    throwsLeft[beat][hand]++
+                    sb.setLength(frame.startBufferLength)
+                    latestReturnValue = frame.num
+                    sp--
+                    childReturned = true
+                }
+            }
         }
 
-        ++throwsLeft[beat][h]
-
-        sb.setLength(originalLength)
-        return num
+        return latestReturnValue
     }
 
     // Calculate the state based on previous beat's state and throws.
@@ -1409,7 +1568,8 @@ class SiteswapGenerator : Generator() {
         fun runGeneratorCLI(args: List<String>, target: GeneratorTarget) {
             if (args.size < 3) {
                 val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
-                val copyright = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+                val copyright =
+                    jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
                 var output = "Juggling Lab ${version.lowercase()}\n"
                 output += "$copyright\n"
                 output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
@@ -1438,7 +1598,7 @@ class SiteswapGenerator : Generator() {
 // This is uniquely determined by command line arguments
 //------------------------------------------------------------------------------
 
-class SiteswapGeneratorConfig {
+private class SiteswapGeneratorConfig {
     var n: Int = 0
     var jugglers: Int = 1
     var ht: Int = 0
@@ -2059,4 +2219,46 @@ class SiteswapGeneratorConfig {
             return res
         }
     }
+}
+
+//------------------------------------------------------------------------------
+// Helper type during search execution (depth first search)
+//------------------------------------------------------------------------------
+
+private class SearchFrame {
+    // (beat, hand, multiplexing slot) we're assigning a throw to
+    var beat: Int = 0
+    var hand: Int = -1
+    var slot: Int = -1
+
+    // initial output String buffer length, so we can backtrack
+    var startBufferLength: Int = 0
+
+    // limits on values so that multiplexed throws are always generated in a
+    // certain ordering
+    var minThrow: Int = 0
+    var minHand: Int = 0
+
+    // throw value and target hand assigned for this (beat, hand, slot)
+    var throwValue: Int = 0
+    var targetHand: Int = 0
+
+    // patterns (cycles) found so far by all "child" frames
+    var num: Int = 0
+
+    /**
+     * Search status transition indicator:
+     * - 0: Initial status on workcell entry. Checks if all hands' throws have
+     *      been assigned for the current beat.
+     *      If so, processes the completed beat and transitions to status 2,
+     *      then outputs a completed pattern or advances to the next beat.
+     *      If not, transitions to status 1 to assign throws.
+     * - 1: Assigning a throw for the current hand/slot. Iterates over possible
+     *      throw values (`j`) and target hands (`k`).
+     *      When a multiplexed throw child frame completes, execution returns
+     *      here to backtrack and continue the loop.
+     * - 2: Recursion into the next beat (`beat + 1`). Waiting for the next
+     *      beat's frame to return, then propagate the result.
+     */
+    var status: Int = 0
 }
