@@ -49,7 +49,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import okio.Path
@@ -146,13 +148,18 @@ fun JmlFileChooser(
 
                         when (parser.fileType) {
                             JmlParser.JML_PATTERN -> {
-                                val pat = JmlPattern.fromJmlNode(parser.tree!!)
-                                pat.layout
+                                val pat = withContext(Dispatchers.Default) {
+                                    val pat = JmlPattern.fromJmlNode(parser.tree!!)
+                                    pat.layout
+                                    pat
+                                }
                                 onPatternLoaded(pat)
                             }
 
                             JmlParser.JML_LIST -> {
-                                val pl = JmlPatternList(parser.tree)
+                                val pl = withContext(Dispatchers.Default) {
+                                    JmlPatternList(parser.tree)
+                                }
                                 if (pl.title == null) {
                                     pl.title = displayName
                                 }
@@ -204,13 +211,18 @@ fun JmlFileChooser(
 
                                     when (parser.fileType) {
                                         JmlParser.JML_PATTERN -> {
-                                            val pat = JmlPattern.fromJmlNode(parser.tree!!)
-                                            pat.layout
+                                            val pat = withContext(Dispatchers.Default) {
+                                                val pat = JmlPattern.fromJmlNode(parser.tree!!)
+                                                pat.layout
+                                                pat
+                                            }
                                             onPatternLoaded(pat)
                                         }
 
                                         JmlParser.JML_LIST -> {
-                                            val pl = JmlPatternList(parser.tree)
+                                            val pl = withContext(Dispatchers.Default) {
+                                                JmlPatternList(parser.tree)
+                                            }
                                             if (pl.title == null) {
                                                 pl.title = displayName
                                             }

@@ -114,7 +114,13 @@ fun AnimationViewCombined(
     }
 
     val currentLayout = animationController.currentLayout
-    LaunchedEffect(animCenter.value, currentLayout, state.selectedItemHashCode, coordinator, coordinator?.walkthroughStep) {
+    LaunchedEffect(
+        animCenter.value,
+        currentLayout,
+        state.selectedItemHashCode,
+        coordinator,
+        coordinator?.walkthroughStep
+    ) {
         val step = coordinator?.walkthroughStep ?: 0
         val ac = animCenter.value
         if (step != 0 && ac != null && currentLayout != null && state.selectedItemHashCode != 0 && coordinator != null) {
@@ -201,7 +207,8 @@ fun AnimationViewCombined(
                     IconButton(
                         onClick = {
                             if (isLadderExpanded && ladderScrollState.maxValue > 0) {
-                                savedScrollProportion = ladderScrollState.value.toFloat() / ladderScrollState.maxValue
+                                savedScrollProportion =
+                                    ladderScrollState.value.toFloat() / ladderScrollState.maxValue
                             }
                             isLadderExpanded = !isLadderExpanded
                         },
@@ -294,7 +301,8 @@ fun AnimationViewCombined(
                     IconButton(
                         onClick = {
                             if (isLadderExpanded && ladderScrollState.maxValue > 0) {
-                                savedScrollProportion = ladderScrollState.value.toFloat() / ladderScrollState.maxValue
+                                savedScrollProportion =
+                                    ladderScrollState.value.toFloat() / ladderScrollState.maxValue
                             }
                             isLadderExpanded = !isLadderExpanded
                         },
@@ -360,29 +368,27 @@ fun AnimationViewCombined(
         onDismissRequest = { activeAnimationDialog = null },
         onConfirmPrefs = { newPrefs ->
             activeAnimationDialog = null
-            coroutineScope.launch(Dispatchers.Default) {
-                onBusy(true)
-                try {
-                    withContext(Dispatchers.Main) {
-                        animationController.restartJuggle(prefs = newPrefs)
-                    }
-                } catch (e: Throwable) {
-                    onError(e)
-                } finally {
-                    onBusy(false)
-                }
+            onBusy(true)
+            try {
+                animationController.restartJuggle(prefs = newPrefs)
+            } catch (e: Throwable) {
+                onError(e)
+            } finally {
+                onBusy(false)
             }
         },
         onConfirmTiming = { scale ->
             activeAnimationDialog = null
-            coroutineScope.launch(Dispatchers.Default) {
+            coroutineScope.launch {
                 onBusy(true)
                 try {
-                    val newPat = state.pattern.withScaledTime(scale)
-                    withContext(Dispatchers.Main) {
-                        animationController.restartJuggle(pattern = newPat)
-                        state.addCurrentToUndoList()
+                    val newPat = withContext(Dispatchers.Default) {
+                        val newPat = state.pattern.withScaledTime(scale)
+                        newPat.layout
+                        newPat
                     }
+                    animationController.restartJuggle(pattern = newPat)
+                    state.addCurrentToUndoList()
                 } catch (e: Throwable) {
                     onError(e)
                 } finally {
@@ -392,16 +398,18 @@ fun AnimationViewCombined(
         },
         onConfirmTitle = { newTitle ->
             activeAnimationDialog = null
-            coroutineScope.launch(Dispatchers.Default) {
+            coroutineScope.launch {
                 onBusy(true)
                 try {
-                    val rec = PatternBuilder.fromJmlPattern(state.pattern)
-                    rec.setTitleString(newTitle.takeIf { it.isNotBlank() })
-                    val newPat = JmlPattern.fromPatternBuilder(rec)
-                    withContext(Dispatchers.Main) {
-                        animationController.restartJuggle(pattern = newPat, coldRestart = false)
-                        state.addCurrentToUndoList()
+                    val newPat = withContext(Dispatchers.Default) {
+                        val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                        rec.setTitleString(newTitle.takeIf { it.isNotBlank() })
+                        val newPat = JmlPattern.fromPatternBuilder(rec)
+                        newPat.layout
+                        newPat
                     }
+                    animationController.restartJuggle(pattern = newPat, coldRestart = false)
+                    state.addCurrentToUndoList()
                 } catch (e: Throwable) {
                     onError(e)
                 } finally {
@@ -475,9 +483,9 @@ private fun AnimationViewMenus(
 
             val layout = animationController.currentLayout
             val showRestart = (layout != null) && ((state.zoom != 1.0) ||
-                (state.cameraAngle != state.initialCameraAngle()) ||
-                (state.selectedItemHashCode != 0 &&
-                (layout.eventPoints.isNotEmpty() || layout.posPoints.isNotEmpty())))
+                    (state.cameraAngle != state.initialCameraAngle()) ||
+                    (state.selectedItemHashCode != 0 &&
+                            (layout.eventPoints.isNotEmpty() || layout.posPoints.isNotEmpty())))
 
             if (showRestart) {
                 IconButton(onClick = { animationController.restartJuggle() }) {
@@ -682,17 +690,19 @@ private fun AnimationViewMenus(
                 text = { Text(stringResource(Res.string.gui_pcmenu_mixed)) },
                 onClick = {
                     isColorPropsMenuExpanded = false
-                    coroutineScope.launch(Dispatchers.Default) {
+                    coroutineScope.launch {
                         onBusy(true)
                         try {
-                            val newPat = state.pattern.withPropColors("mixed")
-                            withContext(Dispatchers.Main) {
-                                animationController.restartJuggle(
-                                    pattern = newPat,
-                                    coldRestart = false
-                                )
-                                state.addCurrentToUndoList()
+                            val newPat = withContext(Dispatchers.Default) {
+                                val newPat = state.pattern.withPropColors("mixed")
+                                newPat.layout
+                                newPat
                             }
+                            animationController.restartJuggle(
+                                pattern = newPat,
+                                coldRestart = false
+                            )
+                            state.addCurrentToUndoList()
                         } catch (e: Throwable) {
                             onError(e)
                         } finally {
@@ -705,17 +715,19 @@ private fun AnimationViewMenus(
                 text = { Text(stringResource(Res.string.gui_pcmenu_orbits)) },
                 onClick = {
                     isColorPropsMenuExpanded = false
-                    coroutineScope.launch(Dispatchers.Default) {
+                    coroutineScope.launch {
                         onBusy(true)
                         try {
-                            val newPat = state.pattern.withPropColors("orbits")
-                            withContext(Dispatchers.Main) {
-                                animationController.restartJuggle(
-                                    pattern = newPat,
-                                    coldRestart = false
-                                )
-                                state.addCurrentToUndoList()
+                            val newPat = withContext(Dispatchers.Default) {
+                                val newPat = state.pattern.withPropColors("orbits")
+                                newPat.layout
+                                newPat
                             }
+                            animationController.restartJuggle(
+                                pattern = newPat,
+                                coldRestart = false
+                            )
+                            state.addCurrentToUndoList()
                         } catch (e: Throwable) {
                             onError(e)
                         } finally {
@@ -725,7 +737,8 @@ private fun AnimationViewMenus(
                 }
             )
             HorizontalDivider()
-            val outlineColor = if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color.White else Color.Black
+            val outlineColor =
+                if (MaterialTheme.colorScheme.background.luminance() < 0.5f) Color.White else Color.Black
             for ((i, colorName) in Prop.colorNames.withIndex()) {
                 DropdownMenuItem(
                     text = { Text(stringResource(Prop.colorStringResources[i])) },
@@ -739,17 +752,19 @@ private fun AnimationViewMenus(
                     },
                     onClick = {
                         isColorPropsMenuExpanded = false
-                        coroutineScope.launch(Dispatchers.Default) {
+                        coroutineScope.launch {
                             onBusy(true)
                             try {
-                                val newPat = state.pattern.withPropColors("{$colorName}")
-                                withContext(Dispatchers.Main) {
-                                    animationController.restartJuggle(
-                                        pattern = newPat,
-                                        coldRestart = false
-                                    )
-                                    state.addCurrentToUndoList()
+                                val newPat = withContext(Dispatchers.Default) {
+                                    val newPat = state.pattern.withPropColors("{$colorName}")
+                                    newPat.layout
+                                    newPat
                                 }
+                                animationController.restartJuggle(
+                                    pattern = newPat,
+                                    coldRestart = false
+                                )
+                                state.addCurrentToUndoList()
                             } catch (e: Throwable) {
                                 onError(e)
                             } finally {

@@ -12,8 +12,7 @@ import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.ParameterList
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -31,9 +30,16 @@ fun NotationScreen(
         state.pattern.basePatternConfig
     } else null
 
+    var isBasePatternEdited by remember { mutableStateOf(false) }
+    LaunchedEffect(state.pattern) {
+        isBasePatternEdited = withContext(Dispatchers.Default) {
+            state.pattern.hasBasePattern && state.pattern.isBasePatternEdited
+        }
+    }
+
     SiteswapNotationControl(
         initialParams = initialParams,
-        isBasePatternEdited = state.pattern.hasBasePattern && state.pattern.isBasePatternEdited,
+        isBasePatternEdited = isBasePatternEdited,
         onConfirm = { parameterString ->
             coroutineScope.launch(Dispatchers.Default) {
                 onBusyChange(true)

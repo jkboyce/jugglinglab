@@ -56,17 +56,18 @@ fun FavoritesScreen(
         patternListPath = localFilesDir?.let { it / "Favorites.jml" },
         listState = listState,
         onItemClick = { index, _ ->
-            coroutineScope.launch(Dispatchers.Default) {
+            coroutineScope.launch {
                 onBusyChange(true)
                 try {
-                    val newPattern = favoritesList.getPatternForLine(index) ?: return@launch
-                    newPattern.layout
+                    val newPat = withContext(Dispatchers.Default) {
+                        val newPat = favoritesList.getPatternForLine(index)
+                        newPat?.layout
+                        newPat
+                    } ?: return@launch
                     val ap = favoritesList.getAnimationPrefsForLine(index)
-                    animationController.restartJuggle(pattern = newPattern, prefs = ap)
+                    animationController.restartJuggle(pattern = newPat, prefs = ap)
                     state.addCurrentToUndoList()
-                    withContext(Dispatchers.Main) {
-                        onNavigateTo("Animation")
-                    }
+                    onNavigateTo("Animation")
                 } catch (e: Throwable) {
                     onError(e)
                 } finally {
@@ -126,14 +127,11 @@ fun FavoritesScreen(
                         }
                         jlExitProcess(0)
                     } catch (e: Throwable) {
-                        onError(
-                            JuggleExceptionInternal(
-                                getString(
-                                    Res.string.error_mobile_deleting_favorites,
-                                    e.message ?: ""
-                                )
-                            )
+                        val message = getString(
+                            Res.string.error_mobile_deleting_favorites,
+                            e.message ?: ""
                         )
+                        onError(JuggleExceptionInternal(message))
                     }
                 }
             } else {

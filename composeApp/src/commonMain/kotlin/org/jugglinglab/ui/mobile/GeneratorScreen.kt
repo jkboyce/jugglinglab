@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.withContext
 
 @Composable
 fun GeneratorScreen(
@@ -49,124 +50,119 @@ fun GeneratorScreen(
     GeneratorControlCombined(
         isBusy = isBusy,
         onGeneratorConfirm = { params ->
-            try {
-                generator.initGenerator(params)
-                patternList.clearModel()
-                patternList.title = "Siteswap Patterns"
-                onIsEditableChange(true)
-                onPathChange(null)
-                onHasLoadedChange(true)
-                onPatternListScrollStateChange(LazyListState())
-                onNavigateTo("PatternList")
-                onBusyChange(true)
-                val job = coroutineScope.launch {
-                    try {
-                        channelFlow {
-                            val genTarget = object : GeneratorTarget {
-                                override fun addResult(
-                                    display: String,
-                                    notation: String?,
-                                    anim: String?
-                                ) {
-                                    trySend(
-                                        PatternRecord.create(
-                                            display,
-                                            null,
-                                            notation,
-                                            anim,
-                                            null,
-                                            null
-                                        )
+            onBusyChange(true)
+            val job = coroutineScope.launch {
+                try {
+                    generator.initGenerator(params)
+                    patternList.clearModel()
+                    patternList.title = "Siteswap Patterns"
+                    onIsEditableChange(true)
+                    onPathChange(null)
+                    onHasLoadedChange(true)
+                    onPatternListScrollStateChange(LazyListState())
+                    onNavigateTo("PatternList")
+
+                    channelFlow {
+                        val genTarget = object : GeneratorTarget {
+                            override fun addResult(
+                                display: String,
+                                notation: String?,
+                                anim: String?
+                            ) {
+                                trySend(
+                                    PatternRecord.create(
+                                        display,
+                                        null,
+                                        notation,
+                                        anim,
+                                        null,
+                                        null
                                     )
-                                }
+                                )
                             }
-                            generator.runGenerator(
-                                genTarget,
-                                MAX_PATTERNS,
-                                MAX_TIME_SEC
-                            )
                         }
-                            .buffer(Channel.UNLIMITED)
-                            .flowOn(Dispatchers.Default)
-                            .collect { record ->
-                                patternList.addLine(-1, record)
-                            }
-                    } catch (e: JuggleExceptionDone) {
-                        // generator hit a limit and stopped prematurely; notify the user
-                        onError(e)
-                    } catch (_: kotlin.coroutines.cancellation.CancellationException) {
-                        // ignore user-initiated cancellation or interruption
-                    } catch (e: Throwable) {
-                        onError(e)
-                    } finally {
-                        onBusyChange(false)
-                        onGeneratorJobChange(null)
+                        generator.runGenerator(
+                            genTarget,
+                            MAX_PATTERNS,
+                            MAX_TIME_SEC
+                        )
                     }
+                        .buffer(Channel.UNLIMITED)
+                        .flowOn(Dispatchers.Default)
+                        .collect { record ->
+                            patternList.addLine(-1, record)
+                        }
+                } catch (e: JuggleExceptionDone) {
+                    // generator hit a limit and stopped prematurely; notify the user
+                    onError(e)
+                } catch (_: kotlin.coroutines.cancellation.CancellationException) {
+                    // ignore user-initiated cancellation or interruption
+                } catch (e: Throwable) {
+                    onError(e)
+                } finally {
+                    onBusyChange(false)
+                    onGeneratorJobChange(null)
                 }
-                onGeneratorJobChange(job)
-            } catch (e: Throwable) {
-                onError(e)
-                onBusyChange(false)
             }
+            onGeneratorJobChange(job)
         },
         onTransitionerConfirm = { params ->
-            try {
-                transitioner.initTransitioner(params)
-                patternList.clearModel()
-                patternList.title = "Siteswap Patterns"
-                onIsEditableChange(true)
-                onPathChange(null)
-                onPatternListScrollStateChange(LazyListState())
-                onNavigateTo("PatternList")
-                onBusyChange(true)
-                val job = coroutineScope.launch {
-                    try {
-                        channelFlow {
-                            val genTarget = object : GeneratorTarget {
-                                override fun addResult(
-                                    display: String,
-                                    notation: String?,
-                                    anim: String?
-                                ) {
-                                    trySend(
-                                        PatternRecord.create(
-                                            display,
-                                            null,
-                                            notation,
-                                            anim,
-                                            null,
-                                            null
-                                        )
-                                    )
-                                }
-                            }
-                            transitioner.runTransitioner(
-                                genTarget,
-                                MAX_PATTERNS,
-                                MAX_TIME_SEC
-                            )
-                        }
-                            .buffer(Channel.UNLIMITED)
-                            .flowOn(Dispatchers.Default)
-                            .collect { record ->
-                                patternList.addLine(-1, record)
-                            }
-                    } catch (e: JuggleExceptionDone) {
-                        onError(e)
-                    } catch (_: kotlin.coroutines.cancellation.CancellationException) {
-                        // ignore expected cancellation or interruption
-                    } catch (e: Throwable) {
-                        onError(e)
-                    } finally {
-                        onBusyChange(false)
-                        onGeneratorJobChange(null)
+            onBusyChange(true)
+            val job = coroutineScope.launch {
+                try {
+                    withContext(Dispatchers.Default) {
+                        // potentially slow operation parsing from/to patterns
+                        transitioner.initTransitioner(params)
                     }
+                    patternList.clearModel()
+                    patternList.title = "Siteswap Patterns"
+                    onIsEditableChange(true)
+                    onPathChange(null)
+                    onHasLoadedChange(true)
+                    onPatternListScrollStateChange(LazyListState())
+                    onNavigateTo("PatternList")
+                    channelFlow {
+                        val genTarget = object : GeneratorTarget {
+                            override fun addResult(
+                                display: String,
+                                notation: String?,
+                                anim: String?
+                            ) {
+                                trySend(
+                                    PatternRecord.create(
+                                        display,
+                                        null,
+                                        notation,
+                                        anim,
+                                        null,
+                                        null
+                                    )
+                                )
+                            }
+                        }
+                        transitioner.runTransitioner(
+                            genTarget,
+                            MAX_PATTERNS,
+                            MAX_TIME_SEC
+                        )
+                    }
+                        .buffer(Channel.UNLIMITED)
+                        .flowOn(Dispatchers.Default)
+                        .collect { record ->
+                            patternList.addLine(-1, record)
+                        }
+                } catch (e: JuggleExceptionDone) {
+                    onError(e)
+                } catch (_: kotlin.coroutines.cancellation.CancellationException) {
+                    // ignore user-initiated cancellation or interruption
+                } catch (e: Throwable) {
+                    onError(e)
+                } finally {
+                    onBusyChange(false)
+                    onGeneratorJobChange(null)
                 }
-                onGeneratorJobChange(job)
-            } catch (e: Throwable) {
-                onError(e)
-                onBusyChange(false)
             }
+            onGeneratorJobChange(job)
         },
         generatorState = generatorState,
         transitionerState = transitionerState,

@@ -191,8 +191,7 @@ class AppViewModel(
                 if (!(record.notation?.equals("jml", ignoreCase = true) ?: true)) {
                     // rewrite animation parameters in canonical ordering
                     val newAnim =
-                        Pattern.newPattern(record.notation).fromString(record.anim!!)
-                            .toCanonicalString()
+                        Pattern.canonicalConfig(notation = record.notation, config = record.anim)
                     newRecord = newRecord.copy(anim = newAnim)
                 }
                 favoritesList.model.add(displaySize, newRecord)
@@ -239,7 +238,11 @@ class AppViewModel(
         }
     }
 
-    fun removeFromFavoritesPattern(pattern: JmlPattern, prefs: AnimationPrefs, scope: CoroutineScope) {
+    fun removeFromFavoritesPattern(
+        pattern: JmlPattern,
+        prefs: AnimationPrefs,
+        scope: CoroutineScope
+    ) {
         scope.launch(Dispatchers.Default) {
             isProcessing = true
             try {

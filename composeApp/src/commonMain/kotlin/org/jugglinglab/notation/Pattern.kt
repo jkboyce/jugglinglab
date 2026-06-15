@@ -27,8 +27,8 @@ abstract class Pattern {
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     abstract fun fromParameters(pl: ParameterList): Pattern
 
-    // canonical string representation
-    abstract fun toCanonicalString(forHashCode: Boolean = false): String
+    // canonical representation of a given `config` string
+    abstract fun canonicalizedConfig(config: String?, forHashCode: Boolean = false): String
 
     // convert pattern to JML
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
@@ -64,6 +64,16 @@ abstract class Pattern {
                 }
             }
             return null
+        }
+
+        // Return a `config` string in canonical form, for a given notation.
+
+        fun canonicalConfig(
+            notation: String,
+            config: String?,
+            forHashCode: Boolean = false
+        ): String {
+            return newPattern(notation).canonicalizedConfig(config, forHashCode)
         }
     }
 }

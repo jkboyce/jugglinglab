@@ -319,8 +319,11 @@ class JmlPatternList(
                 try {
                     var result = notation.lowercase().hashCode()
                     if (anim != null) {
-                        result = 31 * result + Pattern.newPattern(notation).fromString(anim)
-                            .toCanonicalString(forHashCode = true).hashCode()
+                        result = 31 * result + Pattern.canonicalConfig(
+                            notation = notation,
+                            config = anim,
+                            forHashCode = true
+                        ).hashCode()
                     }
                     if (patnode != null) {
                         val nodeHash = buildString { patnode.writeNode(this, 0) }.hashCode()

@@ -193,8 +193,14 @@ abstract class MhnPattern : Pattern() {
 
     // Write out configuration parameters in a standard order.
 
-    override fun toCanonicalString(forHashCode: Boolean): String {
-        if (config == null) return ""
+    override fun canonicalizedConfig(config: String?, forHashCode: Boolean): String {
+        if (config == null) {
+            return ""
+        } else if (config.indexOf('=') == -1) {
+            // just the pattern
+            return "pattern=$config"
+        }
+
         var result = ""
         try {
             val pl = ParameterList(config)
@@ -235,7 +241,7 @@ abstract class MhnPattern : Pattern() {
 
     @Throws(JuggleExceptionInternal::class)
     override fun toString(): String {
-        return toCanonicalString()
+        return canonicalizedConfig(config)
     }
 
     // Fill in details of the juggling matrix th[], to prepare for animation

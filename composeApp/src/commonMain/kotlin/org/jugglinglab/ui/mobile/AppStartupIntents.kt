@@ -72,17 +72,15 @@ fun AppStartupIntents(
                             navigateTo("Animation")
                         }
                     } else {
-                        onError(JuggleExceptionUser(getString(Res.string.error_mobile_load_shared_pattern)))
+                        val message = getString(Res.string.error_mobile_load_shared_pattern)
+                        onError(JuggleExceptionUser(message))
                     }
                 } catch (e: Exception) {
-                    onError(
-                        JuggleExceptionInternal(
-                            getString(
-                                Res.string.error_mobile_loading_pattern,
-                                e.message ?: ""
-                            )
-                        )
+                    val message = getString(
+                        Res.string.error_mobile_loading_pattern,
+                        e.message ?: ""
                     )
+                    onError(JuggleExceptionInternal(message))
                 } finally {
                     viewModel.isProcessing = false
                     onUrlHandled()
@@ -131,18 +129,16 @@ fun AppStartupIntents(
                         }
 
                         else -> {
-                            onError(JuggleExceptionUser(getString(Res.string.error_invalid_jml)))
+                            val message = getString(Res.string.error_invalid_jml)
+                            onError(JuggleExceptionUser(message))
                         }
                     }
                 } catch (e: JuggleExceptionUser) {
-                    onError(
-                        JuggleExceptionUser(
-                            getString(
-                                Res.string.error_mobile_reading_imported_file,
-                                e.message ?: ""
-                            )
-                        )
+                    val message = getString(
+                        Res.string.error_mobile_reading_imported_file,
+                        e.message ?: ""
                     )
+                    onError(JuggleExceptionUser(message))
                 } catch (e: Throwable) {
                     onError(e)
                 } finally {
