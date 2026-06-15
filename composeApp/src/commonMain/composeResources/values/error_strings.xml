@@ -9,6 +9,7 @@
     <string name="error_parsing_jml">Problem parsing JML pattern</string>
     <string name="error_no_pattern">No pattern specified</string>
     <string name="error_number_format">Number format error in "%1$s" value</string>
+    <string name="error_negative_value">Value must be positive</string>
     <string name="error_too_many_elements">Too many elements given in "%1$s" value</string>
     <string name="error_jml_parsing">Parsing error at line %1$d%2$s</string>
     <string name="error_invalid_jml">File not valid JML</string>

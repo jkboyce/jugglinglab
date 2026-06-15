@@ -105,27 +105,6 @@ compose.desktop {
             "-DJL_compose_ui=$isCompose",
             "--enable-native-access=ALL-UNNAMED"
         )
-
-        /*
-        nativeDistributions {
-            // this section is unused; native packaging scripts are in bin/packaging
-
-            targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "Juggling Lab"
-            packageVersion = "1.7.3"
-
-            macOS {
-                //iconFile.set(project.file("launcher-icons/icon.icns"))
-                dockName = "Juggling Lab"
-            }
-            windows {
-                //iconFile.set(project.file("launcher-icons/icon.ico"))
-            }
-            linux {
-                //iconFile.set(project.file("launcher-icons/icon.png"))
-            }
-        }
-        */
     }
 }
 
@@ -199,9 +178,11 @@ val shadowJar by tasks.existing(ShadowJar::class) {
     }
     val isMac = osName.contains("mac")
     val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
-    println("#### DEBUG [shadowJar]: osName=$osName, osArch=$osArch, isMac=$isMac, isArm64=$isArm64")
     if (isMac && isArm64) exclude("libskiko-macos-x64.dylib")
     if (isMac && !isArm64) exclude("libskiko-macos-arm64.dylib")
+    doFirst {
+        println("#### DEBUG [shadowJar]: osName=$osName, osArch=$osArch, isMac=$isMac, isArm64=$isArm64")
+    }
 }
 
 // Custom task to unpack the OR-Tools native libraries

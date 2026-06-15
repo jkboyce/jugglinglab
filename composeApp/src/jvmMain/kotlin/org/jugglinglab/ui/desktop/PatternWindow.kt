@@ -369,7 +369,7 @@ class PatternWindow(
         // in JugglingLab.java
         val includeAbout =
             !Desktop.isDesktopSupported()
-                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
+                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = jlGetStringResource(Res.string.gui_help)
         if (jlIsMacOs) {
@@ -523,8 +523,8 @@ class PatternWindow(
                         val fw = FileWriter(lastJmlFilepath!!.toFile())
                         view.state.pattern.writeJml(fw, writeTitle = true, writeInfo = true)
                         fw.close()
-                    } catch (e: Exception) {
-                        throw JuggleExceptionInternal("Exception on save: " + e.message)
+                    } catch (e: Throwable) {
+                        throw JuggleExceptionInternal("Error on save: " + e.message)
                     } finally {
                         setCursor(Cursor.getDefaultCursor())
                     }
@@ -725,22 +725,26 @@ class PatternWindow(
 
         val okbutton = JButton(jlGetStringResource(Res.string.gui_ok))
         okbutton.addActionListener { _: ActionEvent? ->
-            val scale: Double
             try {
-                scale = jlParseFiniteDouble(tf.getText()) / 100.0
+                val scale = jlParseFiniteDouble(tf.getText()) / 100.0
+                if (scale > 0.0) {
+                    val newpat = view.state.pattern.withScaledTime(scale)
+                    view.restartView(newpat, null)
+                    view.state.addCurrentToUndoList()
+                } else {
+                    val message = jlGetStringResource(Res.string.error_negative_value)
+                    throw JuggleExceptionUser(message)
+                }
             } catch (_: NumberFormatException) {
-                jlHandleUserException(
-                    this@PatternWindow,
-                    "Number format error in rescale percentage"
-                )
-                return@addActionListener
+                val message = jlGetStringResource(Res.string.error_number_format, "rescale")
+                jlHandleUserException(this@PatternWindow, message)
+            } catch (je: JuggleExceptionUser) {
+                jlHandleUserException(this@PatternWindow, je.message)
+            } catch (jei: JuggleExceptionInternal) {
+                jlHandleFatalException(jei)
+            } finally {
+                jd.dispose()
             }
-            if (scale > 0.0) {
-                val newpat = view.state.pattern.withScaledTime(scale)
-                view.restartView(newpat, null)
-                view.state.addCurrentToUndoList()
-            }
-            jd.dispose()
         }
 
         jd.contentPane.add(p1)
