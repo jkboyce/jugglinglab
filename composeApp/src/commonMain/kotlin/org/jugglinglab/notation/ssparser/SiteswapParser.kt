@@ -18,6 +18,7 @@ import org.antlr.v4.kotlinruntime.CommonTokenStream
 import org.antlr.v4.kotlinruntime.RecognitionException
 import org.antlr.v4.kotlinruntime.Recognizer
 import org.antlr.v4.kotlinruntime.Token
+import org.antlr.v4.kotlinruntime.atn.PredictionMode
 
 object SiteswapParser {
     @Throws(SiteswapParseException::class)
@@ -27,17 +28,20 @@ object SiteswapParser {
         val tokens = CommonTokenStream(lexer)
         val parser = JlSiteswapParser(tokens)
 
+        // Use SLL prediction mode to avoid a Kotlin/Native release build crash
+        // in the antlr-kotlin-runtime's LL full-context prediction path
+        // (ParserATNSimulator.computeReachSet). SLL is sufficient for our grammar.
+        parser.interpreter.predictionMode = PredictionMode.SLL
+
         val logger = SiteswapErrorLogger()
         lexer.removeErrorListeners()
         lexer.addErrorListener(logger)
         parser.removeErrorListeners()
         parser.addErrorListener(logger)
 
-        // start parsing at the 'pattern' rule
         val tree = parser.pattern()
         logger.throwIfErrors()
 
-        // build the SiteswapTreeItem hierarchy
         return SiteswapAstVisitor().visit(tree)
     }
 }
