@@ -254,8 +254,9 @@ class PatternListWindow(
                 }
             }
 
-            MenuCommand.FILE_SAVEAS -> try {
-                var fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve("${title}.jml")
+             MenuCommand.FILE_SAVEAS -> try {
+                val truncatedTitle = title?.take(40) ?: "pattern"
+                var fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve("${truncatedTitle}.jml")
                 fpath = jlSanitizeFilepath(fpath)
                 jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
@@ -288,9 +289,10 @@ class PatternListWindow(
             }
 
             MenuCommand.FILE_SAVETEXT -> try {
+                val truncatedTitle = title?.take(40) ?: "pattern"
                 var fpath = lastJmlFilepath?.let {
                     it.resolveSibling("${it.fileName.toString().substringBeforeLast(".")}.txt")
-                } ?: jlBaseFileDirectory.resolve("${title}.txt")
+                } ?: jlBaseFileDirectory.resolve("${truncatedTitle}.txt")
                 fpath = jlSanitizeFilepath(fpath)
                 jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("Text file", "txt"))

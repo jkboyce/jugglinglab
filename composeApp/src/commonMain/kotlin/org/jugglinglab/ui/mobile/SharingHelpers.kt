@@ -31,6 +31,10 @@ private const val JML_MIME_TYPE = "application/octet-stream"
 // Functions for sharing and exporting
 //------------------------------------------------------------------------------
 
+private fun String.truncate(limit: Int): String {
+    return if (this.length > limit) this.take(limit) + "..." else this
+}
+
 private suspend fun sharePattern(
     pattern: JmlPattern,
     prefs: AnimationPrefs,
@@ -42,7 +46,7 @@ private suspend fun sharePattern(
     } else {
         val title = pattern.title?.takeIf { it.isNotBlank() }
             ?: getString(Res.string.gui_pattern).lowercase()
-        val subject = getString(Res.string.gui_mobile_share_subject, title)
+        val subject = getString(Res.string.gui_mobile_share_subject, title).truncate(50)
         val htmlText = getString(Res.string.gui_mobile_share_html, url, title)
         jlShareUrl(
             url = url,
@@ -57,10 +61,11 @@ private suspend fun exportPattern(
 ) {
     val title = pattern.title?.takeIf { it.isNotBlank() }
         ?: getString(Res.string.gui_pattern).lowercase()
-    val subject = getString(Res.string.gui_mobile_share_subject, title)
+    val subject = getString(Res.string.gui_mobile_share_subject, title).truncate(50)
+    val truncatedTitle = title.take(40)
     jlShareFile(
         content = pattern.toString(),
-        filename = jlSanitizeFilename("$title.jml"),
+        filename = jlSanitizeFilename("$truncatedTitle.jml"),
         mimeType = JML_MIME_TYPE,
         subject = subject
     )
@@ -75,10 +80,11 @@ private suspend fun exportPatternList(
         ?: getString(Res.string.gui_pattern_list)
     val sb = StringBuilder()
     list.writeJml(sb)
-    val subject = getString(Res.string.gui_mobile_share_subject, listHeading)
+    val subject = getString(Res.string.gui_mobile_share_subject, listHeading).truncate(50)
+    val truncatedHeading = listHeading.take(40)
     jlShareFile(
         content = sb.toString(),
-        filename = jlSanitizeFilename("$listHeading.jml"),
+        filename = jlSanitizeFilename("$truncatedHeading.jml"),
         mimeType = JML_MIME_TYPE,
         subject = subject
     )
