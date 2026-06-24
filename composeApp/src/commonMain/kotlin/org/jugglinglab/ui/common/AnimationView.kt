@@ -251,21 +251,34 @@ fun AnimationView(
                             val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
                             oldTime -= loopDuration
                         }
-                        if (state.prefs.catchSound) {
-                            for (path in 1..state.pattern.numberOfPaths) {
-                                if (state.pattern.layout.getPathCatchVolume(path, oldTime, newTime) > 0.0) {
-                                    jlPlayCatchSound()
+                        try {
+                            if (state.prefs.catchSound) {
+                                for (path in 1..state.pattern.numberOfPaths) {
+                                    if (state.pattern.layout.getPathCatchVolume(
+                                            path,
+                                            oldTime,
+                                            newTime
+                                        ) > 0.0
+                                    ) {
+                                        jlPlayCatchSound()
+                                    }
                                 }
                             }
-                        }
-                        if (state.prefs.bounceSound) {
-                            for (path in 1..state.pattern.numberOfPaths) {
-                                if (state.pattern.layout.getPathBounceVolume(path, oldTime, newTime) > 0.0) {
-                                    jlPlayBounceSound()
+                            if (state.prefs.bounceSound) {
+                                for (path in 1..state.pattern.numberOfPaths) {
+                                    if (state.pattern.layout.getPathBounceVolume(
+                                            path,
+                                            oldTime,
+                                            newTime
+                                        ) > 0.0
+                                    ) {
+                                        jlPlayBounceSound()
+                                    }
                                 }
                             }
+                        } catch (e: Throwable) {
+                            onError(e)
                         }
-
                         state.update(time = newTime)
                         onFrame(newTime)
                     }

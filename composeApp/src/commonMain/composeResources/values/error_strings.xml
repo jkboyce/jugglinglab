@@ -40,6 +40,8 @@
     <string name="error_generator_underspecified">Either max throw or period must be specified</string>
     <string name="error_generator_height_too_small">Maximum throw must be at least 1</string>
     <string name="error_generator_period_problem">Syntax error in period</string>
+    <string name="error_generator_memory">Memory needed (%1$s MB) is too large</string>
+    <string name="error_generator_out_of_memory">Out of memory</string>
     <string name="error_passing_leader_number">passing leader number</string>
     <string name="error_excluded_throws">Format error in excluded throws</string>
     <string name="error_excluded_passes">Format error in excluded passes</string>

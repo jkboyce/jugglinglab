@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                     contentResolver.openInputStream(uri)?.use { stream ->
                         startJmlContent = stream.reader().readText()
                     }
-                } catch (e: Exception) {
+                } catch (e: Throwable) {
                     println("Error reading JML file from intent: ${e.message}")
                 }
             }

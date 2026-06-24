@@ -124,11 +124,11 @@ private fun InfoHeader(
         Text(
             text = if (jlIsAndroid) {
                 stringResource(Res.string.gui_copyright_message, Constants.YEAR) + ". " +
-                    stringResource(Res.string.gui_gpl_message) +
-                    ". " + stringResource(Res.string.gui_mobile_android_leads)
+                        stringResource(Res.string.gui_gpl_message) +
+                        ". " + stringResource(Res.string.gui_mobile_android_leads)
             } else {
                 stringResource(Res.string.gui_copyright_message, Constants.YEAR) + ". " +
-                    stringResource(Res.string.gui_gpl_message) + "."
+                        stringResource(Res.string.gui_gpl_message) + "."
             },
             style = MaterialTheme.typography.bodySmall
         )
@@ -137,7 +137,13 @@ private fun InfoHeader(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = "jugglinglab.org",
-                modifier = Modifier.clickable { uriHandler.openUri("https://jugglinglab.org") },
+                modifier = Modifier.clickable {
+                    try {
+                        uriHandler.openUri("https://jugglinglab.org")
+                    } catch (_: Throwable) {
+                        // no reasonable response for connection errors etc.
+                    }
+                },
                 color = MaterialTheme.colorScheme.primary,
                 textDecoration = TextDecoration.Underline,
                 style = MaterialTheme.typography.bodyLarge

@@ -148,4 +148,19 @@ class SiteswapPatternTest {
         assertEquals(1, pattern.numberOfJugglers)
         assertEquals(4, pattern.numberOfPaths)
     }
+
+    @Test
+    fun `pattern parsing non-first brace values`() {
+        val pattern1 = SiteswapPattern().fromString("{5}{1}")
+        pattern1.asJmlPattern().layout
+        assertEquals(1, pattern1.numberOfJugglers)
+
+        val pattern2 = SiteswapPattern().fromString("5{1}")
+        pattern2.asJmlPattern().layout
+        assertEquals(1, pattern2.numberOfJugglers)
+
+        val pattern3 = SiteswapPattern().fromString("{5}1{5}1")
+        pattern3.asJmlPattern().layout
+        assertEquals(1, pattern3.numberOfJugglers)
+    }
 }

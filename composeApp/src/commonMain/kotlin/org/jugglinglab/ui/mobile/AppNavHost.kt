@@ -124,8 +124,6 @@ fun AppNavHost(
         composable("Generator") {
             GeneratorScreen(
                 isBusy = viewModel.isProcessing,
-                generator = viewModel.generator,
-                transitioner = viewModel.transitioner,
                 patternList = viewModel.patternList,
                 onIsEditableChange = { viewModel.isPatternListEditable = it },
                 onPathChange = { viewModel.patternListPath = it },

@@ -12,8 +12,6 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.OkioJmlStorageRepository
 import org.jugglinglab.core.PatternAnimationState
-import org.jugglinglab.generator.SiteswapGenerator
-import org.jugglinglab.generator.SiteswapTransitioner
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
@@ -66,8 +64,6 @@ class AppViewModel(
     val favoritesListScrollState = LazyListState()
 
     // generator
-    val generator = SiteswapGenerator()
-    val transitioner = SiteswapTransitioner()
     val generatorState = SiteswapGeneratorState()
     val transitionerState = SiteswapTransitionerState()
     val combinedState = GeneratorControlCombinedState()

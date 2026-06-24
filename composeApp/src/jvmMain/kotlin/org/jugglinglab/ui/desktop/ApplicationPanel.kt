@@ -14,10 +14,8 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.Constants.MAX_PATTERNS
 import org.jugglinglab.core.Constants.MAX_TIME_SEC
-import org.jugglinglab.generator.Generator
 import org.jugglinglab.generator.Generator.Companion.newGenerator
 import org.jugglinglab.generator.GeneratorTargetPatternList
-import org.jugglinglab.generator.Transitioner
 import org.jugglinglab.generator.Transitioner.Companion.newTransitioner
 import org.jugglinglab.jml.JmlPattern.Companion.fromBasePattern
 import org.jugglinglab.jml.JmlPatternList
@@ -91,8 +89,7 @@ open class ApplicationPanel(
         if (pl == null && havePatternListTab) {
             pl = PatternListPanel(patternList = JmlPatternList(), animTarget = animtarget)
         }
-        val trans = newTransitioner(Pattern.builtinNotations[notationNum - 1])
-        val gen = newGenerator(Pattern.builtinNotations[notationNum - 1])
+        val notationName = Pattern.builtinNotations[notationNum - 1]
 
         val composePanel = ComposePanel().apply {
             // Set a preferred size so pack() on the parent JFrame works correctly
@@ -133,14 +130,14 @@ open class ApplicationPanel(
 
                                     1 -> SiteswapTransitionerControl(
                                         onConfirm = onRunTransitioner(
-                                            trans!!,
+                                            notationName,
                                             pl
                                         )
                                     )
 
                                     2 -> SiteswapGeneratorControl(
                                         onConfirm = onRunGenerator(
-                                            gen!!,
+                                            notationName,
                                             pl
                                         )
                                     )
@@ -197,14 +194,15 @@ open class ApplicationPanel(
     // Callback function to invoke on "Run" on the transitioner control
 
     private fun onRunTransitioner(
-        trans: Transitioner,
+        notationName: String,
         plp: PatternListPanel?
     ): (String) -> Unit {
         return { params ->
             coroutineScope.launch {
                 var pw: PatternListWindow? = null
                 try {
-                    trans.initTransitioner(params)
+                    val trans = newTransitioner(notationName, params)
+                        ?: throw JuggleExceptionInternal("Unknown transitioner")
                     var pwot: GeneratorTargetPatternList? = null
                     withContext(Dispatchers.Main) {
                         if (plp != null) {
@@ -260,14 +258,15 @@ open class ApplicationPanel(
     // Callback function to invoke on "Run" on the generator control
 
     private fun onRunGenerator(
-        gen: Generator,
+        notationName: String,
         plp: PatternListPanel?
     ): (String) -> Unit {
         return { params ->
             coroutineScope.launch {
                 var pw: PatternListWindow? = null
                 try {
-                    gen.initGenerator(params)
+                    val gen = newGenerator(notationName, params)
+                        ?: throw JuggleExceptionInternal("Unknown generator")
                     var gtpl: GeneratorTargetPatternList? = null
                     withContext(Dispatchers.Main) {
                         if (plp != null) {

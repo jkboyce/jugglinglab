@@ -13,18 +13,8 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 
 abstract class Generator {
-    @Throws(JuggleExceptionUser::class)
-    fun initGenerator(arg: String) {
-        val args: List<String> = arg.split(' ', '\n').filter { it.isNotEmpty() }
-        initGenerator(args)
-    }
-
     // return the notation name
     abstract val notationName: String
-
-    // use command line args
-    @Throws(JuggleExceptionUser::class)
-    abstract fun initGenerator(args: List<String>)
 
     // run the generator with bounds on space and time; negative numbers mean
     // no limits
@@ -36,8 +26,12 @@ abstract class Generator {
         @Suppress("unused")
         val builtinGenerators = arrayOf("Siteswap")
 
-        fun newGenerator(name: String): Generator? {
-            if (name.equals("siteswap", ignoreCase = true)) return SiteswapGenerator()
+        fun isGeneratorSupported(name: String): Boolean {
+            return name.equals("siteswap", ignoreCase = true)
+        }
+
+        fun newGenerator(name: String, arg: String): Generator? {
+            if (isGeneratorSupported(name)) return SiteswapGenerator(arg)
             return null
         }
     }

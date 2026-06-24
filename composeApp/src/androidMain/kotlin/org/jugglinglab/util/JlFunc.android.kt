@@ -98,6 +98,8 @@ actual fun jlExitProcess(status: Int) {
 
 actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
+actual val jlMaxMemoryBytes: Long = 100 * 1024 * 1024
+
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------

@@ -28,8 +28,8 @@ import kotlin.math.PI
 
 // Calculate the binomial coefficient (a choose b).
 
-fun jlBinomial(a: Int, b: Int): Int {
-    var result = 1
+fun jlBinomial(a: Long, b: Int): Long {
+    var result: Long = 1
     for (i in 0..<b) {
         result *= (a - i)
         result /= (i + 1)
@@ -269,9 +269,11 @@ val jlIsLinux: Boolean by lazy {
 // Timing and execution.
 expect fun jlCurrentTimeMillis(): Long
 
+expect fun jlExitProcess(status: Int)
+
 expect val jlFileSystem: okio.FileSystem
 
-expect fun jlExitProcess(status: Int)
+expect val jlMaxMemoryBytes: Long
 
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files

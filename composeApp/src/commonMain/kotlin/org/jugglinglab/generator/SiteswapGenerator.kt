@@ -28,7 +28,7 @@
 // Copyright 1991-2026 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:Suppress("KotlinConstantConditions", "EmptyRange")
+@file:Suppress("KotlinConstantConditions", "EmptyRange", "LocalVariableName")
 
 package org.jugglinglab.generator
 
@@ -43,16 +43,19 @@ import org.jugglinglab.util.jlCurrentTimeMillis
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlCharForDigit
+import org.jugglinglab.util.jlToStringRounded
+import org.jugglinglab.util.jlMaxMemoryBytes
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.math.max
 import kotlin.math.min
 
-class SiteswapGenerator : Generator() {
+class SiteswapGenerator(arg: String) : Generator() {
     // generator configuration
-    private lateinit var config: SiteswapGeneratorConfig
+    private val args = arg.split(' ', '\n').filter { it.isNotEmpty() }
+    private val config = SiteswapGeneratorConfig(args)
 
-    // working variables, initialized at runtime
+    // working variables
     private lateinit var searchFrame: Array<SearchFrame>
     private lateinit var state: Array<Array<IntArray>>
     private var lTarget: Int = 0
@@ -69,22 +72,19 @@ class SiteswapGenerator : Generator() {
     private var maxTime: Double = -1.0 // maximum number of seconds
     private var maxTimeMillis: Long = 0 // maximum number of milliseconds
     private var startTimeMillis: Long = 0 // start time of run, in milliseconds
-    private var loopCounter: Int = 0 // counter for checking timeout
 
     // other state variables
     private var target: GeneratorTarget? = null
+
+    init {
+        allocateWorkspace()
+    }
 
     //--------------------------------------------------------------------------
     // Generator overrides
     //--------------------------------------------------------------------------
 
     override val notationName: String = "Siteswap"
-
-    @Throws(JuggleExceptionUser::class)
-    override fun initGenerator(args: List<String>) {
-        config = SiteswapGeneratorConfig(args)
-        allocateWorkspace()
-    }
 
     @Suppress("SimplifyBooleanWithConstants")
     @Throws(
@@ -100,8 +100,7 @@ class SiteswapGenerator : Generator() {
         this.maxNum = maxNum
         patternsFound = 0
         this.maxTime = maxTime
-        loopCounter = 0
-        if (maxTime > 0 || Constants.DEBUG_GENERATOR) {
+        if (maxTime > 0 || Constants.DEBUG_GENERATOR_DETAILED) {
             maxTimeMillis = (1000.0 * maxTime).toLong()
             startTimeMillis = jlCurrentTimeMillis()
         }
@@ -129,7 +128,7 @@ class SiteswapGenerator : Generator() {
             return num
         } finally {
             target?.completed()
-            if (Constants.DEBUG_GENERATOR) {
+            if (Constants.DEBUG_GENERATOR_SUMMARY) {
                 val millis = jlCurrentTimeMillis() - startTimeMillis
                 val secs = millis / 1000
                 val ms = (millis % 1000).toString().padStart(3, '0')
@@ -146,32 +145,67 @@ class SiteswapGenerator : Generator() {
     // other incidental variables.
 
     private fun allocateWorkspace() {
-        // Array of SearchFrames for the iterative DFS algorithm
-        // on each beat: at most (config.hands * config.maxOccupancy) throws,
-        // with one frame each, plus a frame in state==2 to end the beat
-        val maxDepth = config.lMax * (config.hands * config.maxOccupancy + 1)
-        searchFrame = Array(maxDepth) { SearchFrame() }
+        // First calculate total bytes of heap storage needed, ignoring overhead
+        // of Array storage. Use Long values to avoid overflow.
+        val searchFrameSize =
+            config.lMax.toLong() * (config.hands.toLong() * config.maxOccupancy + 1) * SearchFrame.SIZE_BYTES
+        val stateSize =
+            (config.lMax.toLong() + 1) * config.hands * config.groundStateLength * Int.SIZE_BYTES
+        val holesSize = config.hands.toLong() * (config.lMax.toLong() + config.ht) * Int.SIZE_BYTES
+        val throwToSize =
+            config.slotSize.toLong() * config.hands * config.maxOccupancy * Int.SIZE_BYTES
+        val throwValueSize =
+            config.slotSize.toLong() * config.hands * config.maxOccupancy * Int.SIZE_BYTES
+        val mpFilterSize =
+            if (config.mpflag != 0) ((config.lMax.toLong() + 1) * config.hands * config.slotSize * 3 * Int.SIZE_BYTES) else 0L
+        val throwsLeftSize = config.lMax.toLong() * config.hands * Int.SIZE_BYTES
+        val totalSize =
+            searchFrameSize + stateSize + holesSize + throwToSize + throwValueSize + mpFilterSize + throwsLeftSize
 
-        // last index below is not `config.ht` because of findStartEnd()
-        state =
-            Array(config.lMax + 1) { Array(config.hands) { IntArray(config.groundStateLength) } }
-        holes =
-            Array(config.hands) { IntArray(config.lMax + config.ht) }
-        // first index below is not `config.lMax` because of findStartEnd()
-        throwTo =
-            Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
-        throwValue =
-            Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
-
-        if (config.mpflag != 0) {
-            mpFilter =
-                Array(config.lMax + 1) { Array(config.hands) { Array(config.slotSize) { IntArray(3) } } }
+        if (totalSize > jlMaxMemoryBytes) {
+            val mem = jlToStringRounded(totalSize.toDouble() / (1024 * 1024), 0)
+            val message = jlGetStringResource(Res.string.error_generator_memory, mem)
+            throw JuggleExceptionUser(message)
         }
 
-        throwsLeft = Array(config.lMax) { IntArray(config.hands) }
+        try {
+            // Array of SearchFrames for the iterative DFS algorithm
+            // on each beat: at most (config.hands * config.maxOccupancy) throws,
+            // with one frame each, plus a frame in state==2 to end the beat
+            val maxDepth = config.lMax * (config.hands * config.maxOccupancy + 1)
+            searchFrame = Array(maxDepth) { SearchFrame() }
 
-        if (config.connectedPatternsFlag) {
-            connections = BooleanArray(config.jugglers)
+            // last index below is not `config.ht` because of findStartEnd()
+            state =
+                Array(config.lMax + 1) { Array(config.hands) { IntArray(config.groundStateLength) } }
+            holes =
+                Array(config.hands) { IntArray(config.lMax + config.ht) }
+            // first index below is not `config.lMax` because of findStartEnd()
+            throwTo =
+                Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
+            throwValue =
+                Array(config.slotSize) { Array(config.hands) { IntArray(config.maxOccupancy) } }
+
+            if (config.mpflag != 0) {
+                mpFilter = Array(config.lMax + 1) {
+                    Array(config.hands) {
+                        Array(config.slotSize) {
+                            IntArray(
+                                3
+                            )
+                        }
+                    }
+                }
+            }
+
+            throwsLeft = Array(config.lMax) { IntArray(config.hands) }
+
+            if (config.connectedPatternsFlag) {
+                connections = BooleanArray(config.jugglers)
+            }
+        } catch (_: Throwable) {
+            val message = jlGetStringResource(Res.string.error_generator_out_of_memory)
+            throw JuggleExceptionUser(message)
         }
     }
 
@@ -195,9 +229,10 @@ class SiteswapGenerator : Generator() {
         kotlin.coroutines.cancellation.CancellationException::class
     )
     private suspend fun findPatterns(): Int {
-        if (!currentCoroutineContext().isActive) {
-            throw JuggleExceptionInterrupted()
+        if (Constants.DEBUG_GENERATOR_SUMMARY) {
+            println("starting findPatterns() with lTarget = $lTarget")
         }
+        checkIfStopping()
 
         if (config.groundflag == 1) {
             // find only ground state patterns
@@ -229,9 +264,11 @@ class SiteswapGenerator : Generator() {
         // Initialize pos[0]
         pos[0] = 0
 
+        var checkCounter = 0
         while (true) {
-            if (!currentCoroutineContext().isActive) {
-                throw JuggleExceptionInterrupted()
+            if (++checkCounter > LOOPS_PER_CHECK) {
+                checkCounter = 0
+                checkIfStopping()
             }
 
             if (pos[b] < maxPos) {
@@ -296,9 +333,12 @@ class SiteswapGenerator : Generator() {
         kotlin.coroutines.cancellation.CancellationException::class
     )
     private suspend fun processCompletedState(): Int {
-        if (config.groundflag == 2 && compareStates(state[0], config.groundState) == 0) {
+        if (config.groundflag == 2 && areStatesEqual(state[0], config.groundState)) {
             // don't find ground state patterns
             return 0
+        }
+        if (Constants.DEBUG_GENERATOR_SUMMARY) {
+            println("starting processCompletedState()")
         }
 
         // At this point our state is completed.  Set up the initial
@@ -348,7 +388,7 @@ class SiteswapGenerator : Generator() {
             findStartEnd()
         }
 
-        if (Constants.DEBUG_GENERATOR) {
+        if (Constants.DEBUG_GENERATOR_SUMMARY) {
             println("Starting findCycles() from state:")
             config.printState(state[0])
         }
@@ -403,20 +443,12 @@ class SiteswapGenerator : Generator() {
 
         var latestReturnValue = 0
         var childReturned = false
+        var checkCounter = 0
 
         while (sp >= 0) {
-            if (loopCounter++ > LOOP_COUNTER_MAX) {
-                loopCounter = 0
-                if (!currentCoroutineContext().isActive) {
-                    throw JuggleExceptionInterrupted()
-                }
-                if (maxTime > 0) {
-                    if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
-                        val message =
-                            jlGetStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
-                        throw JuggleExceptionDone(message)
-                    }
-                }
+            if (++checkCounter > LOOPS_PER_CHECK) {
+                checkCounter = 0
+                checkIfStopping()
             }
 
             frame = searchFrame[sp]
@@ -472,7 +504,7 @@ class SiteswapGenerator : Generator() {
                         continue
                     }
 
-                    if (Constants.DEBUG_GENERATOR) {
+                    if (Constants.DEBUG_GENERATOR_DETAILED) {
                         val sb2 = StringBuilder()
                         sb2.append(".  ".repeat(frame.beat)) // Indent for debugging
                         sb2.append(sb.substring(frame.startBufferLength))
@@ -483,7 +515,7 @@ class SiteswapGenerator : Generator() {
                         // continue to next beat
                         startBeat(frame.beat + 1)
                         frame.status = 2
-                        
+
                         sp++
                         val child = searchFrame[sp]
                         child.beat = frame.beat + 1
@@ -500,10 +532,11 @@ class SiteswapGenerator : Generator() {
                     }
 
                     // at the target length
-                    val isValid = (compareStates(state[0], state[lTarget]) == 0 && isPatternValid(sb.toString()))
+                    val isValid = areStatesEqual(state[0], state[lTarget]) &&
+                            isPatternValid(sb.toString())
 
                     val result = if (isValid) {
-                        if (Constants.DEBUG_GENERATOR) {
+                        if (Constants.DEBUG_GENERATOR_DETAILED) {
                             println("got a pattern: $sb")
                         }
                         if (config.numflag != 2) {
@@ -511,7 +544,8 @@ class SiteswapGenerator : Generator() {
                         }
                         patternsFound++
                         if (maxNum >= 0 && maxNum == patternsFound) {
-                            val message = jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
+                            val message =
+                                jlGetStringResource(Res.string.gui_generator_spacelimit, maxNum)
                             throw JuggleExceptionDone(message)
                         }
                         1
@@ -556,7 +590,7 @@ class SiteswapGenerator : Generator() {
                         val nextMinHand = if (slot != 0) targetHand else 0
 
                         foundChoice = true
-                        
+
                         sp++
                         val child = searchFrame[sp]
                         child.beat = beat
@@ -590,6 +624,25 @@ class SiteswapGenerator : Generator() {
         }
 
         return latestReturnValue
+    }
+
+    // Check if the timer has expired, or the user has stopped the generator.
+
+    private suspend fun checkIfStopping() {
+        if (maxTime > 0) {
+            if ((jlCurrentTimeMillis() - startTimeMillis) > maxTimeMillis) {
+                val message =
+                    jlGetStringResource(Res.string.gui_generator_timeout, maxTime.toInt())
+                throw JuggleExceptionDone(message)
+            }
+        }
+        if (!currentCoroutineContext().isActive) {
+            if (Constants.DEBUG_GENERATOR_SUMMARY) {
+                println("generator stopping in checkIfStopping()")
+            }
+            throw JuggleExceptionInterrupted()
+        }
+        kotlinx.coroutines.yield()
     }
 
     // Calculate the state based on previous beat's state and throws.
@@ -637,20 +690,21 @@ class SiteswapGenerator : Generator() {
         }
 
         if (beat % config.rhythmPeriod == 0) {
-            val cs = compareStates(state[0], state[beat])
-
-            if (config.fullflag != 0 && beat != lTarget && cs == 0) {
-                return false // intersection
-            }
-            if (config.rotflag == 0 && cs == 1) {
-                return false // bad rotation
+            if (areStatesEqual(state[0], state[beat])) {
+                if (config.fullflag != 0 && beat != lTarget) {
+                    return false // intersection
+                }
+            } else {
+                if (config.rotflag == 0 && compareStates(state[0], state[beat]) == 1) {
+                    return false // bad rotation
+                }
             }
         }
 
         if (config.fullflag == 2) {  // list only simple loops?
             for (j in 1..<beat) {
                 if ((beat - j) % config.rhythmPeriod == 0) {
-                    if (compareStates(state[j], state[beat]) == 0) {
+                    if (areStatesEqual(state[j], state[beat])) {
                         return false
                     }
                 }
@@ -733,7 +787,7 @@ class SiteswapGenerator : Generator() {
     private fun areThrowsValid(beat: Int, patternString: String): Boolean {
         // check #1: test against exclusions
         for (regex in config.exclude) {
-            if (Constants.DEBUG_GENERATOR) {
+            if (Constants.DEBUG_GENERATOR_DETAILED) {
                 println(
                     "test exclusions for string $patternString = ${
                         patternString.matches(regex)
@@ -830,11 +884,11 @@ class SiteswapGenerator : Generator() {
 
     // Test if a completed pattern is valid.
 
-    private fun isPatternValid(patternString: String): Boolean {
+    private suspend fun isPatternValid(patternString: String): Boolean {
         // check #1: verify against inclusions.
         for (regex in config.include) {
             if (!patternString.matches(regex)) {
-                if (Constants.DEBUG_GENERATOR) {
+                if (Constants.DEBUG_GENERATOR_DETAILED) {
                     println("   pattern invalid: missing inclusion")
                 }
                 return false
@@ -850,7 +904,7 @@ class SiteswapGenerator : Generator() {
                         throwValue[i + 1][j][0] == 1 &&
                         config.personNumber[throwTo[i + 1][j][0]] == config.personNumber[j]
                     ) {
-                        if (Constants.DEBUG_GENERATOR) {
+                        if (Constants.DEBUG_GENERATOR_DETAILED) {
                             println("  pattern invalid: 11 sequence")
                         }
                         return false
@@ -864,9 +918,9 @@ class SiteswapGenerator : Generator() {
         if (config.fullflag == 0 && config.rotflag == 0) {
             for (i in 1..<lTarget) {
                 if (i % config.rhythmPeriod == 0) { // can we compare states?
-                    if (compareStates(state[0], state[i]) == 0) {
+                    if (areStatesEqual(state[0], state[i])) {
                         if (compareRotations(0, i) < 0) {
-                            if (Constants.DEBUG_GENERATOR) {
+                            if (Constants.DEBUG_GENERATOR_DETAILED) {
                                 println("   pattern invalid: bad rotation")
                             }
                             return false
@@ -907,7 +961,7 @@ class SiteswapGenerator : Generator() {
             }
             for (i in 0..<config.jugglers) {
                 if (!connections[i]) {
-                    if (Constants.DEBUG_GENERATOR) {
+                    if (Constants.DEBUG_GENERATOR_DETAILED) {
                         println("   pattern invalid: not connected")
                     }
                     return false
@@ -989,7 +1043,7 @@ class SiteswapGenerator : Generator() {
                     }
 
                     if (scoremp1 > scorem) {
-                        if (Constants.DEBUG_GENERATOR) {
+                        if (Constants.DEBUG_GENERATOR_DETAILED) {
                             println("   pattern invalid: bad juggler permutation")
                         }
                         return false
@@ -1056,9 +1110,10 @@ class SiteswapGenerator : Generator() {
     // congruent to pos2 mod rhythm_period.
 
     @Suppress("SameParameterValue")
-    private fun compareRotations(beat1: Int, beat2: Int): Int {
+    private suspend fun compareRotations(beat1: Int, beat2: Int): Int {
         var i = 0
         while (i < lTarget) {
+            checkIfStopping()
             val res = compareLoops((beat1 + i) % lTarget, (beat2 + i) % lTarget)
             if (res > 0) {
                 return 1
@@ -1068,7 +1123,7 @@ class SiteswapGenerator : Generator() {
 
             ++i
             while (i < lTarget) {
-                if (compareStates(state[beat1], state[(beat1 + i) % lTarget]) == 0) {
+                if (areStatesEqual(state[beat1], state[(beat1 + i) % lTarget])) {
                     break
                 }
                 ++i
@@ -1092,21 +1147,25 @@ class SiteswapGenerator : Generator() {
         while (true) {
             ++i
 
+            if (currentBeat1 + 1 >= state.size || currentBeat2 + 1 >= state.size) {
+                return result
+            }
+
             if (result == 0) {
                 result = compareThrows(currentBeat1, currentBeat2)
             }
 
             if (i % config.rhythmPeriod == 0) {
-                val cs1 = compareStates(state[currentBeat1 + 1], stateStart)
-                val cs2 = compareStates(state[currentBeat2 + 1], stateStart)
+                val eq1 = areStatesEqual(state[currentBeat1 + 1], stateStart)
+                val eq2 = areStatesEqual(state[currentBeat2 + 1], stateStart)
 
-                if (cs1 == 0) {
-                    if (cs2 == 0) {
+                if (eq1) {
+                    if (eq2) {
                         return result
                     }
                     return -1
                 }
-                if (cs2 == 0) {
+                if (eq2) {
                     return 1
                 }
             }
@@ -1121,8 +1180,8 @@ class SiteswapGenerator : Generator() {
     // Return 1 if the throw at beat1 is greater than the throw at beat2,
     // -1 if lesser, and 0 iff the throws are identical.
     //
-    // This method assumes the throws are comparable, i.e., that beat1 is congruent
-    // to beat2 mod rhythm_period.
+    // This method assumes the throws are comparable, i.e., that beat1 is
+    // congruent to beat2 mod rhythm_period.
 
     private fun compareThrows(beat1: Int, beat2: Int): Int {
         check(beat1 >= 0 && beat1 <= config.lMax)
@@ -1152,13 +1211,23 @@ class SiteswapGenerator : Generator() {
 
     // Compare two states.
     //
-    // Return 1 if state1 > state2, -1 if state1 < state2, and 0 iff state1
-    // and state2 are identical.
+    // Return true iff two states are equal.
+
+    private fun areStatesEqual(state1: Array<IntArray>, state2: Array<IntArray>): Boolean {
+        for (i in 0..<config.hands) {
+            if (!state1[i].contentEquals(state2[i])) {
+                return false
+            }
+        }
+        return true
+    }
+
+    // Return 1 if state1 > state2, -1 if state1 < state2, and 0 iff state1 and
+    // state are equal.
 
     private fun compareStates(state1: Array<IntArray>, state2: Array<IntArray>): Int {
         var mo1 = 0
         var mo2 = 0
-
         for (i in 0..<config.hands) {
             for (j in 0..<config.ht) {
                 if (state1[i][j] > mo1) {
@@ -1352,7 +1421,7 @@ class SiteswapGenerator : Generator() {
                 outputline.append(startingSeq)
                 outputline.append("  ")
             } else {
-                isExcited = (compareStates(config.groundState, state[0]) != 0)
+                isExcited = !areStatesEqual(config.groundState, state[0])
                 if (isExcited) {
                     outputline.append("* ")
                 } else {
@@ -1561,7 +1630,7 @@ class SiteswapGenerator : Generator() {
         private const val FROM = 1
         private const val VALUE = 2
 
-        private const val LOOP_COUNTER_MAX = 20000
+        private const val LOOPS_PER_CHECK = 100
 
         // Run the generator from command-line input.
 
@@ -1579,8 +1648,7 @@ class SiteswapGenerator : Generator() {
             }
 
             try {
-                val ssg = SiteswapGenerator()
-                ssg.initGenerator(args)
+                val ssg = SiteswapGenerator(args.joinToString(" "))
                 kotlinx.coroutines.runBlocking {
                     ssg.runGenerator(target)
                 }
@@ -1638,7 +1706,7 @@ private class SiteswapGeneratorConfig {
 
     @Throws(JuggleExceptionUser::class)
     constructor(args: List<String>) {
-        if (Constants.DEBUG_GENERATOR) {
+        if (Constants.DEBUG_GENERATOR_SUMMARY) {
             println("-----------------------------------------------------")
             println("initializing generator with args:")
             for (arg in args) {
@@ -1754,7 +1822,7 @@ private class SiteswapGeneratorConfig {
                             if (!re.contains("^")) {
                                 re = ".*$re.*"
                             }
-                            if (Constants.DEBUG_GENERATOR) {
+                            if (Constants.DEBUG_GENERATOR_DETAILED) {
                                 println("adding exclusion $re")
                             }
                             exclude.add(Regex(re))
@@ -1915,14 +1983,15 @@ private class SiteswapGeneratorConfig {
                 val message = jlGetStringResource(Res.string.error_generator_underspecified)
                 throw JuggleExceptionUser(message)
             }
-            lMax = jlBinomial(ht * hands, n)
+            val binomialVal = jlBinomial(ht.toLong() * hands, n)
+            lMax = min(binomialVal, Int.MAX_VALUE.toLong()).toInt()
             lMax -= (lMax % rhythmPeriod)
         }
         if (ht == -1) {
-            ht = n * lMax
+            ht = min(Int.MAX_VALUE.toLong(), n.toLong() * lMax).toInt()
         }
         // no throws greater than `n * lMax` due to average rule
-        ht = min(ht, n * lMax)
+        ht = min(ht.toLong(), n.toLong() * lMax).toInt()
         if (ht < 1) {
             val message = jlGetStringResource(Res.string.error_generator_height_too_small)
             throw JuggleExceptionUser(message)
@@ -1942,7 +2011,7 @@ private class SiteswapGeneratorConfig {
             throw JuggleExceptionUser(message)
         }
 
-        if (Constants.DEBUG_GENERATOR) {
+        if (Constants.DEBUG_GENERATOR_SUMMARY) {
             println("objects: $n")
             println("height: $ht")
             println("period_min: $lMin")
@@ -1986,7 +2055,7 @@ private class SiteswapGeneratorConfig {
             ++i
         }
 
-        if (Constants.DEBUG_GENERATOR) {
+        if (Constants.DEBUG_GENERATOR_DETAILED) {
             println("ground state length: $groundStateLength")
             println("ground state:")
             printState(groundState)
@@ -2261,4 +2330,8 @@ private class SearchFrame {
      *      beat's frame to return, then propagate the result.
      */
     var status: Int = 0
+
+    companion object {
+        const val SIZE_BYTES = 10 * Int.SIZE_BYTES
+    }
 }

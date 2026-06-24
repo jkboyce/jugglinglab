@@ -14,8 +14,7 @@ import kotlin.test.assertEquals
 class SiteswapGeneratorTest {
     private fun runGeneratorTestCase(input: String): List<String> {
         val patterns = ArrayList<String>()
-        SiteswapGenerator().apply {
-            initGenerator(input.split(" "))
+        SiteswapGenerator(input).apply {
             kotlinx.coroutines.runBlocking {
                 runGenerator(GeneratorTargetBasic(listTarget = patterns))
             }
@@ -102,8 +101,7 @@ class SiteswapGeneratorTest {
     fun `generator pattern limit`() {
         val patterns = ArrayList<String>()
         try {
-            SiteswapGenerator().apply {
-                initGenerator("3 5 6 -se -f".split(" "))
+            SiteswapGenerator("3 5 6 -se -f").apply {
                 // The full testcase has 55 patterns. Let's limit it to 10.
                 kotlinx.coroutines.runBlocking {
                     runGenerator(GeneratorTargetBasic(listTarget = patterns), maxNum = 10)

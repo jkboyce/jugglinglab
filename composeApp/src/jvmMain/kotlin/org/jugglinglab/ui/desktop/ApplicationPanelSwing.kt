@@ -12,17 +12,18 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.Constants.MAX_PATTERNS
 import org.jugglinglab.core.Constants.MAX_TIME_SEC
-import org.jugglinglab.generator.Generator.Companion.newGenerator
-import org.jugglinglab.generator.Transitioner.Companion.newTransitioner
 import org.jugglinglab.generator.Generator
-import org.jugglinglab.generator.GeneratorTargetPatternList
+import org.jugglinglab.generator.Generator.Companion.newGenerator
 import org.jugglinglab.generator.Transitioner
+import org.jugglinglab.generator.Transitioner.Companion.newTransitioner
+import org.jugglinglab.generator.GeneratorTargetPatternList
 import org.jugglinglab.jml.JmlPattern.Companion.fromBasePattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.notation.Pattern
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.JuggleExceptionDone
+import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlConstraints
 import org.jugglinglab.util.jlGetStringResource
@@ -50,7 +51,7 @@ class ApplicationPanelSwing(
     private var genBusy: JLabel? = null
 
     constructor(parentFrame: JFrame?) :
-        this(parentFrame, animtarget = null, patlist = null)
+            this(parentFrame, animtarget = null, patlist = null)
 
     // Input is for example Pattern.NOTATION_SITESWAP.
 
@@ -60,8 +61,7 @@ class ApplicationPanelSwing(
             remove(jtp)
         }
         jtp = JTabbedPane()
-        val trans = newTransitioner(Pattern.builtinNotations[notationNum - 1])
-        val gen = newGenerator(Pattern.builtinNotations[notationNum - 1])
+        val notationName = Pattern.builtinNotations[notationNum - 1]
 
         when (notationNum) {
             Pattern.NOTATION_SITESWAP -> addPatternEntryControl(SiteswapNotationControlSwing())
@@ -71,11 +71,11 @@ class ApplicationPanelSwing(
         if (pl == null && patlisttab) {
             pl = PatternListPanel(patternList = JmlPatternList(), animTarget = animtarget)
         }
-        if (trans != null) {
-            addTransitionerControl(trans, pl)
+        if (Transitioner.isTransitionerSupported(notationName)) {
+            addTransitionerControl(notationName, pl)
         }
-        if (gen != null) {
-            addGeneratorControl(gen, pl)
+        if (Generator.isGeneratorSupported(notationName)) {
+            addGeneratorControl(notationName, pl)
         }
         if (pl != null) {
             jtp!!.addTab(jlGetStringResource(Res.string.gui_pattern_list_tab), pl)
@@ -148,7 +148,7 @@ class ApplicationPanelSwing(
         jtp!!.addTab(jlGetStringResource(Res.string.gui_pattern_entry), np1)
     }
 
-    private fun addTransitionerControl(trans: Transitioner, plp: PatternListPanel?) {
+    private fun addTransitionerControl(notationName: String, plp: PatternListPanel?) {
         val transControl = SiteswapTransitionerControlSwing()
 
         val but1 = JButton(jlGetStringResource(Res.string.gui_defaults)).apply {
@@ -164,7 +164,8 @@ class ApplicationPanelSwing(
                     }
                     var pw: PatternListWindow? = null
                     try {
-                        trans.initTransitioner(transControl.params)
+                        val trans = newTransitioner(notationName, transControl.params)
+                            ?: throw JuggleExceptionInternal("Unknown transitioner")
                         var pwot: GeneratorTargetPatternList? = null
                         withContext(Dispatchers.Main) {
                             val title =
@@ -238,7 +239,7 @@ class ApplicationPanelSwing(
         jtp!!.addTab(jlGetStringResource(Res.string.gui_transitions), p1)
     }
 
-    private fun addGeneratorControl(gen: Generator, plp: PatternListPanel?) {
+    private fun addGeneratorControl(notationName: String, plp: PatternListPanel?) {
         val genControl = SiteswapGeneratorControlSwing()
 
         val but1 = JButton(jlGetStringResource(Res.string.gui_defaults)).apply {
@@ -254,7 +255,8 @@ class ApplicationPanelSwing(
                     }
                     var pw: PatternListWindow? = null
                     try {
-                        gen.initGenerator(genControl.params)
+                        val gen = newGenerator(notationName, genControl.params)
+                            ?: throw JuggleExceptionInternal("Unknown generator")
                         var gtpl: GeneratorTargetPatternList? = null
                         withContext(Dispatchers.Main) {
                             val title =

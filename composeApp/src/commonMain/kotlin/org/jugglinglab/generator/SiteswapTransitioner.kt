@@ -21,12 +21,14 @@ import org.jugglinglab.util.jlCurrentTimeMillis
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlIsWindows
+import org.jugglinglab.util.jlMaxMemoryBytes
+import org.jugglinglab.util.jlToStringRounded
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.math.max
 import kotlin.math.min
 
-class SiteswapTransitioner : Transitioner() {
+class SiteswapTransitioner(arg: String) : Transitioner() {
     // configuration variables
     private var n: Int = 0
     private var jugglers: Int = 0
@@ -70,17 +72,17 @@ class SiteswapTransitioner : Transitioner() {
     private var prefix: String = ""
     private var suffix: String = ""
 
+    init {
+        val args = arg.split(' ', '\n').filter { it.isNotEmpty() }
+        configTransitioner(args)
+        allocateWorkspace()
+    }
+
     //--------------------------------------------------------------------------
     // Transitioner overrides
     //--------------------------------------------------------------------------
 
     override val notationName: String = "Siteswap"
-
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    override fun initTransitioner(args: List<String>) {
-        configTransitioner(args)
-        allocateWorkspace()
-    }
 
     @Throws(
         JuggleExceptionUser::class,
@@ -296,13 +298,35 @@ class SiteswapTransitioner : Transitioner() {
     private fun allocateWorkspace() {
         val size = max(lMax, lReturn)
 
-        state = Array(size + 1) { Array(jugglers) { Array(2) { IntArray(indexes) } } }
-        stateTarget = Array(jugglers) { Array(2) { IntArray(indexes) } }
-        th = Array(jugglers) { Array(2) { Array(size) { arrayOfNulls(maxOccupancy) } } }
-        throwsLeft = Array(size + 1) { Array(jugglers) { IntArray(2) } }
-        out = Array(jugglers) { arrayOfNulls(size) }
-        shouldPrint = BooleanArray(size + 1)
-        asyncHandRight = Array(jugglers) { BooleanArray(size + 1) }
+        // First calculate total bytes of heap storage needed, ignoring overhead
+        // of Array storage. Use Long values to avoid overflow.
+        val stateSize = (size.toLong() + 1) * jugglers * 2 * indexes * Int.SIZE_BYTES
+        val stateTargetSize = jugglers.toLong() * 2 * indexes * Int.SIZE_BYTES
+        val thSize = jugglers.toLong() * 2 * size * maxOccupancy * 8L // 8 bytes per reference
+        val throwsLeftSize = (size.toLong() + 1) * jugglers * 2 * Int.SIZE_BYTES
+        val outSize = jugglers.toLong() * size * 8L // 8 bytes per reference
+        val shouldPrintSize = (size.toLong() + 1) * 1L
+        val asyncHandRightSize = jugglers.toLong() * (size.toLong() + 1) * 1L
+        val totalSize = stateSize + stateTargetSize + thSize + throwsLeftSize + outSize + shouldPrintSize + asyncHandRightSize
+
+        if (totalSize > jlMaxMemoryBytes) {
+            val mem = jlToStringRounded(totalSize.toDouble() / (1024 * 1024), 0)
+            val message = jlGetStringResource(Res.string.error_generator_memory, mem)
+            throw JuggleExceptionUser(message)
+        }
+
+        try {
+            state = Array(size + 1) { Array(jugglers) { Array(2) { IntArray(indexes) } } }
+            stateTarget = Array(jugglers) { Array(2) { IntArray(indexes) } }
+            th = Array(jugglers) { Array(2) { Array(size) { arrayOfNulls(maxOccupancy) } } }
+            throwsLeft = Array(size + 1) { Array(jugglers) { IntArray(2) } }
+            out = Array(jugglers) { arrayOfNulls(size) }
+            shouldPrint = BooleanArray(size + 1)
+            asyncHandRight = Array(jugglers) { BooleanArray(size + 1) }
+        } catch (_: Throwable) {
+            val message = jlGetStringResource(Res.string.error_generator_out_of_memory)
+            throw JuggleExceptionUser(message)
+        }
     }
 
     // Find the shortest return transition from `to` back to `from`.
@@ -1195,8 +1219,7 @@ class SiteswapTransitioner : Transitioner() {
             }
 
             try {
-                val sst = SiteswapTransitioner()
-                sst.initTransitioner(args)
+                val sst = SiteswapTransitioner(args.joinToString(" "))
 
                 kotlinx.coroutines.runBlocking {
                     if (sst.noLimitsFlag) {

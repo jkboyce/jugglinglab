@@ -13,18 +13,8 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 
 abstract class Transitioner {
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    fun initTransitioner(arg: String) {
-        val args: List<String> = arg.split(' ', '\n').filter { it.isNotEmpty() }
-        initTransitioner(args)
-    }
-
     // return the notation name
     abstract val notationName: String
-
-    // use command line args
-    @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    abstract fun initTransitioner(args: List<String>)
 
     // run the transitioner with no limits
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class, kotlin.coroutines.cancellation.CancellationException::class)
@@ -41,9 +31,13 @@ abstract class Transitioner {
             "Siteswap",
             )
 
-        fun newTransitioner(name: String): Transitioner? {
-            if (name.equals("siteswap", ignoreCase = true)) {
-                return SiteswapTransitioner()
+        fun isTransitionerSupported(name: String): Boolean {
+            return name.equals("siteswap", ignoreCase = true)
+        }
+
+        fun newTransitioner(name: String, arg: String): Transitioner? {
+            if (isTransitionerSupported(name)) {
+                return SiteswapTransitioner(arg)
             }
             return null
         }

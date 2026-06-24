@@ -31,8 +31,6 @@ import kotlinx.coroutines.withContext
 @Composable
 fun GeneratorScreen(
     isBusy: Boolean,
-    generator: SiteswapGenerator,
-    transitioner: SiteswapTransitioner,
     patternList: JmlPatternList,
     onIsEditableChange: (Boolean) -> Unit,
     onPathChange: (okio.Path?) -> Unit,
@@ -53,7 +51,7 @@ fun GeneratorScreen(
             onBusyChange(true)
             val job = coroutineScope.launch {
                 try {
-                    generator.initGenerator(params)
+                    val generator = SiteswapGenerator(params)
                     patternList.clearModel()
                     patternList.title = "Siteswap Patterns"
                     onIsEditableChange(true)
@@ -110,9 +108,9 @@ fun GeneratorScreen(
             onBusyChange(true)
             val job = coroutineScope.launch {
                 try {
-                    withContext(Dispatchers.Default) {
+                    val transitioner = withContext(Dispatchers.Default) {
                         // potentially slow operation parsing from/to patterns
-                        transitioner.initTransitioner(params)
+                        SiteswapTransitioner(params)
                     }
                     patternList.clearModel()
                     patternList.title = "Siteswap Patterns"

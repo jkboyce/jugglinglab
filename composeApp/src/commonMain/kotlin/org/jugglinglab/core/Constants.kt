@@ -37,7 +37,8 @@ object Constants {
     const val DEBUG_PATTERN_CREATION: Boolean = false
     const val DEBUG_LAYOUT: Boolean = false
     const val DEBUG_TRANSITIONS: Boolean = false
-    const val DEBUG_GENERATOR: Boolean = false
+    const val DEBUG_GENERATOR_SUMMARY: Boolean = false
+    const val DEBUG_GENERATOR_DETAILED: Boolean = false
     const val DEBUG_OPTIMIZE: Boolean = false
     const val DEBUG_OPEN_SERVER: Boolean = false
     const val VALIDATE_GENERATED_PATTERNS: Boolean = false
