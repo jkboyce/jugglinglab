@@ -119,7 +119,7 @@ actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
 }
 
 //------------------------------------------------------------------------------
-// Other
+// Helpers for sharing
 //------------------------------------------------------------------------------
 
 // Singleton holder for the application Context, set by MainActivity.

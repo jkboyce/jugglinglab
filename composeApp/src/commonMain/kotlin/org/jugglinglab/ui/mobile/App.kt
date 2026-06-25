@@ -159,7 +159,10 @@ fun App(
 
             else -> {
                 viewModel.asyncErrorMessage = "Internal error: ${t.message}"
-                crashReporter.recordThrowable(t)
+                crashReporter.recordThrowable(
+                    throwable = t,
+                    pattern = viewModel.state.pattern
+                )
             }
         }
     }

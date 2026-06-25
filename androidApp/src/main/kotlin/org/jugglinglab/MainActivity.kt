@@ -12,6 +12,7 @@
 package org.jugglinglab
 
 import org.jugglinglab.core.StoredPreferencesRepository
+import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.ui.mobile.App
 import org.jugglinglab.ui.components.JlErrorDialog
 import org.jugglinglab.util.AndroidContext
@@ -45,6 +46,7 @@ import kotlinx.coroutines.launch
 import okio.FileSystem
 import okio.Path.Companion.toPath
 import java.io.File
+import kotlin.coroutines.cancellation.CancellationException
 
 class MainActivity : ComponentActivity() {
     // Class-level so it can be updated by onNewIntent() when the app is already
@@ -76,14 +78,13 @@ class MainActivity : ComponentActivity() {
 
         // Set up Firebase crash logging/reporting
         crashReporter = object : CrashReporter {
-            override fun recordThrowable(throwable: Throwable, message: String?) {
+            override fun recordThrowable(throwable: Throwable, pattern: JmlPattern?) {
+                if (throwable is CancellationException) return
                 val crashlytics = FirebaseCrashlytics.getInstance()
-                message?.let { crashlytics.log(it) }  // Adds custom breadcrumb context
+                if (pattern != null) {
+                    crashlytics.setCustomKey("jml_pattern", pattern.toString())
+                }
                 if (throwable is JuggleExceptionInternal) {
-                    val pat = throwable.pattern
-                    if (pat != null) {
-                        crashlytics.setCustomKey("jml_pattern", pat.toString())
-                    }
                     val wrapped = throwable.wrapped
                     if (wrapped != null) {
                         crashlytics.setCustomKey("wrapped_exception", wrapped.toString())
@@ -93,6 +94,10 @@ class MainActivity : ComponentActivity() {
                     }
                 } else {
                     crashlytics.recordException(throwable)
+                }
+                if (pattern != null) {
+                    // setting is persistent, so un-set
+                    crashlytics.setCustomKey("jml_pattern", "")
                 }
             }
         }

@@ -28,6 +28,7 @@ import java.io.*
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.swing.SwingUtilities
+import kotlin.coroutines.cancellation.CancellationException
 
 object JlCommandLine {
     // command line arguments that we trim as portions are parsed
@@ -40,9 +41,10 @@ object JlCommandLine {
     fun startWithArgs(args: Array<String>) {
         // Set up crash logging/reporting
         crashReporter = object : CrashReporter {
-            override fun recordThrowable(throwable: Throwable, message: String?) {
+            override fun recordThrowable(throwable: Throwable, pattern: JmlPattern?) {
+                if (throwable is CancellationException) return
                 if (throwable is JuggleExceptionInternal) {
-                    System.err.println("INTERNAL ERROR: $message")
+                    System.err.println("INTERNAL ERROR: ${throwable.message}")
                     if (throwable.wrapped != null) {
                         throwable.wrapped?.printStackTrace()
                     } else {
@@ -54,7 +56,7 @@ object JlCommandLine {
                         System.err.println(pat.toString())
                     }
                 } else {
-                    System.err.println("EXCEPTION: $message")
+                    System.err.println("EXCEPTION: ${throwable.message}")
                     throwable.printStackTrace()
                 }
             }

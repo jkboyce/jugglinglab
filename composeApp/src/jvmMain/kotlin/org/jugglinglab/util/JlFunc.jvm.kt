@@ -382,7 +382,7 @@ actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
 }
 
 //------------------------------------------------------------------------------
-// Other
+// Helpers for sharing
 //------------------------------------------------------------------------------
 
 actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {

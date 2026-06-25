@@ -11,6 +11,7 @@
 package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.jml.JmlPattern
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.StringResource
@@ -215,7 +216,7 @@ fun jlCharForDigit(digit: Int, radix: Int): Char {
 }
 
 //------------------------------------------------------------------------------
-// Helper for converting numbers to/from strings
+// Helpers for converting numbers to/from strings
 //------------------------------------------------------------------------------
 
 // Parse a string as a finite-valued Double. Throw an error if there is a
@@ -233,7 +234,7 @@ expect fun jlToStringRounded(value: Double, digits: Int): String
 //------------------------------------------------------------------------------
 
 interface CrashReporter {
-    fun recordThrowable(throwable: Throwable, message: String? = null)
+    fun recordThrowable(throwable: Throwable, pattern: JmlPattern? = null)
 }
 
 // global reference configured at startup
@@ -438,7 +439,7 @@ expect fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap
 expect fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap
 
 //------------------------------------------------------------------------------
-// Other
+// Helpers for sharing
 //------------------------------------------------------------------------------
 
 // Open the platform's native share UI with the given URL string.
