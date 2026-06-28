@@ -276,6 +276,10 @@ expect val jlFileSystem: okio.FileSystem
 
 expect val jlMaxMemoryBytes: Long
 
+// Is the screen in landscape mode?
+@androidx.compose.runtime.Composable
+expect fun jlIsLandscape(): Boolean
+
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files
 //------------------------------------------------------------------------------

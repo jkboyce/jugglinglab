@@ -20,6 +20,7 @@ import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.JuggleExceptionDone
 import org.jugglinglab.util.BackHandler
 import org.jugglinglab.util.backGestureHandler
+import org.jugglinglab.util.jlIsLandscape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -242,7 +243,7 @@ fun App(
                     val maxW = maxWidth
                     val currentBackStackEntry by navController.currentBackStackEntryAsState()
                     val currentRoute = currentBackStackEntry?.destination?.route ?: "Info"
-                    val isLandscape = maxW > maxH
+                    val isLandscape = jlIsLandscape()
 
                     // Composable for the navigation buttons
                     val views = listOf(

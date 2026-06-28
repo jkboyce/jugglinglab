@@ -18,6 +18,7 @@ import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.prop.Prop
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.jlIsLandscape
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -145,7 +146,7 @@ fun AnimationViewCombined(
 
     BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
         val boxWidth = maxWidth
-        val isLandscape = maxWidth > maxHeight
+        val isLandscape = jlIsLandscape()
 
         // for portrait mode
         val targetWeight = if (isLadderExpanded && !isLandscape) 1.5f else 0.001f

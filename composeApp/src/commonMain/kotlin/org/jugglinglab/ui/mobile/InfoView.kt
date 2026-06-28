@@ -14,6 +14,7 @@ import org.jugglinglab.core.Constants
 import org.jugglinglab.core.ThemeSetting
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlIsAndroid
+import org.jugglinglab.util.jlIsLandscape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -64,7 +65,7 @@ fun InfoView(
     BoxWithConstraints(
         modifier = Modifier.fillMaxSize().padding(start = 30.dp, end = 30.dp, top = 30.dp)
     ) {
-        val isLandscape = maxWidth > maxHeight
+        val isLandscape = jlIsLandscape()
 
         if (isLandscape) {
             Row(modifier = Modifier.fillMaxSize()) {

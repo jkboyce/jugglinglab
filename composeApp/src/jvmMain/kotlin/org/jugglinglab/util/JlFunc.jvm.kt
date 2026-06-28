@@ -272,6 +272,13 @@ actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
 actual val jlMaxMemoryBytes: Long = 512 * 1024 * 1024
 
+@androidx.compose.runtime.Composable
+actual fun jlIsLandscape(): Boolean {
+    val windowInfo = androidx.compose.ui.platform.LocalWindowInfo.current
+    val containerSize = windowInfo.containerSize
+    return containerSize.width > containerSize.height
+}
+
 //------------------------------------------------------------------------------
 // Helpers for file opening/saving files
 //------------------------------------------------------------------------------

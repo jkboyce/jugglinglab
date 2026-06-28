@@ -100,6 +100,12 @@ actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
 actual val jlMaxMemoryBytes: Long = 100 * 1024 * 1024
 
+@androidx.compose.runtime.Composable
+actual fun jlIsLandscape(): Boolean {
+    val configuration = androidx.compose.ui.platform.LocalConfiguration.current
+    return configuration.orientation == android.content.res.Configuration.ORIENTATION_LANDSCAPE
+}
+
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
