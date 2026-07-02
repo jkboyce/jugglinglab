@@ -8,3 +8,4 @@ admin/
 build/
 local.properties
 composeApp/bin/
+composeApp/src/commonMain/composeResources/files/strings/

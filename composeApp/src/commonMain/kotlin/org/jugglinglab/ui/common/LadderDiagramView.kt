@@ -305,7 +305,8 @@ fun LadderDiagramView(
                                 val event = awaitPointerEvent()
                                 val change = event.changes.first()
                                 val offset = change.position
-                                val isPopup = event.buttons.isSecondaryPressed
+                                val isPopup = event.buttons.isSecondaryPressed ||
+                                        ((event.keyboardModifiers.isCtrlPressed || event.keyboardModifiers.isMetaPressed) && event.buttons.isPrimaryPressed)
 
                                 if (event.changes.size > 1) {
                                     if (isEventHandled) {

@@ -5,7 +5,8 @@
 // A few useful commands:
 //
 // - `gradlew run` to build and run the desktop app
-// - `gradlew run -PJLcompose` to build and run the desktop app with Compose UI
+// - `gradlew run -PJLcompose` to build and run with a Compose UI
+// - `gradlew jvmTest` to run test cases
 // - `gradlew desktopBuild` to build bin/JugglingLab.jar
 // - `gradlew androidBuild` to build Android Debug APKs
 // - `gradlew :androidApp:bundleRelease` to build a signed AAB for release
@@ -30,6 +31,8 @@ plugins {
 group = "org.jugglinglab"
 
 kotlin {
+    jvm()
+
     android {
         namespace = "org.jugglinglab.composelibrary"
         compileSdk = libs.versions.android.compileSdk.get().toInt()
@@ -43,8 +46,6 @@ kotlin {
             enable = true
         }
     }
-
-    jvm()
 
     sourceSets {
         commonMain {
@@ -61,7 +62,6 @@ kotlin {
             implementation(libs.compose.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
-            // Juggling Lab specific
             implementation(libs.fleeksoft.ksoup)
             implementation(libs.antlr.kotlin.runtime)
             implementation(libs.compose.material.icons.extended)
@@ -74,17 +74,12 @@ kotlin {
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
-            // Juggling Lab specific
             implementation(libs.firebase.crashlytics)
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
-            // Juggling Lab specific
             implementation(libs.google.ortools)
-        }
-        jvmTest.dependencies {
-            implementation(libs.kotlin.test)
         }
     }
 }
@@ -185,6 +180,17 @@ val shadowJar by tasks.existing(ShadowJar::class) {
     }
 }
 
+// Custom task to copy strings so they will package with the application
+val copyStringsForPackaging = tasks.register<Copy>("copyStringsForPackaging") {
+    description = "Copies strings to the composeResources/files/strings directory."
+
+    from("src/commonMain/composeResources") {
+        include("values/**/*.xml")
+        include("values-*/**/*.xml")
+    }
+    into("src/commonMain/composeResources/files/strings")
+}
+
 // Custom task to unpack the OR-Tools native libraries
 val unpackOrtNatives by tasks.registering(Copy::class) {
     group = "distribution"
@@ -212,6 +218,19 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
             include("${artifact.name}/**")
         }
     }
+}
+
+//------------------------------------------------------------------------------
+// Task dependencies
+//------------------------------------------------------------------------------
+
+// Ensure we copy strings for packaging before bundling resources for distribution
+tasks.matching {
+    (it.name.contains("Resources") ||
+            it.name.contains("generateComposeResClass")) &&
+            it.name != "copyStringsForPackaging"
+}.configureEach {
+    dependsOn(copyStringsForPackaging)
 }
 
 // Ensure the `build` task creates all artifacts for desktop packaging

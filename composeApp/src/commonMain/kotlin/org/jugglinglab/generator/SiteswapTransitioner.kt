@@ -18,9 +18,7 @@ import org.jugglinglab.util.JuggleExceptionInterrupted
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlCharForDigit
 import org.jugglinglab.util.jlCurrentTimeMillis
-import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlGetStringResource
-import org.jugglinglab.util.jlIsWindows
 import org.jugglinglab.util.jlMaxMemoryBytes
 import org.jugglinglab.util.jlToStringRounded
 import kotlinx.coroutines.currentCoroutineContext
@@ -39,7 +37,7 @@ class SiteswapTransitioner(arg: String) : Transitioner() {
     private var maxOccupancy: Int = 0
     private var mpAllowSimulcatchesFlag: Boolean = false
     private var mpAllowClustersFlag: Boolean = false
-    private var noLimitsFlag: Boolean = false
+    internal var noLimitsFlag: Boolean = false
     private var patternFrom: String? = null
     private var patternTo: String? = null
     private lateinit var siteswapFrom: SiteswapPattern
@@ -1190,50 +1188,7 @@ class SiteswapTransitioner(arg: String) : Transitioner() {
         private const val LOOP_COUNTER_MAX: Int = 20000
 
         // Execution limits
-        private const val TRANS_MAX_PATTERNS: Int = 1000
-        private const val TRANS_MAX_TIME: Double = 15.0
-
-        // Run the transitioner from command-line input.
-
-        fun runTransitionerCLI(args: List<String>, target: GeneratorTargetBasic?) {
-            if (args.size < 2) {
-                val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
-                val copyright =
-                    jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
-                var output = "Juggling Lab ${version.lowercase()}\n"
-                output += "$copyright\n"
-                output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
-
-                var intro = jlGetStringResource(Res.string.gui_transitioner_intro)
-                if (jlIsWindows) {
-                    // replace single quotes with double quotes in Windows examples
-                    intro = intro.replace("'", "\"")
-                }
-                output += intro
-                println(output)
-                return
-            }
-
-            if (target == null) {
-                return
-            }
-
-            try {
-                val sst = SiteswapTransitioner(args.joinToString(" "))
-
-                kotlinx.coroutines.runBlocking {
-                    if (sst.noLimitsFlag) {
-                        sst.runTransitioner(target)
-                    } else {
-                        sst.runTransitioner(target, TRANS_MAX_PATTERNS, TRANS_MAX_TIME)
-                    }
-                }
-            } catch (e: JuggleExceptionDone) {
-                println(e.message)
-            } catch (e: Throwable) {
-                val message = jlGetStringResource(Res.string.error) + ": " + e.message
-                println(message)
-            }
-        }
+        internal const val TRANS_MAX_PATTERNS: Int = 1000
+        internal const val TRANS_MAX_TIME: Double = 15.0
     }
 }

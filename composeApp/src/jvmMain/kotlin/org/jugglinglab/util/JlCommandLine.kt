@@ -9,26 +9,27 @@
 
 package org.jugglinglab.util
 
-//import org.jugglinglab.composeapp.generated.resources.*
-import org.jugglinglab.ui.desktop.ApplicationWindow
-import org.jugglinglab.ui.desktop.PatternWindow
+import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.core.Constants
+import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.generator.GeneratorTargetBasic
 import org.jugglinglab.generator.SiteswapGenerator
 import org.jugglinglab.generator.SiteswapTransitioner
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
-import org.jugglinglab.core.AnimationPrefs
-import org.jugglinglab.core.Constants
-import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.jml.JmlPatternList
-//import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.ui.desktop.ApplicationWindow
+import org.jugglinglab.ui.desktop.PatternWindow
+import kotlinx.coroutines.runBlocking
+import kotlin.coroutines.cancellation.CancellationException
 import java.awt.Desktop
 import java.awt.desktop.AboutEvent
 import java.io.*
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.Locale
 import javax.swing.SwingUtilities
-import kotlin.coroutines.cancellation.CancellationException
 
 object JlCommandLine {
     // command line arguments that we trim as portions are parsed
@@ -268,7 +269,6 @@ object JlCommandLine {
 
     private fun doHelp(firstarg: String?) {
         System.setProperty("java.awt.headless", "true")
-        /*
         val arg1 = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
         var output = "Juggling Lab " + arg1.lowercase(Locale.getDefault()) + "\n"
         val arg2 = jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
@@ -276,54 +276,6 @@ object JlCommandLine {
         output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
         output += jlGetStringResource(Res.string.gui_cli_help1)
         var examples = jlGetStringResource(Res.string.gui_cli_help2)
-        */
-        var output = "Juggling Lab version $jlCurrentVersion\n" +
-                "Copyright © 2002-${Constants.YEAR} Jack Boyce and the Juggling Lab contributors\n" +
-                "This program is released under the GNU General Public License v2\n\n" +
-                "This is the command line interface to Juggling Lab. Recognized options:\n\n" +
-                "   jlab start\n" + "      Launches the application.\n\n" +
-                "   jlab open <file1.jml> <file2.jml> ...\n" +
-                "      Launches the application and opens the listed JML files.\n\n" +
-                "   jlab anim <pattern> [-prefs <prefs>]\n" +
-                "      Opens a window with an animation of the given pattern, using the\n" +
-                "      given (optional) animation preferences.\n\n" +
-                "   jlab gen <gen_options> [-out <path>]\n" +
-                "      Runs the siteswap generator and prints a list of patterns, using the\n" +
-                "      given set of generator options to define the number of objects, etc.\n" +
-                "      Type \"jlab gen\" with no options for a help message. The output may\n" +
-                "      optionally be written to a file.\n\n" +
-                "   jlab trans <pattern A> <pattern B> [-options] [-out <path>]\n" +
-                "      Runs the siteswap transition-finder and prints a list of transitions\n" +
-                "      from pattern A to pattern B. Type \"jlab trans\" for a help message. The\n" +
-                "      output may optionally be written to a file.\n\n" +
-                "   jlab togif <pattern> [-prefs <prefs>] -out <path>\n" +
-                "      Saves a pattern animation to a file as an animated GIF, using the\n" +
-                "      given (optional) animation preferences.\n\n" +
-                "   jlab tojml <pattern> [-out <path>]\n" +
-                "      Converts a pattern to JML notation, Juggling Lab's internal XML-based\n" +
-                "      pattern description. This may optionally be written to a file.\n\n" +
-                "   jlab verify [-tojml] <file1.jml> <file2.jml> ... [-out <path>]\n" +
-                "      Checks the validity of the listed JML files. For pattern list files, the\n" +
-                "      validity of each line within the list is verified. The output may\n" +
-                "      optionally be written to a file.\n\nPattern input:\n" +
-                "   <pattern> can take one of three formats:\n\n" +
-                "   1. A pattern in siteswap notation, for example 771 or (6x,4)(4,6x).\n" +
-                "   2. A siteswap pattern annotated with additional settings, in a semi-\n" +
-                "      colon separated format. This is described in more detail at\n" +
-                "      https://jugglinglab.org/html/sspanel.html\n" +
-                "   3. A JML pattern read in from a file, using the format '-jml <path>'.\n\n" +
-                "Animation preferences input:\n" +
-                "   <prefs> are optional and are used to override Juggling Lab's default\n" +
-                "   preferences. These are given in a semicolon-separated format. See\n" +
-                "   https://jugglinglab.org/html/animinfo.html\n\n" +
-                "NOTE: Care should be taken when using characters that may be interpreted in\n" +
-                "special ways by the command line interpreter. On Windows use double quotes\n" +
-                "around settings to avoid confusion, and single quotes on macOS/Unix.\n\n"
-        var examples = "Examples:\n   jlab anim '(6x,4)*'\n" +
-                "   jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif\n" +
-                "   jlab anim -jml my_favorite_pattern.jml\n" +
-                "   jlab anim 771 -prefs 'stereo=true;width=800;height=600'\n" +
-                "   jlab anim 5B -prefs 'bouncesound=true'\n   jlab gen 5 7 5\n   jlab trans 5 771"
         if (jlIsWindows) {
             // replace single quotes with double quotes in Windows examples
             examples = examples.replace("'", "\"")
@@ -392,17 +344,36 @@ object JlCommandLine {
     // Run the siteswap generator.
 
     private fun doGen(outpath: Path?, jc: AnimationPrefs?) {
-        //System.setProperty("java.awt.headless", "true")
+        System.setProperty("java.awt.headless", "true")
+        if (jlargs.size < 3) {
+            val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
+            val copyright =
+                jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+            var output = "Juggling Lab ${version.lowercase()}\n"
+            output += "$copyright\n"
+            output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
+            output += jlGetStringResource(Res.string.gui_generator_intro)
+            println(output)
+            return
+        }
+
         try {
             var ps = System.out
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapGenerator.runGeneratorCLI(jlargs, GeneratorTargetBasic(lambdaTarget = { ps.println(it) }))
+            val ssg = SiteswapGenerator(jlargs.joinToString(" "))
+            val target = GeneratorTargetBasic(lambdaTarget = { ps.println(it) })
+            runBlocking {
+                ssg.runGenerator(target)
+            }
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
-        } catch (_: Throwable) {
-            println("stopped")
+        } catch (e: JuggleExceptionUser) {
+            val message = jlGetStringResource(Res.string.error) + ": " + e.message
+            println(message)
+        } catch (t: Throwable) {
+            crashReporter.recordThrowable(t)
         }
 
         if (jc != null) {
@@ -414,16 +385,50 @@ object JlCommandLine {
 
     private fun doTrans(outpath: Path?, jc: AnimationPrefs?) {
         System.setProperty("java.awt.headless", "true")
+        if (jlargs.size < 2) {
+            val version = jlGetStringResource(Res.string.gui_version, jlCurrentVersion)
+            val copyright =
+                jlGetStringResource(Res.string.gui_copyright_message, Constants.YEAR)
+            var output = "Juggling Lab ${version.lowercase()}\n"
+            output += "$copyright\n"
+            output += jlGetStringResource(Res.string.gui_gpl_message) + "\n\n"
+            var intro = jlGetStringResource(Res.string.gui_transitioner_intro)
+            if (jlIsWindows) {
+                // replace single quotes with double quotes in Windows examples
+                intro = intro.replace("'", "\"")
+            }
+            output += intro
+            println(output)
+            return
+        }
+
         try {
             var ps = System.out
             if (outpath != null) {
                 ps = PrintStream(outpath.toFile())
             }
-            SiteswapTransitioner.runTransitionerCLI(jlargs, GeneratorTargetBasic(lambdaTarget = { ps.println(it) }))
+            val sst = SiteswapTransitioner(jlargs.joinToString(" "))
+            val target = GeneratorTargetBasic(lambdaTarget = { ps.println(it) })
+            runBlocking {
+                if (sst.noLimitsFlag) {
+                    sst.runTransitioner(target)
+                } else {
+                    sst.runTransitioner(
+                        target,
+                        maxNum = SiteswapTransitioner.TRANS_MAX_PATTERNS,
+                        maxTime = SiteswapTransitioner.TRANS_MAX_TIME
+                    )
+                }
+            }
         } catch (_: FileNotFoundException) {
             println("Error: Problem writing to file path $outpath")
-        } catch (_: Throwable) {
-            println("stopped")
+        } catch (e: JuggleExceptionDone) {
+            println(e.message)
+        } catch (e: JuggleExceptionUser) {
+            val message = jlGetStringResource(Res.string.error) + ": " + e.message
+            println(message)
+        } catch (t: Throwable) {
+            crashReporter.recordThrowable(t)
         }
 
         if (jc != null) {

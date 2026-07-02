@@ -8,6 +8,7 @@
 
 package org.jugglinglab.util
 
+import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.Constants
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
@@ -15,6 +16,9 @@ import android.os.Build
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.Modifier
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.getString
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
 import java.text.NumberFormat
@@ -87,6 +91,8 @@ actual val jlCurrentVersion: String by lazy {
 
 actual val jlIsDesktop: Boolean = false
 actual val jlIsMobile: Boolean = true
+actual val jlIsWeb: Boolean = false
+
 actual val jlIsAndroid: Boolean = true
 actual val jlIsIos: Boolean = false
 
@@ -110,6 +116,15 @@ actual fun jlIsLandscape(): Boolean {
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
 
+actual fun jlGetStringResource(key: StringResource, vararg args: Any?): String {
+    val message = jlRunBlocking { getString(key) }
+    return if (args.isEmpty()) {
+        message
+    } else {
+        jlFormatString(message, *args)
+    }
+}
+
 // Load an image from a URL string.
 //
 // In the event of a problem, throw a JuggleExceptionUser with a relevant message.
@@ -122,6 +137,10 @@ actual fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap {
 actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
     val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
     return bitmap.asImageBitmap()
+}
+
+actual fun <T> jlRunBlocking(block: suspend () -> T): T {
+    return runBlocking { block() }
 }
 
 //------------------------------------------------------------------------------
@@ -207,6 +226,21 @@ actual fun jlShareFile(
     context.startActivity(chooser)
 }
 
+actual suspend fun jlGzipCompress(input: ByteArray): ByteArray {
+    val buffer = okio.Buffer()
+    okio.GzipSink(buffer).use { sink ->
+        sink.write(okio.Buffer().apply { write(input) }, input.size.toLong())
+    }
+    return buffer.readByteArray()
+}
+
+actual suspend fun jlGzipDecompress(input: ByteArray): ByteArray {
+    val source = okio.GzipSource(okio.Buffer().apply { write(input) })
+    val result = okio.Buffer()
+    result.writeAll(source)
+    return result.readByteArray()
+}
+
 //------------------------------------------------------------------------------
 // Helpers for playing audio
 //------------------------------------------------------------------------------
@@ -220,8 +254,8 @@ private val catchSoundId: Int by lazy {
     try {
         val file = java.io.File(context.cacheDir, "catch.wav")
         if (!file.exists()) {
-            val bytes = kotlinx.coroutines.runBlocking {
-                org.jugglinglab.composeapp.generated.resources.Res.readBytes("files/sounds/catch.wav")
+            val bytes = runBlocking {
+                Res.readBytes("files/sounds/catch.wav")
             }
             file.writeBytes(bytes)
         }
@@ -236,8 +270,8 @@ private val bounceSoundId: Int by lazy {
     try {
         val file = java.io.File(context.cacheDir, "bounce.wav")
         if (!file.exists()) {
-            val bytes = kotlinx.coroutines.runBlocking {
-                org.jugglinglab.composeapp.generated.resources.Res.readBytes("files/sounds/bounce.wav")
+            val bytes = runBlocking {
+                Res.readBytes("files/sounds/bounce.wav")
             }
             file.writeBytes(bytes)
         }

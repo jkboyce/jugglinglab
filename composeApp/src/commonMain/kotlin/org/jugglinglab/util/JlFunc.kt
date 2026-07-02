@@ -15,8 +15,6 @@ import org.jugglinglab.jml.JmlPattern
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.getString
-import kotlinx.coroutines.runBlocking
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -251,10 +249,10 @@ expect val jlAboutBoxPlatform: String
 
 expect val jlCurrentVersion: String
 
+// Exactly one of the following should be true:
 expect val jlIsDesktop: Boolean
 expect val jlIsMobile: Boolean
-expect val jlIsAndroid: Boolean
-expect val jlIsIos: Boolean
+expect val jlIsWeb: Boolean
 
 // Desktop platform shortcuts.
 val jlIsMacOs: Boolean by lazy {
@@ -266,6 +264,10 @@ val jlIsWindows: Boolean by lazy {
 val jlIsLinux: Boolean by lazy {
     jlIsDesktop && jlCurrentPlatform.lowercase().startsWith("linux")
 }
+
+// Mobile platform shortcuts.
+expect val jlIsAndroid: Boolean
+expect val jlIsIos: Boolean
 
 // Timing and execution.
 expect fun jlCurrentTimeMillis(): Long
@@ -353,9 +355,11 @@ fun jlErrorIfNotSanitized(fname: String) {
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
 
+expect fun jlGetStringResource(key: StringResource, vararg args: Any?): String
+
 // Drop-in replacement for java.lang.String.format()
 
-private fun jlFormatString(format: String, vararg args: Any?): String {
+internal fun jlFormatString(format: String, vararg args: Any?): String {
     var result = format
     // 1. Replace indexed placeholders like %1$s, %2$d, etc.
     for (i in args.indices) {
@@ -404,15 +408,6 @@ private fun jlFormatString(format: String, vararg args: Any?): String {
     return sb.toString()
 }
 
-fun jlGetStringResource(key: StringResource, vararg args: Any?): String {
-    val message = runBlocking { getString(key) }
-    return if (args.isEmpty()) {
-        message
-    } else {
-        jlFormatString(message, *args)
-    }
-}
-
 // Load an image from the given source.
 //
 // `source` is either a URL or the name of a Compose drawable resource.
@@ -427,7 +422,7 @@ fun jlGetImageResource(source: String): ImageBitmap {
             jlLoadComposeImageFromUrl(source)
         } else {
             // load from a Compose resource
-            runBlocking {
+            jlRunBlocking {
                 val imageBytes = Res.readBytes("drawable/$source")
                 jlBytesToImageBitmap(imageBytes)
             }
@@ -441,6 +436,8 @@ fun jlGetImageResource(source: String): ImageBitmap {
 expect fun jlLoadComposeImageFromUrl(urlString: String): ImageBitmap
 
 expect fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap
+
+expect fun <T> jlRunBlocking(block: suspend () -> T): T
 
 //------------------------------------------------------------------------------
 // Helpers for sharing
@@ -469,6 +466,10 @@ expect fun jlShareFile(
     bodyText: String? = null,
     htmlText: String? = null
 )
+
+expect suspend fun jlGzipCompress(input: ByteArray): ByteArray
+
+expect suspend fun jlGzipDecompress(input: ByteArray): ByteArray
 
 //------------------------------------------------------------------------------
 // Helpers for playing audio

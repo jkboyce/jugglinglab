@@ -15,7 +15,13 @@ import org.jugglinglab.core.Constants
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.Modifier
+import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.skia.Image
+import com.fleeksoft.ksoup.Ksoup
+import com.fleeksoft.ksoup.parser.Parser
+import kotlin.math.min
+import kotlin.system.exitProcess
+import kotlinx.coroutines.runBlocking
 import java.awt.*
 import java.awt.event.ActionEvent
 import java.io.IOException
@@ -29,8 +35,6 @@ import java.util.Locale
 import java.util.prefs.Preferences
 import javax.imageio.ImageIO
 import javax.swing.*
-import kotlin.math.min
-import kotlin.system.exitProcess
 
 //------------------------------------------------------------------------------
 // Helpers for converting numbers to/from strings
@@ -248,6 +252,8 @@ actual val jlCurrentVersion: String = Constants.VERSION
 
 actual val jlIsDesktop: Boolean = true
 actual val jlIsMobile: Boolean = false
+actual val jlIsWeb: Boolean = false
+
 actual val jlIsAndroid: Boolean = false
 actual val jlIsIos: Boolean = false
 
@@ -358,6 +364,100 @@ fun jlSanitizeFilepath(fpath: Path): Path {
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------
 
+actual fun jlGetStringResource(key: StringResource, vararg args: Any?): String {
+    if (jvmStringResources.isEmpty()) {
+        prewarmJvmStringResources()
+    }
+    val message = jvmStringResources[key.key] ?: key.key
+    return if (args.isEmpty()) {
+        message
+    } else {
+        jlFormatString(message, *args)
+    }
+}
+
+private val jvmStringResources: MutableMap<String, String> = mutableMapOf()
+
+private fun prewarmJvmStringResources() {
+    val lang = Locale.getDefault().language.lowercase()
+    val localeFolder = when {
+        lang.startsWith("es") -> "values-es"
+        lang.startsWith("fr") -> "values-fr"
+        lang.startsWith("he") -> "values-he"
+        lang.startsWith("pt") -> "values-pt"
+        lang.startsWith("tok") -> "values-tok"
+        else -> "values"
+    }
+
+    val foldersToLoad = if (localeFolder != "values") {
+        listOf("values", localeFolder)
+    } else {
+        listOf("values")
+    }
+
+    runBlocking {
+        for (folder in foldersToLoad) {
+            try {
+                val guiXmlBytes = Res.readBytes("files/strings/$folder/gui_strings.xml")
+                val guiXml = guiXmlBytes.decodeToString()
+                parseAndPopulateJvmStrings(guiXml)
+            } catch (_: Exception) {
+                // ignore
+            }
+
+            try {
+                val errorXmlBytes = Res.readBytes("files/strings/$folder/error_strings.xml")
+                val errorXml = errorXmlBytes.decodeToString()
+                parseAndPopulateJvmStrings(errorXml)
+            } catch (_: Exception) {
+                // ignore
+            }
+        }
+    }
+}
+
+private fun unescapeXmlString(str: String): String {
+    val sb = StringBuilder()
+    var i = 0
+    while (i < str.length) {
+        val c = str[i]
+        if (c == '\\' && i + 1 < str.length) {
+            when (val next = str[i + 1]) {
+                'n' -> sb.append('\n')
+                't' -> sb.append('\t')
+                '\'' -> sb.append('\'')
+                '"' -> sb.append('"')
+                '\\' -> sb.append('\\')
+                else -> {
+                    sb.append(c)
+                    sb.append(next)
+                }
+            }
+            i += 2
+        } else {
+            sb.append(c)
+            i++
+        }
+    }
+    return sb.toString()
+}
+
+private fun parseAndPopulateJvmStrings(xml: String) {
+    try {
+        val doc = Ksoup.parse(html = xml, parser = Parser.xmlParser())
+        val stringElements = doc.getElementsByTag("string")
+        for (element in stringElements) {
+            val key = element.attr("name")
+            val value = unescapeXmlString(element.wholeText())
+            if (key.isNotEmpty()) {
+                jvmStringResources[key] = value
+            }
+        }
+    } catch (e: Exception) {
+        println("Error parsing XML: ${e.message}")
+    }
+}
+
 // Load an image from a URL string.
 //
 // In the event of a problem, throw a JuggleExceptionUser with a relevant message.
@@ -388,6 +488,10 @@ actual fun jlBytesToImageBitmap(bytes: ByteArray): ImageBitmap {
     return Image.makeFromEncoded(bytes).toComposeImageBitmap()
 }
 
+actual fun <T> jlRunBlocking(block: suspend () -> T): T {
+    return runBlocking { block() }
+}
+
 //------------------------------------------------------------------------------
 // Helpers for sharing
 //------------------------------------------------------------------------------
@@ -407,6 +511,21 @@ actual fun jlShareFile(
     // Not used on desktop
 }
 
+actual suspend fun jlGzipCompress(input: ByteArray): ByteArray {
+    val buffer = okio.Buffer()
+    okio.GzipSink(buffer).use { sink ->
+        sink.write(okio.Buffer().apply { write(input) }, input.size.toLong())
+    }
+    return buffer.readByteArray()
+}
+
+actual suspend fun jlGzipDecompress(input: ByteArray): ByteArray {
+    val source = okio.GzipSource(okio.Buffer().apply { write(input) })
+    val result = okio.Buffer()
+    result.writeAll(source)
+    return result.readByteArray()
+}
+
 //------------------------------------------------------------------------------
 // Helpers for playing audio
 //------------------------------------------------------------------------------
@@ -415,7 +534,7 @@ private const val CLIP_POOL_SIZE = 16
 
 private fun createClipPool(resourcePath: String): Array<javax.sound.sampled.Clip?> {
     return try {
-        val bytes = kotlinx.coroutines.runBlocking {
+        val bytes = runBlocking {
             Res.readBytes(resourcePath)
         }
         Array(CLIP_POOL_SIZE) {

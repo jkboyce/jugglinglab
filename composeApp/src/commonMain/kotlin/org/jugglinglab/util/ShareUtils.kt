@@ -13,14 +13,11 @@
 
 package org.jugglinglab.util
 
-import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.notation.SiteswapPattern
 import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
-import okio.Buffer
-import okio.GzipSink
-import okio.GzipSource
 import kotlin.text.iterator
 
 private const val SHARE_BASE_URL = "https://jugglinglab.org/anim"
@@ -29,7 +26,7 @@ private const val SHARE_BASE_URL = "https://jugglinglab.org/anim"
 // The XML is gzip-compressed before base64 encoding to keep the URL short.
 
 @OptIn(ExperimentalEncodingApi::class)
-fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
+suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
     val urlStr = if (pattern.hasBasePattern &&
         pattern.basePatternNotation.equals("siteswap", ignoreCase = true) &&
         !pattern.isBasePatternEdited
@@ -37,7 +34,7 @@ fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
         pattern.basePatternConfig!!
     } else {
         val xml = pattern.toString()
-        val compressed = gzipCompress(xml.encodeToByteArray())
+        val compressed = jlGzipCompress(xml.encodeToByteArray())
         val encoded = Base64.encode(compressed)
         "jml=$encoded"
     }
@@ -55,7 +52,7 @@ fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
 // Decode a share URL back to a JmlPattern, or return null on any error.
 
 @OptIn(ExperimentalEncodingApi::class)
-fun decodeShareUrl(url: String): Pair<JmlPattern?, AnimationPrefs?> {
+suspend fun decodeShareUrl(url: String): Pair<JmlPattern?, AnimationPrefs?> {
     var pattern: JmlPattern? = null
     var prefs: AnimationPrefs? = null
 
@@ -74,31 +71,13 @@ fun decodeShareUrl(url: String): Pair<JmlPattern?, AnimationPrefs?> {
             val sspattern = SiteswapPattern().fromParameters(pl)
             sspattern.asJmlPattern()
         } else {
-            val xml = gzipDecompress(Base64.decode(jmlData)).decodeToString()
+            val xml = jlGzipDecompress(Base64.decode(jmlData)).decodeToString()
             JmlPattern.fromJmlString(xml)
         }
     } catch (_: Exception) {
     }
 
     return Pair(pattern, prefs)
-}
-
-private fun gzipCompress(input: ByteArray): ByteArray {
-    val buffer = Buffer()
-    val sink = GzipSink(buffer)
-    try {
-        sink.write(Buffer().apply { write(input) }, input.size.toLong())
-    } finally {
-        sink.close()
-    }
-    return buffer.readByteArray()
-}
-
-private fun gzipDecompress(input: ByteArray): ByteArray {
-    val source = GzipSource(Buffer().apply { write(input) })
-    val result = Buffer()
-    result.writeAll(source)
-    return result.readByteArray()
 }
 
 private const val ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~=;&"
