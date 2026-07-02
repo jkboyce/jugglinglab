@@ -1,0 +1,11 @@
+// LocalSettings.xcconfig
+//
+// This file is used to store local developer settings, such as your Apple Development Team ID.
+// It is ignored by Git, so your personal team settings will not be committed to the public repository.
+//
+// To configure your development team:
+// 1. Set the DEVELOPMENT_TEAM variable below to your 10-character Apple Developer Team ID.
+// 2. Open the project in Xcode and it will pick up your development team.
+//
+DEVELOPMENT_TEAM = <YOUR_10_CHARACTER_TEAM_ID>
+

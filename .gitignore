@@ -9,3 +9,18 @@ build/
 local.properties
 composeApp/bin/
 composeApp/src/commonMain/composeResources/files/strings/
+
+# Xcode / iOS / macOS
+*.pbxuser
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+xcuserdata/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+DerivedData/
+.analytics
+iosApp/iosApp/GoogleService-Info-Debug.plist
+iosApp/iosApp/GoogleService-Info-Release.plist
+iosApp/iosApp/LocalSettings.xcconfig

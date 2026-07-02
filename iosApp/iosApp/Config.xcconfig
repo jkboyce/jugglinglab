@@ -1,0 +1,7 @@
+// Config.xcconfig
+//
+// This is the shared build configuration file checked into the repository.
+// It optionally includes LocalSettings.xcconfig (which is ignored by Git)
+// to load developer-specific values like DEVELOPMENT_TEAM.
+
+#include? "LocalSettings.xcconfig"

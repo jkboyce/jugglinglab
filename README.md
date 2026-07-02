@@ -8,13 +8,11 @@ There is also a [web service](https://jugglinglab.org/html/animinfo.html) to gen
 
 ## The code
 
-Juggling Lab is a Compose Multiplatform application written in Kotlin. To date it supports all desktop platforms (macOS, Windows, Linux) and Android. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
+Juggling Lab is a Compose Multiplatform application written in Kotlin. To date it supports all desktop platforms (macOS, Windows, Linux), Android, and iOS. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
 
-**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use these commands in the base directory of the repo:
-- `gradlew run` – compile and run Juggling Lab
-- `gradlew run -PJLcompose` – compile and run with a Compose interface
+**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use the command `gradlew run` in the base directory of the repo to compile and run the desktop application.
 
-For an IDE we recommend [Android Studio](https://developer.android.com/studio) which has good support for Gradle, Compose, and Android emulation and testing. Opening the repo in Android Studio configures the relevant plugins.
+For mobile development we recommend [Android Studio](https://developer.android.com/studio) (Android) and [Xcode](https://developer.apple.com/xcode/) (iOS). Both have good support for Gradle, and device emulation and testing. Open the repo in either app to configure the relevant plugins.
 
 ## Contributors
 
