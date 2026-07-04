@@ -6,7 +6,7 @@
 
 <line display=""/>
 
-<line display="(4B,2)(2x,4)" notation="jml">
+<line display="(4B,2)(2x,4)*" notation="jml">
 <pattern>
 <title>(4B,2)(2x,4)*</title>
 <prop type="ball" mod="color={250,0,0}"/>
