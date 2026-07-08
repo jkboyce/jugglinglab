@@ -309,13 +309,13 @@ class SplineCurve : Curve() {
                 }
             }
 
-            // Now we apply the "natural throwing" constraint, that the hand
-            // velocity must be parallel to the catch velocity at the time of catch.
-            // We implement this constraint by requiring the cross product between
-            // v[] and the catch velocity to be zero. This is three separate
+            // Now we apply the "natural catch" constraint, that the hand velocity
+            // is parallel to the object velocity at the moment of catch. We
+            // implement this constraint by requiring the cross product between
+            // v[] and the object velocity to be zero. This is three separate
             // constraints (one for each spatial dimension), however they are not
             // linearly independent so we only need to apply two. We select the two
-            // to retain based on the components of catch velocity.
+            // to retain based on the components of the caught object's velocity.
             //
             // The constraints are implemented using Lagrange multipliers, two per
             // specified catch velocity.
@@ -328,7 +328,7 @@ class SplineCurve : Curve() {
                 }
 
                 val index = 3 * (n - 1) + 2 * catchnum
-                val ci0 = v[i + 1]!![0]  // components of catch velocity
+                val ci0 = v[i + 1]!![0]  // components of caught object velocity
                 val ci1 = v[i + 1]!![1]
                 val ci2 = v[i + 1]!![2]
 

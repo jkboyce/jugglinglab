@@ -7,7 +7,7 @@
 package org.jugglinglab.jml
 
 class JmlNode(
-    val nodeType: String?  // from taglist in JmlDefs.java
+    val nodeType: String?  // from taglist in JmlDefs.kt
 ) {
     var nodeValue: String? = null  // for nodes with character content
     var attributes = JmlAttributes()

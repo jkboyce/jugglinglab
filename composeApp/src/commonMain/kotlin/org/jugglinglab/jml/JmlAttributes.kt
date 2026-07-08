@@ -1,5 +1,5 @@
 //
-// JmlAttributes.java
+// JmlAttributes.kt
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //

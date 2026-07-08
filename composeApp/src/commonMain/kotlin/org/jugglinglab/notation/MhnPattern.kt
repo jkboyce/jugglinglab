@@ -248,7 +248,7 @@ abstract class MhnPattern : Pattern() {
     //
     // Note that th[] is assumed to be pre-populated with MhnThrows from the
     // parsing step, prior to this. This function fills in missing data elements
-    // in the MhnThrows, connecting them up into a pattern. See MhnThrow.java
+    // in the MhnThrows, connecting them up into a pattern. See MhnThrow.kt
     // for more details.
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)

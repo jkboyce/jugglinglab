@@ -168,7 +168,7 @@ class SiteswapGenerator(arg: String) : Generator() {
         try {
             // Array of SearchFrames for the iterative DFS algorithm
             // on each beat: at most (config.hands * config.maxOccupancy) throws,
-            // with one frame each, plus a frame in state==2 to end the beat
+            // with one frame each, plus a frame with status==2 to end the beat
             val maxDepth = config.lMax * (config.hands * config.maxOccupancy + 1)
             searchFrame = Array(maxDepth) { SearchFrame() }
 

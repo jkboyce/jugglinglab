@@ -93,28 +93,29 @@ class AnimationGifWriter(
 
     // Output a GIF of the pattern to OutputStream `os`.
     //
-    // Optional parameter `wgm` monitors the progress and allows the user to
-    // cancel. `fps` is the target frames per second for the GIF.
-    //
-    // Note: The GIF header specifies the delay time between frames in terms of
-    // hundredths of a second. This is an integer quantity, so only `fps` values
-    // like 50, 33 1/3, 25, 20, ... are precisely achievable.
+    // Parameter `wgm` monitors the progress and allows the user to cancel.
 
     @Throws(IOException::class, JuggleExceptionInternal::class)
     private fun writeGif(os: OutputStream, wgm: WriteGifMonitor?) {
         val pattern = gifState.pattern
 
-        // (integer) inter-frame delay time, in hundredths of a second
+        // inter-frame delay time, in hundredths of a second
+        //
+        // The GIF header specifies the delay time between frames in terms of
+        // hundredths of a second. This is an integer quantity, so only `fps`
+        // values like 50, 33 1/3, 25, 20, ... are precisely achievable.
         val frameDurationHundredths = max((100.0 / gifState.prefs.fps).roundToInt(), 1)
         val frameDurationString = frameDurationHundredths.toString()
 
         // adjust inter-frame sim time so that an exact number of frames fit
         // within the animation loop
         val loopDuration = pattern.loopEndTime - pattern.loopStartTime
-        val gifLoopFrames = (
-                loopDuration * gifState.prefs.slowdown *
-                        (100.0 / frameDurationHundredths.toDouble())
-                ).roundToInt()
+        val gifLoopFrames = max(
+            (loopDuration * gifState.prefs.slowdown *
+                    (100.0 / frameDurationHundredths.toDouble())
+                    ).roundToInt(),
+            1
+        )
         val totalFrames = gifLoopFrames * pattern.periodWithProps
 
         // Java GIF encoder
@@ -136,7 +137,11 @@ class AnimationGifWriter(
             gifState.update(isPaused = true, message = "")
 
             scene.setContent {
-                AnimationView(state = gifState, isAntiAlias = false, onError = { jlHandleFatalException(it) })
+                AnimationView(
+                    state = gifState,
+                    isAntiAlias = false,
+                    onError = { jlHandleFatalException(it) }
+                )
             }
 
             // need to convert Skia Image into bitmap with color type BGRA_8888
@@ -157,7 +162,8 @@ class AnimationGifWriter(
                 if (frameInLoop == 0 && currentFrame > 0) {
                     gifState.advancePropForPath()
                 }
-                val time = pattern.loopStartTime + (frameInLoop.toDouble() / gifLoopFrames) * loopDuration
+                val time =
+                    pattern.loopStartTime + (frameInLoop.toDouble() / gifLoopFrames) * loopDuration
                 gifState.update(time = time)
 
                 // the next line is critical as it ensures the state update above
@@ -165,8 +171,7 @@ class AnimationGifWriter(
                 Snapshot.sendApplyNotifications()
 
                 // render and process the image
-                val image = scene.render()
-                image.readPixels(bitmap)
+                scene.render().readPixels(bitmap)
                 val bufferedImage = bitmap.toBufferedImage()
 
                 // after the second frame all subsequent frames have identical metadata
