@@ -10,6 +10,9 @@
 // - `gradlew desktopBuild` to build bin/JugglingLab.jar
 // - `gradlew androidBuild` to build Android Debug APKs
 // - `gradlew :androidApp:bundleRelease` to build a signed AAB for release
+// - `gradlew :composeApp:wasmJsBrowserDevelopmentRun` to build and run the web app
+// - `gradlew :composeApp:wasmJsBrowserDistribution` to build
+//    composeApp/build/dist/wasmJs/productionExecutable/*
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -58,6 +61,12 @@ kotlin {
         }
     }
 
+    @OptIn(org.jetbrains.kotlin.gradle.ExperimentalWasmDsl::class)
+    wasmJs {
+        browser()
+        binaries.executable()
+    }
+
     sourceSets {
         commonMain {
             kotlin {
@@ -94,6 +103,10 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
             implementation(libs.google.ortools)
+        }
+        wasmJsMain.dependencies {
+            implementation(libs.okio.fakefilesystem)
+            implementation(libs.kotlinx.datetime)
         }
     }
 }

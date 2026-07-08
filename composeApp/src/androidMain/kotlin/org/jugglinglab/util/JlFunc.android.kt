@@ -96,6 +96,8 @@ actual val jlIsWeb: Boolean = false
 actual val jlIsAndroid: Boolean = true
 actual val jlIsIos: Boolean = false
 
+actual val jlIsMobileWeb: Boolean = false
+
 actual fun jlCurrentTimeMillis(): Long = System.currentTimeMillis()
 
 actual fun jlExitProcess(status: Int) {
@@ -104,7 +106,7 @@ actual fun jlExitProcess(status: Int) {
 
 actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
-actual val jlMaxMemoryBytes: Long = 100 * 1024 * 1024
+actual val jlMaxMemoryBytes: Long = 100L * 1024 * 1024
 
 @androidx.compose.runtime.Composable
 actual fun jlIsLandscape(): Boolean {
@@ -164,6 +166,9 @@ object AndroidContext {
 
     fun get(): android.content.Context? = contextRef?.get()
 }
+
+actual fun jlPreCopyShareUrl(): Boolean = false
+actual fun jlCancelPreCopyShareUrl() {}
 
 @SuppressLint("ObsoleteSdkInt")
 actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
@@ -240,6 +245,8 @@ actual suspend fun jlGzipDecompress(input: ByteArray): ByteArray {
     result.writeAll(source)
     return result.readByteArray()
 }
+
+actual suspend fun jlPickAndReadJmlFile(): String? = null
 
 //------------------------------------------------------------------------------
 // Helpers for playing audio

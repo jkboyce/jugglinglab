@@ -11,6 +11,8 @@ package org.jugglinglab.ui.mobile
 
 import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.core.PatternAnimationState
+import org.jugglinglab.util.jlIsWeb
+import org.jugglinglab.util.jlIsTouchInterface
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.Modifier
@@ -31,7 +33,21 @@ class WalkthroughCoordinator(
     val walkthroughPositions = mutableStateMapOf<String, Rect>()
     var rootBounds by mutableStateOf<Rect?>(null)
 
-    val activeStepData get() = WALKTHROUGH_STEPS.getOrNull(walkthroughStep)
+    val activeStepData: Pair<String, String>?
+        get() {
+            val step = WALKTHROUGH_STEPS.getOrNull(walkthroughStep) ?: return null
+            var text = step.second
+            if (!jlIsTouchInterface) {
+                text = text.replace("long press", "right click")
+                text = text.replace("Long press", "Right click")
+                text = text.replace("a two finger pinch gesture", "the scroll wheel")
+                text = text.replace("a pinch gesture", "the scroll wheel")
+            }
+            if (jlIsWeb && step.first == "file_my_lists") {
+                text += "\n\nImportant: Pattern lists in the web application are not saved between browser sessions."
+            }
+            return Pair(step.first, text)
+        }
 
     fun startWalkthrough() {
         walkthroughStep = 1
@@ -39,6 +55,16 @@ class WalkthroughCoordinator(
 
     fun handleOkClick() {
         when (walkthroughStep) {
+            2 -> {
+                if (jlIsWeb) {
+                    onResetAnimationToDefault()
+                    onNavigateTo("Animation")
+                    walkthroughStep = 4
+                } else {
+                    walkthroughStep = 3
+                }
+            }
+
             3 -> {
                 onResetAnimationToDefault()
                 onNavigateTo("Animation")
@@ -65,8 +91,10 @@ class WalkthroughCoordinator(
             }
 
             19 -> {
-                coroutineScope.launch {
-                    prefsRepo?.saveOnboardingCompleted(true)
+                if (!jlIsWeb) {
+                    coroutineScope.launch {
+                        prefsRepo?.saveOnboardingCompleted(true)
+                    }
                 }
                 onNavigateTo("Info")
                 state.update(selectedItemHashCode = 0)
@@ -81,8 +109,10 @@ class WalkthroughCoordinator(
     }
 
     fun handleSkipClick() {
-        coroutineScope.launch {
-            prefsRepo?.saveOnboardingCompleted(true)
+        if (!jlIsWeb) {
+            coroutineScope.launch {
+                prefsRepo?.saveOnboardingCompleted(true)
+            }
         }
         state.update(selectedItemHashCode = 0)
         walkthroughPositions.clear()
@@ -113,10 +143,10 @@ fun Modifier.walkthroughTarget(key: String, condition: Boolean = true): Modifier
 }
 
 private val WALKTHROUGH_STEPS = listOf(
-    Pair("", ""), // Step 0 placeholder
+    Pair("", ""),  // Step 0 placeholder
     Pair(
         "nav_info",
-        "Welcome to Juggling Lab! This is the home screen – come back here by clicking this icon. (Please do so to advance.)"
+        "Welcome to Juggling Lab! This is the home screen – come back here by selecting this icon. (Please do so to advance.)"
     ),
     Pair(
         "info_pattern_list",
@@ -128,15 +158,15 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "anim_center",
-        "This is the animation view. Tap to pause/unpause, drag your finger to move the camera, and use a two finger pinch gesture to zoom in/out."
+        "This is the animation view. Tap to pause/unpause, drag to move the camera, and use a two finger pinch gesture to zoom in/out."
     ),
     Pair(
         "anim_menu",
-        "Touch this to access the pattern menu. (Please do so to advance.)"
+        "Select this to access the pattern menu. (Please do so to advance.)"
     ),
     Pair(
         "anim_ladder_toggle",
-        "Touch this to open the ladder diagram view. (Please do so to advance.)"
+        "Select this to open the ladder diagram view. (Please do so to advance.)"
     ),
     Pair(
         "ladder_center",
@@ -148,7 +178,7 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "ladder_transition",
-        "This represents a transition, in this case a throw. Touch to select it. (Please do so to advance.)"
+        "This represents a transition, in this case a throw. Select this to highlight it. (Please do so to advance.)"
     ),
     Pair(
         "anim_box",
@@ -164,7 +194,7 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "anim_ladder_toggle",
-        "Touch this to close the ladder diagram. (Please do so to advance.)"
+        "Select this to close the ladder diagram. (Please do so to advance.)"
     ),
     Pair(
         "info_pattern_list",
@@ -180,11 +210,11 @@ private val WALKTHROUGH_STEPS = listOf(
     ),
     Pair(
         "pattern_list_line",
-        "Each line is a separate pattern. Touch one to launch an animation, or long press for additional options. The menu at the upper right accesses features for the entire list."
+        "Each line is a separate pattern. Select one to launch an animation, or long press for additional options. The menu at the upper right accesses features for the entire list."
     ),
     Pair(
         "pattern_list_close",
-        "Use this to close a pattern list and load a new one. (Please do so to advance.)"
+        "Select this to close a pattern list and load a new one. (Please do so to advance.)"
     ),
     Pair(
         "",

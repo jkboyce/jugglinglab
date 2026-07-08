@@ -269,6 +269,11 @@ val jlIsLinux: Boolean by lazy {
 expect val jlIsAndroid: Boolean
 expect val jlIsIos: Boolean
 
+// Web platform shortcuts.
+expect val jlIsMobileWeb: Boolean
+
+val jlIsTouchInterface: Boolean = jlIsMobile || jlIsMobileWeb
+
 // Timing and execution.
 expect fun jlCurrentTimeMillis(): Long
 
@@ -443,6 +448,11 @@ expect fun <T> jlRunBlocking(block: suspend () -> T): T
 // Helpers for sharing
 //------------------------------------------------------------------------------
 
+// Initiate (cancel) a Share URL interaction. These are used for the web app.
+
+expect fun jlPreCopyShareUrl(): Boolean
+expect fun jlCancelPreCopyShareUrl()
+
 // Open the platform's native share UI with the given URL string.
 // `subject`  is used as the email subject.
 // `htmlText` is used as a rich-text email body (falls back to `url` on
@@ -470,6 +480,8 @@ expect fun jlShareFile(
 expect suspend fun jlGzipCompress(input: ByteArray): ByteArray
 
 expect suspend fun jlGzipDecompress(input: ByteArray): ByteArray
+
+expect suspend fun jlPickAndReadJmlFile(): String?
 
 //------------------------------------------------------------------------------
 // Helpers for playing audio

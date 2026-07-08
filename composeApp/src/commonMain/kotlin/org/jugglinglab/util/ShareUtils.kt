@@ -49,38 +49,34 @@ suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
     return "$SHARE_BASE_URL?${urlEncode(fullConfig)}"
 }
 
-// Decode a share URL back to a JmlPattern, or return null on any error.
+// Decode a share URL back to a JmlPattern. Any exceptions during decoding
+// will be thrown back to the caller.
 
 @OptIn(ExperimentalEncodingApi::class)
-suspend fun decodeShareUrl(url: String): Pair<JmlPattern?, AnimationPrefs?> {
-    var pattern: JmlPattern? = null
-    var prefs: AnimationPrefs? = null
+suspend fun decodeShareUrl(url: String): Pair<JmlPattern, AnimationPrefs?> {
+    var settings = urlDecode(url.substringAfter("?"))
+    if ('=' !in settings) {
+        settings = "pattern=$settings"  // simplified form of URL
+    }
+    val pl = ParameterList(settings)
+    val jmlData = pl.removeParameter("jml")
 
-    try {
-        var settings = urlDecode(url.substringAfter("?"))
-        if ('=' !in settings) {
-            settings = "pattern=$settings"  // simplified form of URL
-        }
-        val pl = ParameterList(settings)
-        val jmlData = pl.removeParameter("jml")
+    var prefs: AnimationPrefs? = AnimationPrefs.fromParameters(pl)
+    if (prefs == AnimationPrefs()) prefs = null
 
-        prefs = AnimationPrefs.fromParameters(pl)
-        if (prefs == AnimationPrefs()) prefs = null
-
-        pattern = if (jmlData.isNullOrBlank()) {
-            val sspattern = SiteswapPattern().fromParameters(pl)
-            sspattern.asJmlPattern()
-        } else {
-            val xml = jlGzipDecompress(Base64.decode(jmlData)).decodeToString()
-            JmlPattern.fromJmlString(xml)
-        }
-    } catch (_: Exception) {
+    val pattern = if (jmlData.isNullOrBlank()) {
+        val sspattern = SiteswapPattern().fromParameters(pl)
+        sspattern.asJmlPattern()
+    } else {
+        val xml = jlGzipDecompress(Base64.decode(jmlData)).decodeToString()
+        JmlPattern.fromJmlString(xml)
     }
 
     return Pair(pattern, prefs)
 }
 
-private const val ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~=;&"
+private const val ALLOWED_CHARS =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~=;&"
 
 private fun urlEncode(input: String): String = buildString(input.length * 2) {
     // We allow '=' and ';' to pass through unencoded so that ParameterList

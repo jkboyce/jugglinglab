@@ -19,6 +19,7 @@ import org.jugglinglab.prop.Prop
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.jlIsLandscape
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -451,7 +452,7 @@ private fun AnimationViewMenus(
 
     var inFavorites by remember { mutableStateOf(false) }
     LaunchedEffect(state.pattern, state.prefs, favoritesHashCodes) {
-        inFavorites = withContext(Dispatchers.Default) {
+        inFavorites = !jlIsWeb && withContext(Dispatchers.Default) {
             val tempPl = JmlPatternList()
             tempPl.insertPattern(state.pattern, state.prefs, 0)
             favoritesHashCodes.contains(tempPl.model[0].jlHashCode)
@@ -577,34 +578,36 @@ private fun AnimationViewMenus(
                 }
             )
             HorizontalDivider()
-            if (inFavorites) {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
-                    onClick = {
-                        isMenuExpanded = false
-                        onRemoveFromFavorites(state.pattern, state.prefs)
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
-                        )
-                    }
-                )
-            } else {
-                DropdownMenuItem(
-                    text = { Text(stringResource(Res.string.gui_mobile_add_to_favorites)) },
-                    onClick = {
-                        isMenuExpanded = false
-                        onAddToFavorites(state.pattern, state.prefs)
-                    },
-                    trailingIcon = {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = stringResource(Res.string.gui_mobile_favorites)
-                        )
-                    }
-                )
+            if (!jlIsWeb) {
+                if (inFavorites) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
+                        onClick = {
+                            isMenuExpanded = false
+                            onRemoveFromFavorites(state.pattern, state.prefs)
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
+                            )
+                        }
+                    )
+                } else {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(Res.string.gui_mobile_add_to_favorites)) },
+                        onClick = {
+                            isMenuExpanded = false
+                            onAddToFavorites(state.pattern, state.prefs)
+                        },
+                        trailingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = stringResource(Res.string.gui_mobile_favorites)
+                            )
+                        }
+                    )
+                }
             }
             DropdownMenuItem(
                 text = { Text(stringResource(Res.string.gui_mobile_share)) },

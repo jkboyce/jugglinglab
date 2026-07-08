@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script>
+        (function() {
+            function isWasmSupported() {
+                try {
+                    if (typeof WebAssembly === "object" && typeof WebAssembly.instantiate === "function") {
+                        const module = new WebAssembly.Module(new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]));
+                        if (module instanceof WebAssembly.Module) {
+                            return new WebAssembly.Instance(module) instanceof WebAssembly.Instance;
+                        }
+                    }
+                } catch (e) {}
+                return false;
+            }
+
+            if (!isWasmSupported()) {
+                window.addEventListener('DOMContentLoaded', function() {
+                    const spinner = document.querySelector('.spinner');
+                    const text = document.querySelector('.loading-text');
+                    if (spinner) spinner.style.display = 'none';
+                    if (text) {
+                        text.innerHTML = 'WebAssembly not supported<br><span style="font-size: 0.9rem; text-transform: none; color: #d32f2f; display: inline-block; margin-top: 8px; letter-spacing: 0;">Juggling Lab requires a browser with WebAssembly support. Please upgrade your browser.</span>';
+                    }
+                });
+            } else {
+                var base = document.createElement('base');
+                base.href = (window.location.pathname.startsWith('/app') || window.location.pathname.startsWith('/anim')) ? '/app/' : '/';
+                document.head.appendChild(base);
+            }
+        })();
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juggling Lab</title>
+    <style>
+        html, body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #ffffff;
+            color: #121212;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        #compose-holder {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.5s ease-out, visibility 0.5s;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #6200ee;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        .loading-text {
+            margin-top: 24px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            color: rgba(18, 18, 18, 0.8);
+            text-transform: uppercase;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    <script type="application/javascript" src="composeApp.js"></script>
+</head>
+<body>
+    <div class="loading-screen" id="loading-screen">
+        <div class="spinner"></div>
+        <div class="loading-text">Loading Juggling Lab...</div>
+    </div>
+    <div id="compose-holder"></div>
+</body>
+</html>

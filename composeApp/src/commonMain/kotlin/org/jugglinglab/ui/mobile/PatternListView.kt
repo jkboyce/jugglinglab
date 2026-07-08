@@ -15,6 +15,7 @@ import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -205,7 +206,7 @@ fun PatternListView(
 
                 items(displaySize) { index ->
                     val record = patternList.model[index]
-                    val inFavorites = record.canAnimate && record.jlHashCode != 0 &&
+                    val inFavorites = !jlIsWeb && record.canAnimate && record.jlHashCode != 0 &&
                         favoritesHashCodes.contains(record.jlHashCode)
                     val hasFavoriteStar = inFavorites && !isFavoritesList
 
@@ -373,36 +374,38 @@ private fun PatternListItem(
                 if (isEditable && !isBlankLine) {
                     HorizontalDivider()
                 }
-                if (inFavorites) {
-                    if (!isFavoritesList) {
+                if (!jlIsWeb) {
+                    if (inFavorites) {
+                        if (!isFavoritesList) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
+                                onClick = {
+                                    showMenu = false
+                                    onRemoveFromFavorites(record)
+                                },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Star,
+                                        contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
+                                    )
+                                }
+                            )
+                        }
+                    } else {
                         DropdownMenuItem(
-                            text = { Text(stringResource(Res.string.gui_mobile_remove_from_favorites)) },
+                            text = { Text(stringResource(Res.string.gui_mobile_add_to_favorites)) },
                             onClick = {
                                 showMenu = false
-                                onRemoveFromFavorites(record)
+                                onAddToFavorites(record)
                             },
                             trailingIcon = {
                                 Icon(
                                     imageVector = Icons.Default.Star,
-                                    contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites)
+                                    contentDescription = stringResource(Res.string.gui_mobile_favorites)
                                 )
                             }
                         )
                     }
-                } else {
-                    DropdownMenuItem(
-                        text = { Text(stringResource(Res.string.gui_mobile_add_to_favorites)) },
-                        onClick = {
-                            showMenu = false
-                            onAddToFavorites(record)
-                        },
-                        trailingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Star,
-                                contentDescription = stringResource(Res.string.gui_mobile_favorites)
-                            )
-                        }
-                    )
                 }
                 DropdownMenuItem(
                     text = { Text(stringResource(Res.string.gui_mobile_share)) },

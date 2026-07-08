@@ -13,20 +13,24 @@ import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.util.decodeShareUrl
-import org.jugglinglab.util.JuggleExceptionInternal
+import org.jugglinglab.util.jlIsWeb
 import org.jugglinglab.util.JuggleExceptionUser
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.navigation.NavController
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
 import org.jetbrains.compose.resources.getString
 
 @Composable
 fun AppStartupIntents(
     viewModel: AppViewModel,
+    navController: NavController,
     navigateTo: (String) -> Unit,
     walkthroughCoordinator: WalkthroughCoordinator,
     onboardingCompleted: Boolean,
@@ -50,7 +54,7 @@ fun AppStartupIntents(
 
     // Launch walkthrough
     LaunchedEffect(onboardingCompleted, isMigrationDialogShown) {
-        if (!onboardingCompleted && !isMigrationDialogShown && walkthroughCoordinator.walkthroughStep == 0) {
+        if (!jlIsWeb && !onboardingCompleted && !isMigrationDialogShown && walkthroughCoordinator.walkthroughStep == 0) {
             walkthroughCoordinator.startWalkthrough()
         }
     }
@@ -58,29 +62,33 @@ fun AppStartupIntents(
     // Handle a share URL passed in at launch (Android deep-link)
     LaunchedEffect(startUrl) {
         if (startUrl != null) {
+            if (!startUrl.contains("?") || startUrl.substringAfter("?").isEmpty()) {
+                onUrlHandled()
+                return@LaunchedEffect
+            }
             coroutineScope.launch(Dispatchers.Default) {
                 viewModel.isProcessing = true
                 try {
                     val (pattern, prefs) = decodeShareUrl(startUrl)
-                    if (pattern != null) {
-                        viewModel.animationController.restartJuggle(
-                            pattern = pattern,
-                            prefs = prefs
-                        )
-                        viewModel.state.addCurrentToUndoList()
-                        withContext(Dispatchers.Main) {
-                            navigateTo("Animation")
-                        }
-                    } else {
-                        val message = getString(Res.string.error_mobile_load_shared_pattern)
-                        onError(JuggleExceptionUser(message))
+                    viewModel.animationController.restartJuggle(
+                        pattern = pattern,
+                        prefs = prefs
+                    )
+                    viewModel.state.addCurrentToUndoList()
+                    while (!isNavGraphSet(navController)) {
+                        delay(50.milliseconds)
                     }
-                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        navigateTo("Animation")
+                    }
+                } catch (e: JuggleExceptionUser) {
                     val message = getString(
                         Res.string.error_mobile_loading_pattern,
                         e.message ?: ""
                     )
-                    onError(JuggleExceptionInternal(message))
+                    onError(JuggleExceptionUser(message))
+                } catch (e: Throwable) {
+                    onError(e)
                 } finally {
                     viewModel.isProcessing = false
                     onUrlHandled()
@@ -104,6 +112,9 @@ fun AppStartupIntents(
                             pat.layout
                             viewModel.animationController.restartJuggle(pattern = pat)
                             viewModel.state.addCurrentToUndoList()
+                            while (!isNavGraphSet(navController)) {
+                                delay(50.milliseconds)
+                            }
                             withContext(Dispatchers.Main) {
                                 navigateTo("Animation")
                             }
@@ -123,6 +134,9 @@ fun AppStartupIntents(
                             viewModel.patternListPath = null
                             viewModel.hasLoadedPatternList = true
                             viewModel.patternListScrollState = LazyListState()
+                            while (!isNavGraphSet(navController)) {
+                                delay(50.milliseconds)
+                            }
                             withContext(Dispatchers.Main) {
                                 navigateTo("PatternList")
                             }
@@ -147,5 +161,14 @@ fun AppStartupIntents(
                 }
             }
         }
+    }
+}
+
+private fun isNavGraphSet(navController: NavController): Boolean {
+    return try {
+        navController.graph
+        true
+    } catch (_: IllegalStateException) {
+        false
     }
 }

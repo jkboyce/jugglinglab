@@ -24,3 +24,6 @@ DerivedData/
 iosApp/iosApp/GoogleService-Info-Debug.plist
 iosApp/iosApp/GoogleService-Info-Release.plist
 iosApp/iosApp/LocalSettings.xcconfig
+
+# WASM
+kotlin-js-store/

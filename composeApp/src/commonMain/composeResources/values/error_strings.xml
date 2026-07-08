@@ -209,7 +209,6 @@
     <string name="error_mobile_favorites_format">Favorites file has wrong format</string>
     <string name="error_mobile_local_storage">Local storage not available</string>
     <string name="error_mobile_loading_favorites">Error loading Favorites: %1$s</string>
-    <string name="error_mobile_load_shared_pattern">Could not load shared pattern</string>
     <string name="error_mobile_loading_pattern">Error loading pattern: %1$s</string>
     <string name="error_mobile_reading_imported_file">Error reading imported file: %1$s</string>
     <string name="error_mobile_saving">Error saving: %1$s</string>

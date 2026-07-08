@@ -19,7 +19,8 @@ fun InfoScreen(
     themeSetting: ThemeSetting,
     prefsRepo: StoredPreferencesRepository?,
     onNavigateTo: (String) -> Unit,
-    onStartWalkthrough: (() -> Unit)? = null
+    onStartWalkthrough: (() -> Unit)? = null,
+    onOpenJmlClick: () -> Unit = {}
 ) {
     val coroutineScope = rememberCoroutineScope()
 
@@ -31,6 +32,7 @@ fun InfoScreen(
             }
         },
         onNavClick = onNavigateTo,
-        onStartWalkthrough = onStartWalkthrough
+        onStartWalkthrough = onStartWalkthrough,
+        onOpenJmlClick = onOpenJmlClick
     )
 }

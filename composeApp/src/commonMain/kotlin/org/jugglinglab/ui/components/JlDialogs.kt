@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.OutlinedTextField
@@ -33,6 +34,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
@@ -173,3 +178,82 @@ fun JlConfirmDialog(
         }
     )
 }
+
+@Suppress("DEPRECATION")
+@Composable
+fun JlMobileAppPromotionDialog(
+    onDismiss: () -> Unit
+) {
+    val uriHandler = LocalUriHandler.current
+    val annotatedLinkString = buildAnnotatedString {
+        append("Juggling Lab is also available as a mobile app: ")
+
+        val iosStart = length
+        append("Apple iOS")
+        val iosEnd = length
+        addStringAnnotation(
+            tag = "URL",
+            annotation = "https://apps.apple.com/app/juggling-lab/id6775941862",
+            start = iosStart,
+            end = iosEnd
+        )
+        addStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
+            ),
+            start = iosStart,
+            end = iosEnd
+        )
+
+        append(" or ")
+
+        val androidStart = length
+        append("Android")
+        val androidEnd = length
+        addStringAnnotation(
+            tag = "URL",
+            annotation = "https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab",
+            start = androidStart,
+            end = androidEnd
+        )
+        addStyle(
+            style = SpanStyle(
+                color = MaterialTheme.colorScheme.primary,
+                textDecoration = TextDecoration.Underline
+            ),
+            start = androidStart,
+            end = androidEnd
+        )
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        text = {
+            ClickableText(
+                text = annotatedLinkString,
+                style = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                onClick = { offset ->
+                    annotatedLinkString.getStringAnnotations(
+                        tag = "URL",
+                        start = offset,
+                        end = offset
+                    ).firstOrNull()?.let { annotation ->
+                        try {
+                            uriHandler.openUri(annotation.item)
+                        } catch (_: Throwable) {
+                        }
+                    }
+                }
+            )
+        },
+        confirmButton = {
+            Button(onClick = onDismiss) {
+                Text(stringResource(Res.string.gui_ok))
+            }
+        }
+    )
+}
+

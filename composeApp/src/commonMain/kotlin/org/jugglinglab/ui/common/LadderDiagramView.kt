@@ -15,6 +15,7 @@ import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.ui.mobile.LocalWalkthroughCoordinator
 import org.jugglinglab.util.jlToStringRounded
 import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -170,7 +171,8 @@ fun LadderDiagramView(
                                 // desktop zoom handling
                                 val delta = event.changes.first().scrollDelta
                                 // delta.y is positive for scrolling down (zoom in), negative for up (zoom out)
-                                var zoomChange = 1f + 0.05f * abs(delta.y)
+                                val multiplier = if (jlIsWeb) 0.005f else 0.05f
+                                var zoomChange = 1f + multiplier * abs(delta.y)
                                 if (delta.y < 0) {
                                     zoomChange = 1 / zoomChange
                                 }

@@ -101,6 +101,8 @@ actual val jlIsWeb: Boolean = false
 actual val jlIsAndroid: Boolean = false
 actual val jlIsIos: Boolean = true
 
+actual val jlIsMobileWeb: Boolean = false
+
 actual fun jlCurrentTimeMillis(): Long = (NSDate().timeIntervalSince1970 * 1000).toLong()
 
 actual fun jlExitProcess(status: Int) {
@@ -109,7 +111,7 @@ actual fun jlExitProcess(status: Int) {
 
 actual val jlFileSystem: okio.FileSystem = okio.FileSystem.SYSTEM
 
-actual val jlMaxMemoryBytes: Long = 100 * 1024 * 1024
+actual val jlMaxMemoryBytes: Long = 100L * 1024 * 1024
 
 @androidx.compose.runtime.Composable
 actual fun jlIsLandscape(): Boolean {
@@ -213,7 +215,6 @@ private class ShareUrlActivityItemSource(
     private val urlString: String,
     private val subject: String?
 ) : NSObject(), UIActivityItemSourceProtocol {
-
     override fun activityViewControllerPlaceholderItem(activityViewController: UIActivityViewController): Any {
         return NSURL.URLWithString(urlString) ?: urlString
     }
@@ -244,6 +245,9 @@ private class ShareUrlActivityItemSource(
     }
 }
 
+actual fun jlPreCopyShareUrl(): Boolean = false
+actual fun jlCancelPreCopyShareUrl() {}
+
 actual fun jlShareUrl(url: String, subject: String?, htmlText: String?) {
     presentOnMainThread {
         val shareSource = ShareUrlActivityItemSource(url, subject)
@@ -259,7 +263,6 @@ private class ShareFileActivityItemSource(
     private val fileURL: NSURL,
     private val subject: String?
 ) : NSObject(), UIActivityItemSourceProtocol {
-
     override fun activityViewControllerPlaceholderItem(activityViewController: UIActivityViewController): Any {
         return fileURL
     }
@@ -343,6 +346,8 @@ actual suspend fun jlGzipDecompress(input: ByteArray): ByteArray {
     result.writeAll(source)
     return result.readByteArray()
 }
+
+actual suspend fun jlPickAndReadJmlFile(): String? = null
 
 //------------------------------------------------------------------------------
 // Helpers for playing audio

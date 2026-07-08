@@ -10,6 +10,11 @@ package org.jugglinglab.ui.mobile
 
 import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.core.ThemeSetting
+import org.jugglinglab.jml.JmlParser
+import org.jugglinglab.jml.JmlPattern
+import org.jugglinglab.jml.JmlPatternList
+import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.jlPickAndReadJmlFile
 import org.jugglinglab.util.jlIsIos
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
@@ -23,6 +28,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import okio.Path
 
 @Composable
@@ -159,7 +165,59 @@ fun AppNavHost(
                         navigateTo(route)
                     }
                 },
-                onStartWalkthrough = { walkthroughCoordinator.startWalkthrough() }
+                onStartWalkthrough = { walkthroughCoordinator.startWalkthrough() },
+                onOpenJmlClick = {
+                    coroutineScope.launch(Dispatchers.Default) {
+                        try {
+                            val jmlContent = jlPickAndReadJmlFile() ?: return@launch
+                            viewModel.isProcessing = true
+                            val parser = JmlParser()
+                            parser.parse(jmlContent)
+
+                            when (parser.fileType) {
+                                JmlParser.JML_PATTERN -> {
+                                    val pat = JmlPattern.fromJmlNode(parser.tree!!)
+                                    pat.layout
+                                    viewModel.animationController.restartJuggle(pattern = pat)
+                                    viewModel.state.addCurrentToUndoList()
+                                    withContext(Dispatchers.Main) {
+                                        navigateTo("Animation")
+                                    }
+                                }
+
+                                JmlParser.JML_LIST -> {
+                                    val pl = JmlPatternList(parser.tree)
+                                    viewModel.patternList.clearModel()
+                                    viewModel.patternList.title = pl.title
+                                    for (i in 0 until pl.size) {
+                                        val item = pl.getLine(i)
+                                        if (item != null) {
+                                            viewModel.patternList.addLine(-1, item)
+                                        }
+                                    }
+                                    viewModel.isPatternListEditable = true
+                                    viewModel.patternListPath = null
+                                    viewModel.hasLoadedPatternList = true
+                                    viewModel.patternListScrollState = androidx.compose.foundation.lazy.LazyListState()
+                                    withContext(Dispatchers.Main) {
+                                        navigateTo("PatternList")
+                                    }
+                                }
+
+                                else -> {
+                                    val message = "Invalid JML file"
+                                    handleRuntimeError(JuggleExceptionUser(message))
+                                }
+                            }
+                        } catch (e: JuggleExceptionUser) {
+                            handleRuntimeError(e)
+                        } catch (e: Throwable) {
+                            handleRuntimeError(e)
+                        } finally {
+                            viewModel.isProcessing = false
+                        }
+                    }
+                }
             )
         }
     }

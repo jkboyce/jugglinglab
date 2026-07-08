@@ -15,6 +15,8 @@ import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.util.jlShareFile
 import org.jugglinglab.util.jlShareUrl
+import org.jugglinglab.util.jlPreCopyShareUrl
+import org.jugglinglab.util.jlCancelPreCopyShareUrl
 import org.jugglinglab.util.jlSanitizeFilename
 import org.jugglinglab.util.buildShareUrl
 import org.jugglinglab.util.JuggleExceptionInternal
@@ -42,6 +44,7 @@ private suspend fun sharePattern(
 ) {
     val url = buildShareUrl(pattern, prefs)
     if (url.encodeToByteArray().size > 2000) {
+        jlCancelPreCopyShareUrl()
         onError(JuggleExceptionUser(getString(Res.string.error_mobile_pattern_too_long)))
     } else {
         val title = pattern.title?.takeIf { it.isNotBlank() }
@@ -100,11 +103,13 @@ fun CoroutineScope.shareCurrentPatternHelper(
     onBusyChange: (Boolean) -> Unit,
     onError: (Throwable) -> Unit
 ) {
+    val preCopied = jlPreCopyShareUrl()
     launch(Dispatchers.Default) {
         onBusyChange(true)
         try {
             sharePattern(pattern, prefs, onError)
         } catch (e: Throwable) {
+            if (preCopied) jlCancelPreCopyShareUrl()
             val message = getString(Res.string.error_mobile_sharing, e.message ?: "")
             onError(JuggleExceptionInternal(message))
         } finally {
@@ -156,6 +161,7 @@ fun CoroutineScope.sharePatternHelper(
     onBusyChange: (Boolean) -> Unit,
     onError: (Throwable) -> Unit
 ) {
+    val preCopied = jlPreCopyShareUrl()
     launch(Dispatchers.Default) {
         onBusyChange(true)
         try {
@@ -165,9 +171,14 @@ fun CoroutineScope.sharePatternHelper(
                 val prefs = list.getAnimationPrefsForLine(index) ?: AnimationPrefs()
                 if (pattern != null) {
                     sharePattern(pattern, prefs, onError)
+                } else {
+                    if (preCopied) jlCancelPreCopyShareUrl()
                 }
+            } else {
+                if (preCopied) jlCancelPreCopyShareUrl()
             }
         } catch (e: Throwable) {
+            if (preCopied) jlCancelPreCopyShareUrl()
             val message = getString(Res.string.error_mobile_sharing, e.message ?: "")
             onError(JuggleExceptionInternal(message))
         } finally {

@@ -2,13 +2,11 @@
 
 Juggling Lab is an open-source application for creating and animating juggling patterns. Its main goals are to help people learn juggling patterns, and to assist with inventing new ones.
 
-The [project site](https://jugglinglab.org) has more information and download links.
-
-There is also a [web service](https://jugglinglab.org/html/animinfo.html) to generate animated GIFs from a pattern description.
+The [project site](https://jugglinglab.org) has more information, download links, and the [web application](https://jugglinglab.org/anim).
 
 ## The code
 
-Juggling Lab is a Compose Multiplatform application written in Kotlin. To date it supports all desktop platforms (macOS, Windows, Linux), Android, and iOS. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
+Juggling Lab is a Compose Multiplatform application written in Kotlin. It supports all desktop platforms (macOS, Windows, Linux), Android, iOS, and web/WASM. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
 
 **Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use the command `gradlew run` in the base directory of the repo to compile and run the desktop application.
 

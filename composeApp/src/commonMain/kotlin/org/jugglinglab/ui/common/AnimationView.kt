@@ -20,6 +20,7 @@ import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlToStringRounded
 import org.jugglinglab.util.jlPlayBounceSound
 import org.jugglinglab.util.jlPlayCatchSound
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
@@ -416,7 +417,8 @@ private suspend fun PointerInputScope.handlePointerEvents(
                 try {
                     val delta = changes.first().scrollDelta
                     // delta.y is positive for scrolling down (zoom in), negative for up (zoom out)
-                    var zoomFactor = 1f + 0.1f * abs(delta.y)
+                    val multiplier = if (jlIsWeb) 0.01f else 0.1f
+                    var zoomFactor = 1f + multiplier * abs(delta.y)
                     if (delta.y < 0) {
                         zoomFactor = 1 / zoomFactor
                     }

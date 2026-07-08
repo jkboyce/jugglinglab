@@ -15,11 +15,14 @@ import org.jugglinglab.core.ThemeSetting
 import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.ui.components.JlErrorDialog
 import org.jugglinglab.ui.components.JlStoppedDialog
+import org.jugglinglab.ui.components.JlMobileAppPromotionDialog
 import org.jugglinglab.util.crashReporter
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.JuggleExceptionDone
 import org.jugglinglab.util.BackHandler
 import org.jugglinglab.util.backGestureHandler
+import org.jugglinglab.util.jlIsWeb
+import org.jugglinglab.util.jlIsMobileWeb
 import org.jugglinglab.util.jlIsLandscape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -93,7 +96,19 @@ fun App(
         ThemeSetting.DARK -> true
         ThemeSetting.SYSTEM -> isSystemInDarkTheme()
     }
-    val colorScheme = if (useDarkTheme) darkColorScheme() else lightColorScheme()
+    val colorScheme = if (useDarkTheme) {
+        darkColorScheme()
+    } else {
+        val defaultLight = lightColorScheme()
+        if (jlIsWeb && !jlIsMobileWeb) {
+            defaultLight.copy(
+                background = Color.White,
+                surface = Color.White
+            )
+        } else {
+            defaultLight
+        }
+    }
 
     // Coroutine Scope & ViewModel Setup
 
@@ -212,6 +227,7 @@ fun App(
 
     AppStartupIntents(
         viewModel = viewModel,
+        navController = navController,
         navigateTo = navigateTo,
         walkthroughCoordinator = walkthroughCoordinator,
         onboardingCompleted = onboardingCompleted,
@@ -246,38 +262,52 @@ fun App(
                     val isLandscape = jlIsLandscape()
 
                     // Composable for the navigation buttons
-                    val views = listOf(
-                        Triple(
-                            "Info",
-                            Icons.Default.Home,
-                            stringResource(Res.string.gui_mobile_nav_info)
-                        ),
-                        Triple(
-                            "Animation",
-                            Icons.Default.Animation,
-                            stringResource(Res.string.gui_mobile_nav_animation)
-                        ),
-                        Triple(
-                            "Notation",
-                            Icons.Default.Edit,
-                            stringResource(Res.string.gui_mobile_nav_notation)
-                        ),
-                        Triple(
-                            "PatternList",
-                            Icons.AutoMirrored.Filled.FormatListBulleted,
-                            stringResource(Res.string.gui_mobile_nav_pattern_list)
-                        ),
-                        Triple(
-                            "Generator",
-                            Icons.Default.Build,
-                            stringResource(Res.string.gui_mobile_nav_generator)
-                        ),
-                        Triple(
-                            "Favorites",
-                            Icons.Default.Star,
-                            stringResource(Res.string.gui_mobile_favorites)
+                    val views = buildList {
+                        add(
+                            Triple(
+                                "Info",
+                                Icons.Default.Home,
+                                stringResource(Res.string.gui_mobile_nav_info)
+                            )
                         )
-                    )
+                        add(
+                            Triple(
+                                "Animation",
+                                Icons.Default.Animation,
+                                stringResource(Res.string.gui_mobile_nav_animation)
+                            )
+                        )
+                        add(
+                            Triple(
+                                "Notation",
+                                Icons.Default.Edit,
+                                stringResource(Res.string.gui_mobile_nav_notation)
+                            )
+                        )
+                        add(
+                            Triple(
+                                "PatternList",
+                                Icons.AutoMirrored.Filled.FormatListBulleted,
+                                stringResource(Res.string.gui_mobile_nav_pattern_list)
+                            )
+                        )
+                        add(
+                            Triple(
+                                "Generator",
+                                Icons.Default.Build,
+                                stringResource(Res.string.gui_mobile_nav_generator)
+                            )
+                        )
+                        if (!jlIsWeb) {
+                            add(
+                                Triple(
+                                    "Favorites",
+                                    Icons.Default.Star,
+                                    stringResource(Res.string.gui_mobile_favorites)
+                                )
+                            )
+                        }
+                    }
                     val navButtons = remember {
                         movableContentOf<String> { activeRoute ->
                             views.forEach { (viewName, icon, description) ->
@@ -369,6 +399,13 @@ fun App(
                         JlErrorDialog(
                             errorMessage = currentAsyncErrorMessage,
                             onDismiss = { viewModel.asyncErrorMessage = null }
+                        )
+                    }
+
+                    var showMobilePromotionDialog by remember { mutableStateOf(jlIsMobileWeb) }
+                    if (showMobilePromotionDialog) {
+                        JlMobileAppPromotionDialog(
+                            onDismiss = { showMobilePromotionDialog = false }
                         )
                     }
 

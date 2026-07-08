@@ -17,9 +17,9 @@ import org.jugglinglab.jml.PatternBuilder
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.Coordinate
+import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.jlIsNearLine
 import org.jugglinglab.util.jlGetStringResource
-import org.jugglinglab.util.jlIsMobile
 import org.jugglinglab.util.toDegrees
 import org.jugglinglab.util.toRadians
 import androidx.compose.runtime.getValue
@@ -203,7 +203,7 @@ class AnimationController(
                         layout.eventPoints[0][i][5][1].roundToInt(),
                         layout.eventPoints[0][i][6][0].roundToInt(),
                         layout.eventPoints[0][i][6][1].roundToInt(),
-                        if (jlIsMobile) 30 else 4
+                        if (jlIsTouchInterface) 30 else 4
                     )
                     if (draggingY) {
                         dragging = true
@@ -258,7 +258,7 @@ class AnimationController(
                             layout.posPoints[i][4][1].roundToInt(),
                             layout.posPoints[i][6][0].roundToInt(),
                             layout.posPoints[i][6][1].roundToInt(),
-                            if (jlIsMobile) 30 else 4
+                            if (jlIsTouchInterface) 30 else 4
                         )
                         if (draggingZ) {
                             dragging = true
@@ -283,7 +283,7 @@ class AnimationController(
                     if (layout.showAngleDragControl) {
                         val dmx = mx - t - layout.posPoints[i][5][0].roundToInt()
                         val dmy = my - layout.posPoints[i][5][1].roundToInt()
-                        draggingAngle = (dmx * dmx + dmy * dmy < if (jlIsMobile) 2500.0 else 49.0)
+                        draggingAngle = (dmx * dmx + dmy * dmy < if (jlIsTouchInterface) 2500.0 else 49.0)
                         if (draggingAngle) {
                             dragging = true
                             draggingLeft = (i == 0)

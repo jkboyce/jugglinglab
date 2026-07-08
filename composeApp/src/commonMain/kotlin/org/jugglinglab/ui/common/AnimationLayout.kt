@@ -20,7 +20,7 @@ import org.jugglinglab.jml.JmlPosition
 import org.jugglinglab.renderer.Renderer
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
-import org.jugglinglab.util.jlIsMobile
+import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.toRadians
 import kotlin.math.PI
 import kotlin.math.abs
@@ -247,15 +247,15 @@ class AnimationLayout(
 
         const val STEREO_SEPARATION_RADIANS: Double = 0.1
 
-        val EVENT_BOX_HW_CM: Double = if (jlIsMobile) 10.0 else 5.0
-        val UNSELECTED_BOX_HW_CM: Double = if (jlIsMobile) 4.0 else 2.0
-        val EVENT_YAXIS_CONTROL_CM: Double = if (jlIsMobile) 25.0 else 10.0
+        val EVENT_BOX_HW_CM: Double = if (jlIsTouchInterface) 10.0 else 5.0
+        val UNSELECTED_BOX_HW_CM: Double = if (jlIsTouchInterface) 4.0 else 2.0
+        val EVENT_YAXIS_CONTROL_CM: Double = if (jlIsTouchInterface) 25.0 else 10.0
         const val XZ_CONTROL_SHOW_DEG: Double = 60.0
         const val Y_CONTROL_SHOW_DEG: Double = 30.0
         const val HANDPATH_POINT_SEP_TIME: Double = 0.005
-        val POSITION_BOX_HW_CM: Double = if (jlIsMobile) 20.0 else 10.0
-        val POSITION_ZAXIS_CONTROL_CM: Double = if (jlIsMobile) 40.0 else 20.0
-        val POSITION_ANGLE_CONTROL_CM: Double = if (jlIsMobile) 50.0 else 20.0
+        val POSITION_BOX_HW_CM: Double = if (jlIsTouchInterface) 20.0 else 10.0
+        val POSITION_ZAXIS_CONTROL_CM: Double = if (jlIsTouchInterface) 40.0 else 20.0
+        val POSITION_ANGLE_CONTROL_CM: Double = if (jlIsTouchInterface) 50.0 else 20.0
         const val POSITION_BOX_Z_OFFSET_CM: Double = 0.0
         const val XY_GRID_SPACING_CM: Double = 20.0
         const val GRID_SHOW_DEG: Double = 70.0

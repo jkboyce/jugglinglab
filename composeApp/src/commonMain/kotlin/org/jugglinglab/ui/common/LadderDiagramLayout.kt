@@ -14,8 +14,8 @@ import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPosition
 import org.jugglinglab.jml.JmlSymmetry
-import org.jugglinglab.util.jlIsMobile
 import org.jugglinglab.jml.JmlTransition
+import org.jugglinglab.util.jlIsTouchInterface
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.TextMeasurer
@@ -135,7 +135,7 @@ class LadderDiagramLayout(
         rightX = (scale * (BORDER_SIDES + 1.0)).roundToInt()
         jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION)).roundToInt()
 
-        if (jlIsMobile) {
+        if (jlIsTouchInterface) {
             // try to make hit boxes larger on mobile
             val minTransitionRadius = transitionRadius
             val minPositionRadius = positionRadius

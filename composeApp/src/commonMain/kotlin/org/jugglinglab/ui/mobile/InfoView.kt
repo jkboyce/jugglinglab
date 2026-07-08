@@ -15,6 +15,7 @@ import org.jugglinglab.core.ThemeSetting
 import org.jugglinglab.util.jlCurrentVersion
 import org.jugglinglab.util.jlIsAndroid
 import org.jugglinglab.util.jlIsLandscape
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -35,6 +36,7 @@ import androidx.compose.material.icons.filled.Build
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.FileOpen
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -58,7 +60,8 @@ fun InfoView(
     themeSetting: ThemeSetting = ThemeSetting.SYSTEM,
     onThemeChange: (ThemeSetting) -> Unit = {},
     onNavClick: (String) -> Unit = {},
-    onStartWalkthrough: (() -> Unit)? = null
+    onStartWalkthrough: (() -> Unit)? = null,
+    onOpenJmlClick: () -> Unit = {}
 ) {
     val uriHandler = LocalUriHandler.current
 
@@ -77,7 +80,8 @@ fun InfoView(
                 Spacer(modifier = Modifier.width(16.dp))
                 NavGrid(
                     modifier = Modifier.weight(1f).fillMaxHeight().padding(bottom = 16.dp),
-                    onNavClick = onNavClick
+                    onNavClick = onNavClick,
+                    onOpenJmlClick = onOpenJmlClick
                 )
             }
         } else {
@@ -86,7 +90,8 @@ fun InfoView(
                 Spacer(modifier = Modifier.height(16.dp))
                 NavGrid(
                     modifier = Modifier.weight(1f).fillMaxWidth(),
-                    onNavClick = onNavClick
+                    onNavClick = onNavClick,
+                    onOpenJmlClick = onOpenJmlClick
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 ThemeSelector(themeSetting, onThemeChange)
@@ -166,7 +171,8 @@ private fun InfoHeader(
 @Composable
 private fun NavGrid(
     modifier: Modifier = Modifier,
-    onNavClick: (String) -> Unit
+    onNavClick: (String) -> Unit,
+    onOpenJmlClick: () -> Unit
 ) {
     Column(
         modifier = modifier,
@@ -197,11 +203,19 @@ private fun NavGrid(
             ) { onNavClick("Generator") }
         }
         Row(modifier = Modifier.fillMaxWidth().weight(1f)) {
-            NavButton(
-                modifier = Modifier.weight(1f).walkthroughTarget("info_favorites"),
-                title = stringResource(Res.string.gui_mobile_info_favorites),
-                icon = Icons.Default.Star
-            ) { onNavClick("Favorites") }
+            if (jlIsWeb) {
+                NavButton(
+                    modifier = Modifier.weight(1f),
+                    title = "Open JML File",
+                    icon = Icons.Default.FileOpen
+                ) { onOpenJmlClick() }
+            } else {
+                NavButton(
+                    modifier = Modifier.weight(1f).walkthroughTarget("info_favorites"),
+                    title = stringResource(Res.string.gui_mobile_info_favorites),
+                    icon = Icons.Default.Star
+                ) { onNavClick("Favorites") }
+            }
             NavButton(
                 modifier = Modifier.weight(1f),
                 title = stringResource(Res.string.gui_mobile_info_library),

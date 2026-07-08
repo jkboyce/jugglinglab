@@ -13,6 +13,7 @@ import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterDescriptor
 import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlIsWeb
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.graphics.ImageBitmap
@@ -59,33 +60,47 @@ abstract class Prop {
     abstract fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize
 
     companion object {
-        val builtinProps: List<String> = listOf(
-            "ball",
-            "square",
-            "image",
-            "ring",
-        )
-        val builtinPropsStringResources: List<StringResource> = listOf(
-            Res.string.gui_prop_name_ball,
-            Res.string.gui_prop_name_square,
-            Res.string.gui_prop_name_image,
-            Res.string.gui_prop_name_ring,
-        )
+        val builtinProps: List<String>
+            get() = if (jlIsWeb) {
+                listOf("ball", "square", "ring")
+            } else {
+                listOf("ball", "square", "image", "ring")
+            }
+        val builtinPropsStringResources: List<StringResource>
+            get() = if (jlIsWeb) {
+                listOf(
+                    Res.string.gui_prop_name_ball,
+                    Res.string.gui_prop_name_square,
+                    Res.string.gui_prop_name_ring,
+                )
+            } else {
+                listOf(
+                    Res.string.gui_prop_name_ball,
+                    Res.string.gui_prop_name_square,
+                    Res.string.gui_prop_name_image,
+                    Res.string.gui_prop_name_ring,
+                )
+            }
 
         // Create a new prop of the given type.
         @Throws(JuggleExceptionUser::class)
         fun newProp(type: String): Prop {
-            if (type.equals("ball", ignoreCase = true)) {
+            val actualType = if (jlIsWeb && type.equals("image", ignoreCase = true)) {
+                "ball"
+            } else {
+                type
+            }
+            if (actualType.equals("ball", ignoreCase = true)) {
                 return BallProp()
-            } else if (type.equals("square", ignoreCase = true)) {
+            } else if (actualType.equals("square", ignoreCase = true)) {
                 return SquareProp()
-            } else if (type.equals("image", ignoreCase = true)) {
+            } else if (actualType.equals("image", ignoreCase = true)) {
                 return ImageProp()
-            } else if (type.equals("ring", ignoreCase = true)) {
+            } else if (actualType.equals("ring", ignoreCase = true)) {
                 return RingProp()
             }
 
-            val message = jlGetStringResource(Res.string.error_prop_type, type)
+            val message = jlGetStringResource(Res.string.error_prop_type, actualType)
             throw JuggleExceptionUser(message)
         }
 

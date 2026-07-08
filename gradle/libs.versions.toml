@@ -55,6 +55,10 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 crashkios-crashlytics = { module = "co.touchlab.crashkios:crashlytics", version.ref = "crashkios" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", version.ref = "okio" }
+# kotlinx-datetime version 0.6.1 is strictly required to prevent IrLinkageError at runtime in WasmJs.
+# This version matches what okio-fakefilesystem (used as the mock web filesystem) is compiled against.
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { strictly = "0.6.1" } }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
