@@ -8,8 +8,12 @@
 
 package org.jugglinglab.notation
 
+import org.jugglinglab.composeapp.generated.resources.Res
+import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.jlGetStringResource
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class SiteswapPatternTest {
     @Test
@@ -50,6 +54,40 @@ class SiteswapPatternTest {
         pattern.asJmlPattern().layout
         assertEquals(1, pattern.numberOfJugglers)
         assertEquals(5, pattern.numberOfPaths)
+    }
+
+    @Test
+    fun `pattern parsing multiplex zero regressions`() {
+        val cases = listOf(
+            "([20],[20])([20],[20])" to 2,
+            "([40],[40])([40],[40])([40],[40])" to 4,
+            "[60][60][60][60]" to 6,
+        )
+
+        for ((patternString, expectedPaths) in cases) {
+            assertPatternLayouts(patternString, expectedPaths)
+        }
+    }
+
+    @Test
+    fun `pattern parsing short multiplex zero patterns`() {
+        val cases = listOf(
+            "([20],[20])" to 2,
+            "([40],[40])" to 4,
+            "([40],[40])([40],[40])" to 4,
+            "[60]" to 6,
+            "[60][60]" to 6,
+            "[60][60][60]" to 6,
+        )
+
+        for ((patternString, expectedPaths) in cases) {
+            assertPatternLayouts(patternString, expectedPaths)
+        }
+    }
+
+    @Test
+    fun `pattern parsing multiplex zero placeholders with holds`() {
+        assertPatternLayouts("24[504]", 5)
     }
 
     @Test
@@ -162,5 +200,20 @@ class SiteswapPatternTest {
         val pattern3 = SiteswapPattern().fromString("{5}1{5}1")
         pattern3.asJmlPattern().layout
         assertEquals(1, pattern3.numberOfJugglers)
+    }
+
+    @Test
+    fun `pattern parsing bad average remains a user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("23")
+        }
+        assertEquals(jlGetStringResource(Res.string.error_siteswap_bad_average), exception.message)
+    }
+
+    private fun assertPatternLayouts(patternString: String, expectedPaths: Int) {
+        val pattern = SiteswapPattern().fromString(patternString)
+        pattern.asJmlPattern().layout
+        assertEquals(1, pattern.numberOfJugglers)
+        assertEquals(expectedPaths, pattern.numberOfPaths)
     }
 }
