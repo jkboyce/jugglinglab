@@ -410,7 +410,7 @@ abstract class MhnPattern : Pattern() {
                     itworks = if (target == null) {
                         false
                     } else {
-                        itworks and (target.source == null) // target also unfilled?
+                        itworks and canFillTarget(sst2, target)
                     }
                 }
 
@@ -506,6 +506,9 @@ abstract class MhnPattern : Pattern() {
             throw JuggleExceptionInternal("Problem assigning path numbers 2")
         }
     }
+
+    private fun canFillTarget(source: MhnThrow, target: MhnThrow): Boolean =
+        target.source == null && source.isZeroPlaceholder == target.isZeroPlaceholder
 
     // Set the `source` field for all throws that don't already have it set.
     //

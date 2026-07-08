@@ -40,6 +40,7 @@ Over that long span of time the project has seen contributions from many people,
 - Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - Daniel Simu – Bug reports, many design suggestions
 - P. R. Vaidyanathan – Hand Siteswap feature input
+- Matt Van Horn – Bug fix parsing multiplex patterns with 0s
 - Xavier Verne – French translation of user interface
 - Johannes Waldmann – Source code documentation
 - Mahit Warhadpande – Hand Siteswap feature design and implementation

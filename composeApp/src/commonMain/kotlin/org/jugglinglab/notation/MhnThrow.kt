@@ -60,6 +60,9 @@ data class MhnThrow(
     val isZero: Boolean
         get() = (throwValue == 0 /* pathnum == -1 */)
 
+    val isZeroPlaceholder: Boolean
+        get() = (isZero && juggler == targetJuggler && hand == targetHand)
+
     val throwValue: Int
         get() = (targetIndex - index)
 
