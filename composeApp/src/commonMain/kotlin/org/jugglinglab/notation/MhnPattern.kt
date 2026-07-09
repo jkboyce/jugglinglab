@@ -36,6 +36,7 @@ import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
 import org.jugglinglab.util.Permutation
 import org.jugglinglab.util.jlGetStringResource
+import org.jugglinglab.util.jlToStringRounded
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -101,6 +102,14 @@ abstract class MhnPattern : Pattern() {
         if ((pl.removeParameter("bps").also { temp = it }) != null) {
             try {
                 bpsSet = temp!!.toDouble()
+                if (bpsSet > 0.0 && (bpsSet !in BPS_MIN..BPS_MAX)) {
+                    val message = jlGetStringResource(
+                        Res.string.error_bps_range,
+                        jlToStringRounded(BPS_MIN, 2),
+                        BPS_MAX.toInt().toString()
+                    )
+                    throw JuggleExceptionUser(message)
+                }
                 bps = bpsSet
             } catch (_: NumberFormatException) {
                 val message = jlGetStringResource(Res.string.error_bps_value)
@@ -1865,6 +1874,8 @@ abstract class MhnPattern : Pattern() {
 
     companion object {
         const val BPS_DEFAULT: Double = -1.0 // calculate bps
+        const val BPS_MIN: Double = 0.05
+        const val BPS_MAX: Double = 200.0
         const val DWELL_DEFAULT: Double = 1.3
         const val GRAVITY_DEFAULT: Double = 980.0
         const val PROPDIAM_DEFAULT: Double = 10.0
@@ -1907,6 +1918,12 @@ abstract class MhnPattern : Pattern() {
 
         // Minimum time from a catch to a subsequent throw for that hand, in beats
         protected const val BEATS_CATCH_THROW_MIN: Double = 0.02
+
+        init {
+            require(10001 * min(BEATS_THROW_CATCH_MIN, BEATS_CATCH_THROW_MIN) >= BPS_MAX) {
+                "Safety requirement failed: BPS_MAX is too large for the minimum throw/catch intervals under 4-decimal rounding."
+            }
+        }
 
         // Maximum allowed time without events for a given hand, in seconds
         protected const val SECS_EVENT_GAP_MAX: Double = 0.5

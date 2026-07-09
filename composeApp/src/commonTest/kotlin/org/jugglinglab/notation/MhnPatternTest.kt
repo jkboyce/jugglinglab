@@ -8,8 +8,10 @@
 
 package org.jugglinglab.notation
 
+import org.jugglinglab.util.JuggleExceptionUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 
 class MhnPatternTest {
     // utility function for testing JML creation.
@@ -74,4 +76,27 @@ class MhnPatternTest {
         assertEquals(expected, trimmedJml(pattern.asJmlPattern().toString()))
     }
 
+    @Test
+    fun `bps limits`() {
+        // verify bps = 200 is allowed and does not throw
+        SiteswapPattern().fromString("pattern=3;bps=200").asJmlPattern()
+
+        // verify bps = 201 is rejected with JuggleExceptionUser
+        assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("pattern=3;bps=201").asJmlPattern()
+        }
+
+        // verify bps = 0.05 is allowed and does not throw
+        SiteswapPattern().fromString("pattern=3;bps=0.05").asJmlPattern()
+
+        // verify bps = 0.049 is rejected with JuggleExceptionUser
+        assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("pattern=3;bps=0.049").asJmlPattern()
+        }
+
+        // verify bps = 0 (and negative values) default and do not throw
+        SiteswapPattern().fromString("pattern=3;bps=0").asJmlPattern()
+        SiteswapPattern().fromString("pattern=3;bps=-1").asJmlPattern()
+    }
 }
+
