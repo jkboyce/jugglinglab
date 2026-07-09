@@ -73,7 +73,11 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        enableEdgeToEdge()
+        if (android.os.Build.VERSION.SDK_INT < 35) {
+            enableEdgeToEdge()
+        } else {
+            window.isNavigationBarContrastEnforced = false
+        }
         super.onCreate(savedInstanceState)
 
         // Set up Firebase crash logging/reporting
@@ -156,35 +160,45 @@ class MainActivity : ComponentActivity() {
             }
 
             androidx.compose.runtime.DisposableEffect(useDarkTheme) {
-                enableEdgeToEdge(
-                    statusBarStyle = if (useDarkTheme) {
-                        androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
-                    } else {
-                        androidx.activity.SystemBarStyle.light(
-                            android.graphics.Color.TRANSPARENT,
-                            android.graphics.Color.TRANSPARENT
-                        )
-                    },
-                    navigationBarStyle = if (useDarkTheme) {
-                        androidx.activity.SystemBarStyle.dark(
-                            android.graphics.Color.argb(
-                                0x80,
-                                0x1b,
-                                0x1b,
-                                0x1b
+                if (android.os.Build.VERSION.SDK_INT < 35) {
+                    enableEdgeToEdge(
+                        statusBarStyle = if (useDarkTheme) {
+                            androidx.activity.SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
+                        } else {
+                            androidx.activity.SystemBarStyle.light(
+                                android.graphics.Color.TRANSPARENT,
+                                android.graphics.Color.TRANSPARENT
                             )
-                        )
-                    } else {
-                        androidx.activity.SystemBarStyle.light(
-                            android.graphics.Color.argb(
-                                0xe6,
-                                0xFF,
-                                0xFF,
-                                0xFF
-                            ), android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
-                        )
+                        },
+                        navigationBarStyle = if (useDarkTheme) {
+                            androidx.activity.SystemBarStyle.dark(
+                                android.graphics.Color.argb(
+                                    0x80,
+                                    0x1b,
+                                    0x1b,
+                                    0x1b
+                                )
+                            )
+                        } else {
+                            androidx.activity.SystemBarStyle.light(
+                                android.graphics.Color.argb(
+                                    0xe6,
+                                    0xFF,
+                                    0xFF,
+                                    0xFF
+                                ), android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b)
+                            )
+                        }
+                    )
+                } else {
+                    val window = this@MainActivity.window
+                    val view = window.decorView
+                    window.isNavigationBarContrastEnforced = false
+                    androidx.core.view.WindowCompat.getInsetsController(window, view).run {
+                        isAppearanceLightStatusBars = !useDarkTheme
+                        isAppearanceLightNavigationBars = !useDarkTheme
                     }
-                )
+                }
                 onDispose {}
             }
 
