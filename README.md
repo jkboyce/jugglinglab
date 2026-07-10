@@ -8,7 +8,7 @@ The [project site](https://jugglinglab.org) has more information, download links
 
 Juggling Lab is a Compose Multiplatform application written in Kotlin. It supports all desktop platforms (macOS, Windows, Linux), Android, iOS, and web/WASM. Clone the repository and play around with it! We appreciate bug reports (file under "Issues" above), and pull requests (bug fixes, new/updated pattern files, new features).
 
-**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use the command `gradlew run` in the base directory of the repo to compile and run the desktop application.
+**Building Juggling Lab.** The project is built with [Gradle](https://gradle.org/). Use the command `./gradlew run` in the base directory of the repo to compile and run the desktop application.
 
 For mobile development we recommend [Android Studio](https://developer.android.com/studio) (Android) and [Xcode](https://developer.apple.com/xcode/) (iOS). Both have good support for Gradle, and device emulation and testing. Open the repo in either app to configure the relevant plugins.
 
