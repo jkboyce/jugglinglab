@@ -523,9 +523,122 @@ actual fun jlPlayBounceSound(volume: Float) {
 // Helpers for back navigation
 //------------------------------------------------------------------------------
 
+@JsFun(
+    """(enabled) => {
+        if (typeof window !== 'undefined') {
+            window.composeBackHandlerEnabled = enabled;
+        }
+    }"""
+)
+private external fun jsUpdateBackHandlerEnabled(enabled: Boolean)
+
+@JsFun(
+    """() => {
+        if (typeof window !== 'undefined') {
+            if (window.history) {
+                const doPush = () => {
+                    if (!window.composeBackHandlerPushed) {
+                        window.composeBackHandlerPushed = true;
+                        window.history.pushState({ active: true }, "");
+                    }
+                };
+
+                if (window.composeBackHandlerPushed) {
+                    doPush();
+                } else {
+                    const onInteraction = () => {
+                        doPush();
+                        cleanup();
+                    };
+                    const cleanup = () => {
+                        window.removeEventListener('mousedown', onInteraction);
+                        window.removeEventListener('keydown', onInteraction);
+                        window.removeEventListener('touchstart', onInteraction);
+                        window.removeEventListener('pointerdown', onInteraction);
+                    };
+                    window.composeInteractionCleanup = cleanup;
+                    window.addEventListener('mousedown', onInteraction);
+                    window.addEventListener('keydown', onInteraction);
+                    window.addEventListener('touchstart', onInteraction);
+                    window.addEventListener('pointerdown', onInteraction);
+                }
+            }
+        }
+    }"""
+)
+private external fun jsPushState()
+
+@JsFun(
+    """() => {
+        if (typeof window !== 'undefined' && window.history) {
+            window.history.replaceState({ active: false }, "");
+        }
+    }"""
+)
+private external fun jsReplaceInitialState()
+
+@JsFun(
+    """(onBack) => {
+        if (typeof window !== 'undefined') {
+            window.onpopstate = (event) => {
+                const state = event.state;
+                if (state && state.active) {
+                    return;
+                }
+                if (window.composeBackHandlerEnabled) {
+                    onBack();
+                    if (window.history) {
+                        window.history.forward();
+                    }
+                } else {
+                    if (window.confirm("Are you sure you want to quit the application?")) {
+                        if (window.history) {
+                            window.history.back();
+                        }
+                    } else {
+                        if (window.history) {
+                            window.history.forward();
+                        }
+                    }
+                }
+            };
+        }
+    }"""
+)
+private external fun jsSetupPopStateListener(onBack: () -> Unit)
+
+@JsFun(
+    """() => {
+        if (typeof window !== 'undefined') {
+            window.onpopstate = null;
+            if (window.composeInteractionCleanup) {
+                window.composeInteractionCleanup();
+                window.composeInteractionCleanup = null;
+            }
+            window.composeBackHandlerPushed = false;
+        }
+    }"""
+)
+private external fun jsTeardownPopStateListener()
+
 @androidx.compose.runtime.Composable
 actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
-    // No-op for Web
+    val currentOnBack = androidx.compose.runtime.rememberUpdatedState(onBack)
+
+    androidx.compose.runtime.SideEffect {
+        jsUpdateBackHandlerEnabled(enabled)
+    }
+
+    androidx.compose.runtime.DisposableEffect(Unit) {
+        jsReplaceInitialState()
+        jsPushState()
+        jsSetupPopStateListener {
+            currentOnBack.value()
+        }
+        onDispose {
+            jsTeardownPopStateListener()
+        }
+    }
 }
 
 actual fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier {
