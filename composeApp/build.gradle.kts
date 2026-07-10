@@ -4,14 +4,15 @@
 // Juggling Lab build file for use with the Gradle build system.
 // A few useful commands:
 //
-// - `gradlew run` to build and run the desktop app
-// - `gradlew run -PJLcompose` to build and run with a Compose UI
-// - `gradlew jvmTest` to run test cases
-// - `gradlew desktopBuild` to build bin/JugglingLab.jar
-// - `gradlew androidBuild` to build Android Debug APKs
-// - `gradlew :androidApp:bundleRelease` to build a signed AAB for release
-// - `gradlew :composeApp:wasmJsBrowserDevelopmentRun` to build and run the web app
-// - `gradlew :composeApp:wasmJsBrowserDistribution` to build
+// - `./gradlew run` to build and run the desktop app
+// - `./gradlew run -PJLcompose` to build and run with a Compose UI
+// - `./gradlew jvmTest` to run JVM test cases
+// - `./gradlew check` to run test cases and quality checks for all targets
+// - `./gradlew desktopBuild` to build bin/JugglingLab.jar
+// - `./gradlew androidBuild` to build Android Debug APKs
+// - `./gradlew :androidApp:bundleRelease` to build a signed AAB for release
+// - `./gradlew :composeApp:wasmJsBrowserDevelopmentRun` to build and run the web app
+// - `./gradlew :composeApp:wasmJsBrowserDistribution` to build
 //    composeApp/build/dist/wasmJs/productionExecutable/*
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
@@ -91,6 +92,7 @@ kotlin {
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.kotlinx.coroutines.test)
         }
         androidMain.dependencies {
             implementation(libs.androidx.activity.compose)
@@ -101,7 +103,7 @@ kotlin {
         }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
-            implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.google.ortools)
         }
         wasmJsMain.dependencies {

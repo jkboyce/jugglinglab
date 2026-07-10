@@ -10,14 +10,13 @@ package org.jugglinglab.generator
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlinx.coroutines.test.runTest
 
 class SiteswapGeneratorTest {
-    private fun runGeneratorTestCase(input: String): List<String> {
+    private suspend fun runGeneratorTestCase(input: String): List<String> {
         val patterns = ArrayList<String>()
         SiteswapGenerator(input).apply {
-            kotlinx.coroutines.runBlocking {
-                runGenerator(GeneratorTargetBasic(listTarget = patterns))
-            }
+            runGenerator(GeneratorTargetBasic(listTarget = patterns))
         }
         return patterns
     }
@@ -31,14 +30,14 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `3 balls async siteswaps`() {
+    fun `3 balls async siteswaps`() = runTest {
         val patterns = runGeneratorTestCase("3 5 6 -se -f")
         assertEquals(55, patterns.size)
         assertEquals("444042", patterns[10])
     }
 
     @Test
-    fun `siteswap counting rule 1`() {
+    fun `siteswap counting rule 1`() = runTest {
         // Verify the Buhler et al formula
         val balls = 4
         val period = 3
@@ -48,7 +47,7 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `siteswap counting rule 2`() {
+    fun `siteswap counting rule 2`() = runTest {
         // Verify the Buhler et al formula
         val balls = 5
         val period = 5
@@ -58,7 +57,7 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `prime siteswap counting height limited`() {
+    fun `prime siteswap counting height limited`() = runTest {
         // Generating prime patterns in the height-limited case
         val patterns = runGeneratorTestCase("5 7 - -prime -se")
         assertEquals(337, patterns.size)
@@ -66,7 +65,7 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `prime siteswap counting period limited`() {
+    fun `prime siteswap counting period limited`() = runTest {
         // Generating prime patterns in the period-limited case, validated
         // against `jprime`
         val patterns = runGeneratorTestCase("4 24 6 -prime -se")
@@ -74,13 +73,13 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `generator regex 1`() {
+    fun `generator regex 1`() = runTest {
         val patterns = runGeneratorTestCase("5 3 4 -j 2 -f -cp -x <3p|.*>")
         assertEquals(7, patterns.size)
     }
 
     @Test
-    fun `generator regex 2`() {
+    fun `generator regex 2`() = runTest {
         val patterns1 = runGeneratorTestCase("5 7 4 -f")
         val patterns2 = runGeneratorTestCase("5 7 4 -m 2 -f -x [")
         assertEquals(patterns1.size, patterns2.size)
@@ -88,7 +87,7 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `generator multiplexing 1`() {
+    fun `generator multiplexing 1`() = runTest {
         val patterns1 = runGeneratorTestCase("5 5 3 -m 2 -f")
         val patterns2 = runGeneratorTestCase("5 5 3 -m 2 -f -mt")
         val patterns3 = runGeneratorTestCase("5 5 3 -m 2 -f -mt -mc")
@@ -98,14 +97,12 @@ class SiteswapGeneratorTest {
     }
 
     @Test
-    fun `generator pattern limit`() {
+    fun `generator pattern limit`() = runTest {
         val patterns = ArrayList<String>()
         try {
             SiteswapGenerator("3 5 6 -se -f").apply {
                 // The full testcase has 55 patterns. Let's limit it to 10.
-                kotlinx.coroutines.runBlocking {
-                    runGenerator(GeneratorTargetBasic(listTarget = patterns), maxNum = 10)
-                }
+                runGenerator(GeneratorTargetBasic(listTarget = patterns), maxNum = 10)
             }
         } catch (_: org.jugglinglab.util.JuggleExceptionDone) {
             // expected termination exception
