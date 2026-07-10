@@ -718,10 +718,11 @@ data class JmlPattern(
     // Set the colors of props in the pattern, using the information provided
     // in `colorString`.
 
-    @Throws(JuggleExceptionInternal::class, JuggleExceptionUser::class)
+    @Throws(JuggleExceptionUser::class)
     fun withPropColors(colorString: String): JmlPattern {
         if (!isColorable) {
-            throw JuggleExceptionInternal("setPropColors(): not colorable", this)
+            val message = jlGetStringResource(Res.string.error_not_colorable)
+            throw JuggleExceptionUser(message)
         }
 
         // compile a list of colors to apply in round-robin fashion to paths
