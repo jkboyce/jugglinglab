@@ -31,10 +31,10 @@ kotlin {
         implementation(libs.compose.uiToolingPreview)
         implementation(libs.compose.foundation)
         implementation(libs.compose.material3)
-        // Juggling Lab specific
         implementation(platform(libs.firebase.bom))
         implementation(libs.firebase.analytics)
         implementation(libs.firebase.crashlytics)
+        debugImplementation(libs.leakcanary.android)
     }
 }
 

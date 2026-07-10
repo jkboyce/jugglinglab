@@ -24,6 +24,7 @@ google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.7"
 okio = "3.9.1"
 crashkios = "0.9.0"
+leakcanary = "2.14"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -60,6 +61,7 @@ okio-fakefilesystem = { module = "com.squareup.okio:okio-fakefilesystem", versio
 # kotlinx-datetime version 0.6.1 is strictly required to prevent IrLinkageError at runtime in WasmJs.
 # This version matches what okio-fakefilesystem (used as the mock web filesystem) is compiled against.
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version = { strictly = "0.6.1" } }
+leakcanary-android = { module = "com.squareup.leakcanary:leakcanary-android", version.ref = "leakcanary" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
