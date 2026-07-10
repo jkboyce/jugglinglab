@@ -243,6 +243,7 @@ actual fun <T> jlRunBlocking(block: suspend () -> T): T {
         if (typeof window !== 'undefined') {
             window.pendingResolve = null;
             window.pendingReject = null;
+            window.clipboardCopyCancelled = false;
             if (navigator.clipboard && window.isSecureContext && typeof ClipboardItem !== 'undefined') {
                 const promise = new Promise((resolve, reject) => {
                     window.pendingResolve = resolve;
@@ -257,7 +258,9 @@ actual fun <T> jlRunBlocking(block: suspend () -> T): T {
                 navigator.clipboard.write([item]).then(() => {
                     alert('Pattern URL copied to clipboard');
                 }).catch(err => {
-                    if (err && err.message !== "Cancelled") {
+                    if (window.clipboardCopyCancelled) {
+                        window.clipboardCopyCancelled = false;
+                    } else if (err && err.message !== "Cancelled") {
                         console.error('Error copying to clipboard: ', err);
                         alert('Problem copying to clipboard');
                     }
@@ -285,10 +288,13 @@ private external fun jsResolveClipboardCopy(url: String): Boolean
 
 @JsFun(
     """() => {
-        if (typeof window !== 'undefined' && window.pendingReject) {
-            window.pendingReject(new Error("Cancelled"));
-            window.pendingResolve = null;
-            window.pendingReject = null;
+        if (typeof window !== 'undefined') {
+            window.clipboardCopyCancelled = true;
+            if (window.pendingReject) {
+                window.pendingReject(new Error("Cancelled"));
+                window.pendingResolve = null;
+                window.pendingReject = null;
+            }
         }
     }"""
 )

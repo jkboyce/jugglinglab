@@ -27,6 +27,8 @@ import org.jugglinglab.util.jlErrorIfNotSanitized
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
+import org.jugglinglab.util.jlHandleUserMessage
+import org.jugglinglab.util.buildShareUrl
 import org.jugglinglab.util.jlIsMacOs
 import org.jugglinglab.util.jlIsSwing
 import org.jugglinglab.util.jlJfc
@@ -40,6 +42,7 @@ import org.jugglinglab.view.SimpleView
 import org.jugglinglab.view.View
 import java.awt.*
 import java.awt.event.*
+import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileWriter
@@ -54,6 +57,11 @@ import javax.swing.text.JTextComponent
 import kotlin.math.max
 import kotlin.system.exitProcess
 import org.jetbrains.compose.resources.StringResource
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 class PatternWindow(
     title: String?,
@@ -66,6 +74,7 @@ class PatternWindow(
     lateinit var windowMenu: JMenu
         private set
     private var lastJmlFilepath: Path? = null
+    private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
     init {
         createMenus()
@@ -108,6 +117,7 @@ class PatternWindow(
                 override fun windowClosed(e: WindowEvent?) {
                     KeyboardFocusManager.getCurrentKeyboardFocusManager()
                         .removeKeyEventPostProcessor(postProcessor)
+                    coroutineScope.cancel()
                 }
             })
 
@@ -402,6 +412,7 @@ class PatternWindow(
                 "save" -> doMenuCommand(MenuCommand.FILE_SAVE)
                 "saveas" -> doMenuCommand(MenuCommand.FILE_SAVEAS)
                 "savegifanim" -> doMenuCommand(MenuCommand.FILE_SAVEGIF)
+                "shareurl" -> doMenuCommand(MenuCommand.FILE_SHAREURL)
                 "duplicate" -> doMenuCommand(MenuCommand.FILE_DUPLICATE)
                 "changetitle" -> doMenuCommand(MenuCommand.FILE_TITLE)
                 "changetiming" -> doMenuCommand(MenuCommand.FILE_RESCALE)
@@ -475,6 +486,7 @@ class PatternWindow(
         FILE_SAVE,
         FILE_SAVEAS,
         FILE_SAVEGIF,
+        FILE_SHAREURL,
         FILE_DUPLICATE,
         FILE_TITLE,
         FILE_RESCALE,
@@ -582,6 +594,37 @@ class PatternWindow(
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
                 view.writeGif(f)
                 setCursor(Cursor.getDefaultCursor())
+            }
+
+            MenuCommand.FILE_SHAREURL -> {
+                val pat = pattern
+                val prefs = animationPrefs
+                coroutineScope.launch {
+                    try {
+                        val url = buildShareUrl(pat, prefs)
+                        if (url.encodeToByteArray().size > 2000) {
+                            jlHandleUserException(
+                                this@PatternWindow,
+                                jlGetStringResource(Res.string.error_mobile_pattern_too_long)
+                            )
+                        } else {
+                            val selection = StringSelection(url)
+                            val clipboard = Toolkit.getDefaultToolkit().systemClipboard
+                            clipboard.setContents(selection, selection)
+
+                            jlHandleUserMessage(
+                                this@PatternWindow,
+                                jlGetStringResource(Res.string.gui_share_url),
+                                jlGetStringResource(Res.string.gui_share_url_copied)
+                            )
+                        }
+                    } catch (e: Throwable) {
+                        jlHandleUserException(
+                            this@PatternWindow,
+                            jlGetStringResource(Res.string.error_mobile_sharing, e.message ?: "")
+                        )
+                    }
+                }
             }
 
             MenuCommand.FILE_DUPLICATE -> {
@@ -876,6 +919,7 @@ class PatternWindow(
             Res.string.gui_save_jml,
             Res.string.gui_save_jml_as___,
             Res.string.gui_save_animated_gif_as___,
+            Res.string.gui_share_url,
             null,
             Res.string.gui_duplicate,
             null,
@@ -896,6 +940,7 @@ class PatternWindow(
             "save",
             "saveas",
             "savegifanim",
+            "shareurl",
             null,
             "duplicate",
             null,
@@ -916,6 +961,7 @@ class PatternWindow(
             's',
             'S',
             'g',
+            ' ',
             ' ',
             'd',
             ' ',
