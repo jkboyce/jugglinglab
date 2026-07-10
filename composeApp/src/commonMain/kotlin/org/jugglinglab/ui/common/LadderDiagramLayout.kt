@@ -128,12 +128,16 @@ class LadderDiagramLayout(
 
         // distance between left/right hands of each juggler is 1.0 in these
         // dimensionless units; translate to pixels
-        val scale: Double = width.toDouble() / (BORDER_SIDES * 2 +
+        val denom = BORDER_SIDES * 2 +
                 JUGGLER_SEPARATION * (pattern.numberOfJugglers - 1) +
-                pattern.numberOfJugglers)
-        leftX = (scale * BORDER_SIDES).roundToInt()
-        rightX = (scale * (BORDER_SIDES + 1.0)).roundToInt()
-        jugglerDeltaX = (scale * (1.0 + JUGGLER_SEPARATION)).roundToInt()
+                pattern.numberOfJugglers
+        val scale: Double = if (abs(denom) > 1.0e-4) width.toDouble() / denom else 0.0
+        val scaleValLeft = scale * BORDER_SIDES
+        leftX = if (!scaleValLeft.isNaN() && !scaleValLeft.isInfinite()) scaleValLeft.roundToInt() else 0
+        val scaleValRight = scale * (BORDER_SIDES + 1.0)
+        rightX = if (!scaleValRight.isNaN() && !scaleValRight.isInfinite()) scaleValRight.roundToInt() else 0
+        val scaleValJuggler = scale * (1.0 + JUGGLER_SEPARATION)
+        jugglerDeltaX = if (!scaleValJuggler.isNaN() && !scaleValJuggler.isInfinite()) scaleValJuggler.roundToInt() else 0
 
         if (jlIsTouchInterface) {
             // try to make hit boxes larger on mobile
@@ -141,11 +145,16 @@ class LadderDiagramLayout(
             val minPositionRadius = positionRadius
 
             // expand to fit width
-            val maxTransitions = pattern.loopEvents.maxOf { it.event.transitions.size }
-            val scale2 = ((rightX - leftX) / (maxTransitions * 4 + 4)).toDouble() / transitionRadius.toDouble()
-            if (scale2 > 1.0) {
-                transitionRadius = (transitionRadius * scale2).roundToInt()
-                positionRadius = (positionRadius * scale2).roundToInt()
+            val maxTransitions = if (pattern.loopEvents.isNotEmpty()) {
+                pattern.loopEvents.maxOf { it.event.transitions.size }
+            } else 0
+            val denom2 = transitionRadius.toDouble()
+            if (denom2 > 1.0e-4) {
+                val scale2 = ((rightX - leftX) / (maxTransitions * 4 + 4)).toDouble() / denom2
+                if (!scale2.isNaN() && !scale2.isInfinite() && scale2 > 1.0) {
+                    transitionRadius = (transitionRadius * scale2).roundToInt()
+                    positionRadius = (positionRadius * scale2).roundToInt()
+                }
             }
 
             // ensure hit boxes don't overlap vertically
@@ -164,10 +173,13 @@ class LadderDiagramLayout(
             }.sorted()
             if (separationPixels.size > 2) {
                 val minSep = (separationPixels[2] * 0.8).roundToInt()
-                val scale3 = minSep.toDouble() / (transitionRadius * 2).toDouble()
-                if (scale3 < 1.0) {
-                    transitionRadius = (transitionRadius * scale3).roundToInt()
-                    positionRadius = (positionRadius * scale3).roundToInt()
+                val denom3 = (transitionRadius * 2).toDouble()
+                if (denom3 > 1.0e-4) {
+                    val scale3 = minSep.toDouble() / denom3
+                    if (!scale3.isNaN() && !scale3.isInfinite() && scale3 < 1.0) {
+                        transitionRadius = (transitionRadius * scale3).roundToInt()
+                        positionRadius = (positionRadius * scale3).roundToInt()
+                    }
                 }
             }
 
@@ -230,18 +242,24 @@ class LadderDiagramLayout(
                     // maximum "bulge" (in pixels) toward the center of the ladder
                     val b: Double = SELFTHROW_WIDTH * abs(center - xt)
                     // displacement of arc center from (xt,yt)
-                    val d = 0.5 * max(a * a / b - b, a)
+                    val d = if (abs(b) > 1.0e-4) 0.5 * max(a * a / b - b, a) else 0.5 * a
 
                     val mult = if (item.endEvent.hand == JmlEvent.LEFT_HAND) -1.0 else 1.0
-                    val xc = xt + mult * d * (yt - item.yStart.toDouble()) / a
-                    val yc = yt - mult * d * (xt - item.xStart.toDouble()) / a
+                    val xc = if (a > 1.0e-4) xt + mult * d * (yt - item.yStart.toDouble()) / a else xt
+                    val yc = if (a > 1.0e-4) yt - mult * d * (xt - item.xStart.toDouble()) / a else yt
                     val dx2 = item.xStart.toDouble() - xc
                     val dy2 = item.yStart.toDouble() - yc
                     val rad = sqrt(dx2 * dx2 + dy2 * dy2)
 
-                    item.xCenter = xc.roundToInt()
-                    item.yCenter = yc.roundToInt()
-                    item.radius = rad.roundToInt()
+                    if (!xc.isNaN() && !xc.isInfinite()) {
+                        item.xCenter = xc.roundToInt()
+                    }
+                    if (!yc.isNaN() && !yc.isInfinite()) {
+                        item.yCenter = yc.roundToInt()
+                    }
+                    if (!rad.isNaN() && !rad.isInfinite()) {
+                        item.radius = rad.roundToInt()
+                    }
                 }
             }
         }
@@ -263,14 +281,17 @@ class LadderDiagramLayout(
     fun timeToY(time: Double): Int {
         val loopStart = pattern.loopStartTime
         val loopEnd = pattern.loopEndTime
-        return (((height - 2 * borderTop).toDouble() *
-                (time - loopStart) / (loopEnd - loopStart)).roundToInt() + borderTop)
+        val duration = loopEnd - loopStart
+        val multiplier = if (abs(duration) > 1.0e-4) (time - loopStart) / duration else 0.0
+        val valToRound = (height - 2 * borderTop).toDouble() * multiplier
+        return (if (!valToRound.isNaN() && !valToRound.isInfinite()) valToRound.roundToInt() else 0) + borderTop
     }
 
     fun yToTime(y: Int): Double {
         val loopStart = pattern.loopStartTime
         val loopEnd = pattern.loopEndTime
-        val scale = (loopEnd - loopStart) / (height - 2 * borderTop).toDouble()
+        val denom = (height - 2 * borderTop).toDouble()
+        val scale = if (abs(denom) > 1.0e-4) (loopEnd - loopStart) / denom else 0.0
         return (y - borderTop).toDouble() * scale
     }
 

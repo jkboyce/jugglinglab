@@ -329,36 +329,40 @@ class AnimationController(
                 // then (A, B) are coordinates of shifted control point, in
                 // juggler space
                 val det = startDx[0] * startDy[1] - startDx[1] * startDy[0]
-                val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
-                val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
-                deltaAngle = -atan2(-a, -b)
+                if (abs(det) > 1.0e-4) {
+                    val a = (startDy[1] * dcontrol[0] - startDy[0] * dcontrol[1]) / det
+                    val b = (-startDx[1] * dcontrol[0] + startDx[0] * dcontrol[1]) / det
+                    deltaAngle = -atan2(-a, -b)
 
-                // snap the angle to the four cardinal directions
-                val newAngle = startAngle + deltaAngle
-                if (anglediff(newAngle) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle
-                } else if (anglediff(newAngle + 0.5 * PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle - 0.5 * PI
-                } else if (anglediff(newAngle + PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle + PI
-                } else if (anglediff(newAngle + 1.5 * PI) < SNAP_ANGLE / 2) {
-                    deltaAngle = -startAngle + 0.5 * PI
+                    // snap the angle to the four cardinal directions
+                    val newAngle = startAngle + deltaAngle
+                    if (anglediff(newAngle) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle
+                    } else if (anglediff(newAngle + 0.5 * PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle - 0.5 * PI
+                    } else if (anglediff(newAngle + PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle + PI
+                    } else if (anglediff(newAngle + 1.5 * PI) < SNAP_ANGLE / 2) {
+                        deltaAngle = -startAngle + 0.5 * PI
+                    }
+
+                    var finalAngle = (startAngle + deltaAngle).toDegrees()
+                    if (!finalAngle.isNaN() && !finalAngle.isInfinite()) {
+                        while (finalAngle > 360) finalAngle -= 360.0
+                        while (finalAngle < 0) finalAngle += 360.0
+
+                        val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                        val activePosition = AnimationLayout.getActivePosition(state)!!
+                        val index = rec.positions.indexOf(activePosition)
+                        if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
+                        val newPosition = activePosition.copy(angle = finalAngle)
+                        rec.positions[index] = newPosition
+                        state.update(
+                            pattern = JmlPattern.fromPatternBuilder(rec),
+                            selectedItemHashCode = newPosition.jlHashCode
+                        )
+                    }
                 }
-
-                var finalAngle = (startAngle + deltaAngle).toDegrees()
-                while (finalAngle > 360) finalAngle -= 360.0
-                while (finalAngle < 0) finalAngle += 360.0
-
-                val rec = PatternBuilder.fromJmlPattern(state.pattern)
-                val activePosition = AnimationLayout.getActivePosition(state)!!
-                val index = rec.positions.indexOf(activePosition)
-                if (index < 0) throw JuggleExceptionInternal("Error 1 in AC.mouseDraggedLogic()")
-                val newPosition = activePosition.copy(angle = finalAngle)
-                rec.positions[index] = newPosition
-                state.update(
-                    pattern = JmlPattern.fromPatternBuilder(rec),
-                    selectedItemHashCode = newPosition.jlHashCode
-                )
             } else {
                 deltaX = mx - startX
                 deltaY = my - startY
@@ -366,51 +370,53 @@ class AnimationController(
                 // Get updated event/position coordinate based on mouse position.
                 // This modifies deltaX, deltaY based on snapping and projection.
                 val cc = currentCoordinate
-                val activeEventImage = AnimationLayout.getActiveEvent(state)
+                if (cc.isValid) {
+                    val activeEventImage = AnimationLayout.getActiveEvent(state)
 
-                if (activeEventImage != null) {
-                    var deltalc = Coordinate.sub(cc, eventStart)!!
-                    deltalc = Coordinate.truncate(deltalc, 1e-7)
+                    if (activeEventImage != null) {
+                        var deltalc = Coordinate.sub(cc, eventStart)!!
+                        deltalc = Coordinate.truncate(deltalc, 1e-7)
 
-                    val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
-                    val newEvent = activeEventImage.first.copy(
-                        x = newEventCoordinate.x,
-                        y = newEventCoordinate.y,
-                        z = newEventCoordinate.z
-                    )
-
-                    if (activeEventImage.first.hand != activeEventImage.second.hand) {
-                        deltalc.x = -deltalc.x
-                    }
-                    val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
-                    val newPrimary = activeEventImage.second.copy(
-                        x = newPrimaryCoordinate.x,
-                        y = newPrimaryCoordinate.y,
-                        z = newPrimaryCoordinate.z
-                    )
-
-                    val record = PatternBuilder.fromJmlPattern(state.pattern)
-                    val index = record.events.indexOf(activeEventImage.second)
-                    record.events[index] = newPrimary
-                    state.update(
-                        pattern = JmlPattern.fromPatternBuilder(record),
-                        selectedItemHashCode = newEvent.jlHashCode
-                    )
-                } else {
-                    val activePosition = AnimationLayout.getActivePosition(state)
-
-                    if (activePosition != null) {
-                        val rec = PatternBuilder.fromJmlPattern(state.pattern)
-                        val index = rec.positions.indexOf(activePosition)
-                        if (index < 0) {
-                            throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
-                        }
-                        val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
-                        rec.positions[index] = newPosition
-                        state.update(
-                            pattern = JmlPattern.fromPatternBuilder(rec),
-                            selectedItemHashCode = newPosition.jlHashCode
+                        val newEventCoordinate = Coordinate.add(eventStart, deltalc)!!
+                        val newEvent = activeEventImage.first.copy(
+                            x = newEventCoordinate.x,
+                            y = newEventCoordinate.y,
+                            z = newEventCoordinate.z
                         )
+
+                        if (activeEventImage.first.hand != activeEventImage.second.hand) {
+                            deltalc.x = -deltalc.x
+                        }
+                        val newPrimaryCoordinate = Coordinate.add(eventPrimaryStart, deltalc)!!
+                        val newPrimary = activeEventImage.second.copy(
+                            x = newPrimaryCoordinate.x,
+                            y = newPrimaryCoordinate.y,
+                            z = newPrimaryCoordinate.z
+                        )
+
+                        val record = PatternBuilder.fromJmlPattern(state.pattern)
+                        val index = record.events.indexOf(activeEventImage.second)
+                        record.events[index] = newPrimary
+                        state.update(
+                            pattern = JmlPattern.fromPatternBuilder(record),
+                            selectedItemHashCode = newEvent.jlHashCode
+                        )
+                    } else {
+                        val activePosition = AnimationLayout.getActivePosition(state)
+
+                        if (activePosition != null) {
+                            val rec = PatternBuilder.fromJmlPattern(state.pattern)
+                            val index = rec.positions.indexOf(activePosition)
+                            if (index < 0) {
+                                throw JuggleExceptionInternal("Error 2 in AC.mouseDraggedLogic()")
+                            }
+                            val newPosition = activePosition.copy(x = cc.x, y = cc.y, z = cc.z)
+                            rec.positions[index] = newPosition
+                            state.update(
+                                pattern = JmlPattern.fromPatternBuilder(rec),
+                                selectedItemHashCode = newPosition.jlHashCode
+                            )
+                        }
                     }
                 }
             }
@@ -555,13 +561,18 @@ class AnimationController(
                 }
                 if (draggingXz) {
                     val det = dx[0] * dz[1] - dx[1] * dz[0]
-                    val a = (dz[1] * deltaX - dz[0] * deltaY) / det
-                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
-                    c.x += a
-                    c.z += b
-                    if (abs(c.z) < YZ_EVENT_SNAP_CM) {
-                        deltaY += (dz[1] * (-c.z)).roundToInt()
-                        c.z = 0.0
+                    if (abs(det) > 1.0e-4) {
+                        val a = (dz[1] * deltaX - dz[0] * deltaY) / det
+                        val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
+                        c.x += a
+                        c.z += b
+                        if (!c.z.isNaN() && !c.z.isInfinite() && abs(c.z) < YZ_EVENT_SNAP_CM) {
+                            val deltaYpx = dz[1] * (-c.z)
+                            if (!deltaYpx.isNaN() && !deltaYpx.isInfinite()) {
+                                deltaY += deltaYpx.roundToInt()
+                            }
+                            c.z = 0.0
+                        }
                     }
                 }
                 if (draggingY) {
@@ -569,12 +580,18 @@ class AnimationController(
                     if (abs(det) > 1.0e-4) {
                         val a = (dz[1] * deltaX - dz[0] * deltaY) / det
                         c.y += a
-                    } else {
+                    } else if (abs(dy[1]) > 1.0e-4) {
                         c.y += deltaY / dy[1]
                     }
-                    if (abs(c.y) < YZ_EVENT_SNAP_CM) c.y = 0.0
-                    deltaX = ((c.y - eventStart!!.y) * dy[0]).roundToInt()
-                    deltaY = ((c.y - eventStart!!.y) * dy[1]).roundToInt()
+                    if (!c.y.isNaN() && !c.y.isInfinite()) {
+                        if (abs(c.y) < YZ_EVENT_SNAP_CM) c.y = 0.0
+                        val deltaXpx = (c.y - eventStart!!.y) * dy[0]
+                        val deltaYpx = (c.y - eventStart!!.y) * dy[1]
+                        if (!deltaXpx.isNaN() && !deltaXpx.isInfinite() && !deltaYpx.isNaN() && !deltaYpx.isInfinite()) {
+                            deltaX = deltaXpx.roundToInt()
+                            deltaY = deltaYpx.roundToInt()
+                        }
+                    }
                 }
                 return c
             }
@@ -597,45 +614,63 @@ class AnimationController(
                 }
                 if (draggingXy) {
                     val det = dx[0] * dy[1] - dx[1] * dy[0]
-                    val a = (dy[1] * deltaX - dy[0] * deltaY) / det
-                    val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
-                    val angle = (activePosition.angle).toRadians()
-                    c.x += a * cos(angle) - b * sin(angle)
-                    c.y += a * sin(angle) + b * cos(angle)
+                    if (abs(det) > 1.0e-4) {
+                        val a = (dy[1] * deltaX - dy[0] * deltaY) / det
+                        val b = (-dx[1] * deltaX + dx[0] * deltaY) / det
+                        val angle = (activePosition.angle).toRadians()
+                        c.x += a * cos(angle) - b * sin(angle)
+                        c.y += a * sin(angle) + b * cos(angle)
 
-                    var snapped = false
-                    val oldcx = c.x
-                    val oldcy = c.y
-                    val closestGridX = XY_GRID_SPACING_CM * (c.x / XY_GRID_SPACING_CM).roundToInt()
-                    if (abs(c.x - closestGridX) < XYZ_GRID_POSITION_SNAP_CM) {
-                        c.x = closestGridX; snapped = true
-                    }
-                    val closestGridY = XY_GRID_SPACING_CM * (c.y / XY_GRID_SPACING_CM).roundToInt()
-                    if (abs(c.y - closestGridY) < XYZ_GRID_POSITION_SNAP_CM) {
-                        c.y = closestGridY; snapped = true
-                    }
+                        var snapped = false
+                        val oldcx = c.x
+                        val oldcy = c.y
+                        if (!c.x.isNaN() && !c.x.isInfinite()) {
+                            val closestGridX = XY_GRID_SPACING_CM * (c.x / XY_GRID_SPACING_CM).roundToInt()
+                            if (abs(c.x - closestGridX) < XYZ_GRID_POSITION_SNAP_CM) {
+                                c.x = closestGridX; snapped = true
+                            }
+                        }
+                        if (!c.y.isNaN() && !c.y.isInfinite()) {
+                            val closestGridY = XY_GRID_SPACING_CM * (c.y / XY_GRID_SPACING_CM).roundToInt()
+                            if (abs(c.y - closestGridY) < XYZ_GRID_POSITION_SNAP_CM) {
+                                c.y = closestGridY; snapped = true
+                            }
+                        }
 
-                    if (snapped) {
-                        val deltacx = c.x - oldcx
-                        val deltacy = c.y - oldcy
-                        val deltaa = deltacx * cos(angle) + deltacy * sin(angle)
-                        val deltab = -deltacx * sin(angle) + deltacy * cos(angle)
-                        val deltaXpx = dx[0] * deltaa + dy[0] * deltab
-                        val deltaYpx = dx[1] * deltaa + dy[1] * deltab
-                        deltaX += deltaXpx.roundToInt()
-                        deltaY += deltaYpx.roundToInt()
+                        if (snapped) {
+                            val deltacx = c.x - oldcx
+                            val deltacy = c.y - oldcy
+                            val deltaa = deltacx * cos(angle) + deltacy * sin(angle)
+                            val deltab = -deltacx * sin(angle) + deltacy * cos(angle)
+                            val deltaXpx = dx[0] * deltaa + dy[0] * deltab
+                            val deltaYpx = dx[1] * deltaa + dy[1] * deltab
+                            if (!deltaXpx.isNaN() && !deltaXpx.isInfinite() && !deltaYpx.isNaN() && !deltaYpx.isInfinite()) {
+                                deltaX += deltaXpx.roundToInt()
+                                deltaY += deltaYpx.roundToInt()
+                            }
+                        }
                     }
                 }
                 if (draggingZ) {
                     deltaX = 0
-                    c.z += deltaY / dz[1]
-                    if (abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
-                        deltaY += (dz[1] * (100 - c.z)).roundToInt()
-                        c.z = 100.0
-                    }
-                    if (abs(c.z) < XYZ_GRID_POSITION_SNAP_CM) {
-                        deltaY += (dz[1] * (-c.z)).roundToInt()
-                        c.z = 0.0
+                    if (abs(dz[1]) > 1.0e-4) {
+                        c.z += deltaY / dz[1]
+                        if (!c.z.isNaN() && !c.z.isInfinite()) {
+                            if (abs(c.z - 100) < XYZ_GRID_POSITION_SNAP_CM) {
+                                val deltaYpx = dz[1] * (100 - c.z)
+                                if (!deltaYpx.isNaN() && !deltaYpx.isInfinite()) {
+                                    deltaY += deltaYpx.roundToInt()
+                                }
+                                c.z = 100.0
+                            }
+                            if (abs(c.z) < XYZ_GRID_POSITION_SNAP_CM) {
+                                val deltaYpx = dz[1] * (-c.z)
+                                if (!deltaYpx.isNaN() && !deltaYpx.isInfinite()) {
+                                    deltaY += deltaYpx.roundToInt()
+                                }
+                                c.z = 0.0
+                            }
+                        }
                     }
                 }
                 return c
