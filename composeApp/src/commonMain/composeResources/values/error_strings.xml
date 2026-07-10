@@ -215,7 +215,7 @@
     <string name="error_mobile_reading_imported_file">Error reading imported file: %1$s</string>
     <string name="error_mobile_saving">Error saving: %1$s</string>
     <string name="error_mobile_adding_favorites">Error adding to Favorites: %1$s</string>
-    <string name="error_mobile_pattern_too_long">Pattern is too long to share. Export as a file instead.</string>
+    <string name="error_mobile_pattern_too_long">Pattern is too long to share as a URL, export as a file instead</string>
     <string name="error_mobile_sharing">Error sharing: %1$s</string>
     <string name="error_mobile_exporting">Error exporting: %1$s</string>
     <string name="error_mobile_file_exists">A file with that name already exists</string>

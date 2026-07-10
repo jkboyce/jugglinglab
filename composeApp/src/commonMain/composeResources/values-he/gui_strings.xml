@@ -255,6 +255,6 @@
     <string name="gui_mobile_plpopup_insert_text___">Insert Text...</string>
     <string name="gui_mobile_plpopup_change_display_text___">Change Display Text...</string>
     <string name="gui_mobile_plpopup_remove_line">Remove Line</string>
-    <string name="gui_share_url">Share URL</string>
+    <string name="gui_share_url">Copy Share URL</string>
     <string name="gui_share_url_copied">Pattern URL copied to clipboard</string>
 </resources>

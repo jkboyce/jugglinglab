@@ -227,7 +227,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.4;
+				MARKETING_VERSION = 1.7.5;
 				PRODUCT_BUNDLE_IDENTIFIER = org.jugglinglab.iosApp.debug;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -257,7 +257,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.7.4;
+				MARKETING_VERSION = 1.7.5;
 				PRODUCT_BUNDLE_IDENTIFIER = org.jugglinglab.iosApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;

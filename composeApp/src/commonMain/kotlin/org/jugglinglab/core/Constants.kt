@@ -10,7 +10,7 @@ import org.jugglinglab.curve.Curve
 import androidx.compose.ui.graphics.Color
 
 object Constants {
-    const val VERSION: String = "1.7.4"
+    const val VERSION: String = "1.7.5"
     const val YEAR: String = "2026"
 
     const val SITE_URL: String = "http://jugglinglab.org"

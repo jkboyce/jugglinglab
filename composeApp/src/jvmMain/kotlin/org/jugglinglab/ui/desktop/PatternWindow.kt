@@ -961,7 +961,7 @@ class PatternWindow(
             's',
             'S',
             'g',
-            ' ',
+            'c',
             ' ',
             'd',
             ' ',

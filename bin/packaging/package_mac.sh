@@ -122,7 +122,7 @@ cp -r "ortools-lib/ortools-darwin-${ortools_arch_suffix}/"* target
 jpackage --type app-image \
    --input target/ \
    --name "Juggling Lab" \
-   --app-version "1.7.4" \
+   --app-version "1.7.5" \
    --main-jar JugglingLab.jar \
    --mac-package-name "Juggling Lab" \
    --resource-dir "packaging/macos/" \
@@ -152,7 +152,7 @@ fi
 jpackage --type dmg \
    --app-image "Juggling Lab.app" \
    --name "Juggling Lab" \
-   --app-version "1.7.4" \
+   --app-version "1.7.5" \
    "${extra_options[@]}" \
    --verbose
 
