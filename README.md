@@ -19,6 +19,7 @@ Juggling Lab has been in development since 1997 – the earliest days of the Jav
 Over that long span of time the project has seen contributions from many people, including:
 
 - Jack Boyce – Most Juggling Lab code, project administration
+- Taehyun Ahn – Bug reports, improvement ideas including brace notation for large siteswap throw values
 - Roman Auvrey – Fixes to language localization code, French language translation
 - Daniel Bareket – Hebrew translations
 - Dominik Braun – Fun With Juggling Lab patterns, and many design ideas including camangle, showground, and hidejugglers settings, and the '^' repeat notation
