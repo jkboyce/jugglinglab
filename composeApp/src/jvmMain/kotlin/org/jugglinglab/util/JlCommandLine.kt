@@ -639,20 +639,21 @@ object JlCommandLine {
     // Output an animated GIF of the pattern.
 
     private fun doTogif(pat: JmlPattern, outpath: Path?, prefs: AnimationPrefs?) {
-        var jc = prefs
         if (outpath == null) {
             println("Error: No output path specified for animated GIF")
             return
         }
 
         try {
-            if (jc == null) {
-                jc = AnimationPrefs(fps = 33.3)  // default frames per sec for GIFs
+            val jc = if (prefs == null) {
+                AnimationPrefs(fps = 33.3)
                 // Note the GIF header specifies inter-frame delay in terms of
                 // hundredths of a second, so only `fps` values like 50, 33 1/3,
                 // 25, 20, ... are precisely achievable.
-            } else if (jc.fps == AnimationPrefs.FPS_DEF) {
-                jc = jc.copy(fps = 33.3)
+            } else if (prefs.fps == AnimationPrefs.FPS_DEF) {
+                prefs.copy(fps = 33.3)
+            } else {
+                prefs
             }
             AnimationGifWriter(PatternAnimationState(pat, jc), outpath.toFile())
         } catch (jeu: JuggleExceptionUser) {

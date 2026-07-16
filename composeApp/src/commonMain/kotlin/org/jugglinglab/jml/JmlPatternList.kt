@@ -11,12 +11,18 @@ package org.jugglinglab.jml
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.core.AnimationPrefs.Companion.FPS_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.HEIGHT_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.MOUSEPAUSE_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.VIEW_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.WIDTH_DEF
 import org.jugglinglab.notation.Pattern
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
 import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlCompareVersions
+import org.jugglinglab.util.jlIsDesktop
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 
@@ -120,8 +126,18 @@ class JmlPatternList(
             return null
         }
         val params = ParameterList(rec.animprefs)
-        val ap = AnimationPrefs.fromParameters(params)
+        var ap = AnimationPrefs.fromParameters(params)
         params.errorIfParametersLeft()
+        if (!jlIsDesktop) {
+            // ignore these settings on non-desktop platforms
+            ap = ap.copy(
+                width = WIDTH_DEF,
+                height = HEIGHT_DEF,
+                fps = FPS_DEF,
+                defaultView = VIEW_DEF,
+                mousePause = MOUSEPAUSE_DEF
+            )
+        }
         return ap
     }
 

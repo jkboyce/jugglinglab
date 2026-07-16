@@ -6,7 +6,7 @@
 // The share URL format is:
 //   https://jugglinglab.org/anim?pattern=<siteswap pattern>;setting2=...
 // or:
-//   https://jugglinglab.org/anim?jml=<base64-encoded gzip-compressed XML>; setting2=...
+//   https://jugglinglab.org/anim?jml=<base64-encoded gzip-compressed XML>;setting2=...
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -14,6 +14,11 @@
 package org.jugglinglab.util
 
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.core.AnimationPrefs.Companion.FPS_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.HEIGHT_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.MOUSEPAUSE_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.VIEW_DEF
+import org.jugglinglab.core.AnimationPrefs.Companion.WIDTH_DEF
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.notation.SiteswapPattern
 import kotlin.io.encoding.Base64
@@ -22,16 +27,30 @@ import kotlin.text.iterator
 
 private const val SHARE_BASE_URL = "https://jugglinglab.org/anim"
 
-// Build a shareable URL for the given pattern.
-// The XML is gzip-compressed before base64 encoding to keep the URL short.
+// Build a shareable URL for the given pattern. If the pattern is in JML format,
+// gzip-compress before base64 encoding to keep the URL short.
 
 @OptIn(ExperimentalEncodingApi::class)
 suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
-    val urlStr = if (pattern.hasBasePattern &&
+    // disable desktop-specific prefs
+    val prefsConfig = prefs.copy(
+        width = WIDTH_DEF,
+        height = HEIGHT_DEF,
+        fps = FPS_DEF,
+        defaultView = VIEW_DEF,
+        mousePause = MOUSEPAUSE_DEF
+    ).toString()
+
+    val patternConfig = if (pattern.hasBasePattern &&
         pattern.basePatternNotation.equals("siteswap", ignoreCase = true) &&
         !pattern.isBasePatternEdited
     ) {
-        pattern.basePatternConfig!!
+        val bpConfig = pattern.basePatternConfig!!
+        if (prefsConfig.isEmpty() && !bpConfig.contains(';')) {
+            bpConfig.substringAfter("pattern=")
+        } else {
+            bpConfig
+        }
     } else {
         val xml = pattern.toString()
         val compressed = jlGzipCompress(xml.encodeToByteArray())
@@ -39,11 +58,10 @@ suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
         "jml=$encoded"
     }
 
-    val prefsConfig = prefs.toString()
     val fullConfig = if (prefsConfig.isNotEmpty()) {
-        "$urlStr;$prefsConfig"
+        "$patternConfig;$prefsConfig"
     } else {
-        urlStr
+        patternConfig
     }
 
     return "$SHARE_BASE_URL?${urlEncode(fullConfig)}"
@@ -54,11 +72,11 @@ suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
 
 @OptIn(ExperimentalEncodingApi::class)
 suspend fun decodeShareUrl(url: String): Pair<JmlPattern, AnimationPrefs?> {
-    var settings = urlDecode(url.substringAfter("?"))
-    if ('=' !in settings) {
-        settings = "pattern=$settings"  // simplified form of URL
+    var config = urlDecode(url.substringAfter("?"))
+    if ('=' !in config) {
+        config = "pattern=$config"  // simplified form of URL
     }
-    val pl = ParameterList(settings)
+    val pl = ParameterList(config)
     val jmlData = pl.removeParameter("jml")
 
     var prefs: AnimationPrefs? = AnimationPrefs.fromParameters(pl)

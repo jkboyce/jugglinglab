@@ -34,15 +34,23 @@ fun AnimationPrefsControl(
     initialPrefs: AnimationPrefs,
     onConfirm: (AnimationPrefs) -> Unit
 ) {
-    // Extra parameters not covered by UI fields
-    val initialManualSettings = try {
-        val pl = ParameterList(initialPrefs.toString())
-        val paramsRemove = listOf(
+    val paramsWithUi = if (jlIsDesktop) {
+        listOf(
             "width", "height", "fps", "slowdown", "border",
             "showground", "startpaused", "mousepause", "stereo",
             "catchsound", "bouncesound"
         )
-        for (param in paramsRemove) {
+    } else {
+        listOf(
+            "slowdown", "showground", "startpaused", "stereo",
+            "catchsound", "bouncesound"
+        )
+    }
+
+    // Extra parameters not covered by UI fields
+    val initialManualSettings = try {
+        val pl = ParameterList(initialPrefs.toString())
+        for (param in paramsWithUi) {
             pl.removeParameter(param)
         }
         pl.toString()
@@ -82,8 +90,6 @@ fun AnimationPrefsControl(
 
     // Helper for creating the return object
     fun tryCreatePrefs() {
-        var newPrefs = AnimationPrefs()
-
         // Validate and set numeric fields
         fun parseDouble(valStr: String, name: String): Double {
             return valStr.toDoubleOrNull()?.takeIf { it > 0.0 }
@@ -95,32 +101,28 @@ fun AnimationPrefsControl(
                 ?: throw NumberFormatException(name)
         }
 
-        try {
-            newPrefs = newPrefs.copy(
+        var newPrefs = try {
+            AnimationPrefs(
                 width = parseInt(width, "width"),
                 height = parseInt(height, "height"),
                 fps = parseDouble(fps, "fps"),
                 slowdown = parseDouble(slowdown, "slowdown"),
-                borderPixels = parseInt(border, "border")
+                borderPixels = parseInt(border, "border"),
+                showGround = showGround,
+                startPaused = startPaused,
+                mousePause = mousePause,
+                stereo = stereo,
+                catchSound = catchSound,
+                bounceSound = bounceSound
             )
         } catch (e: Exception) {
             errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
             return
         }
 
-        newPrefs = newPrefs.copy(
-            showGround = showGround,
-            startPaused = startPaused,
-            mousePause = mousePause,
-            stereo = stereo,
-            catchSound = catchSound,
-            bounceSound = bounceSound
-        )
-
-        // Process manual settings
         if (manualSettings.isNotBlank()) {
             try {
-                // We effectively merge the current object state with the manual string
+                // merge the current object state with the manual string
                 newPrefs = AnimationPrefs.fromString("$newPrefs;$manualSettings")
             } catch (jeu: JuggleExceptionUser) {
                 errorMessage = jeu.message
@@ -146,102 +148,118 @@ fun AnimationPrefsControl(
             }
     ) {
         // Number inputs section
-        if (jlIsDesktop) {
+        if ("width" in paramsWithUi) {
             JlPrefsInputRow(width, { width = it }, stringResource(Res.string.gui_width))
+        }
+        if ("height" in paramsWithUi) {
             JlPrefsInputRow(height, { height = it }, stringResource(Res.string.gui_height))
+        }
+        if ("fps" in paramsWithUi) {
             JlPrefsInputRow(fps, { fps = it }, stringResource(Res.string.gui_frames_per_second))
         }
-        JlPrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
-        if (jlIsDesktop) {
+        if ("slowdown" in paramsWithUi) {
+            JlPrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
+        }
+        if ("border" in paramsWithUi) {
             JlPrefsInputRow(border, { border = it }, stringResource(Res.string.gui_border__pixels_))
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        if ("showground" in paramsWithUi) {
+            Spacer(modifier = Modifier.height(4.dp))
 
-        // Dropdown section
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(vertical = 4.dp)
-        ) {
-            // Use a Box to simulate the dropdown behavior
-            var expanded by remember { mutableStateOf(false) }
-            val options = listOf(
-                AnimationPrefs.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
-                AnimationPrefs.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
-                AnimationPrefs.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
-            )
-            val selectedText = options.find { it.first == showGround }?.second ?: ""
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                // Use a Box to simulate the dropdown behavior
+                var expanded by remember { mutableStateOf(false) }
+                val options = listOf(
+                    AnimationPrefs.GROUND_AUTO to stringResource(Res.string.gui_prefs_show_ground_auto),
+                    AnimationPrefs.GROUND_ON to stringResource(Res.string.gui_prefs_show_ground_yes),
+                    AnimationPrefs.GROUND_OFF to stringResource(Res.string.gui_prefs_show_ground_no)
+                )
+                val selectedText = options.find { it.first == showGround }?.second ?: ""
 
-            Box {
-                OutlinedButton(
-                    onClick = { expanded = true },
-                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                    modifier = Modifier.width(80.dp).height(56.dp)
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            selectedText,
-                            style = MaterialTheme.typography.bodyMedium,
-                            maxLines = 1
-                        )
-                        Spacer(Modifier.weight(1f))
-                        Icon(
-                            Icons.Filled.ArrowDropDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(16.dp)
-                        )
+                Box {
+                    OutlinedButton(
+                        onClick = { expanded = true },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier.width(80.dp).height(56.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                selectedText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        options.forEach { (value, label) ->
+                            DropdownMenuItem(
+                                text = { Text(text = label) },
+                                onClick = {
+                                    showGround = value
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
-                DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-                    options.forEach { (value, label) ->
-                        DropdownMenuItem(
-                            text = { Text(text = label) },
-                            onClick = {
-                                showGround = value
-                                expanded = false
-                            }
-                        )
-                    }
-                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(Res.string.gui_prefs_show_ground),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
-
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                stringResource(Res.string.gui_prefs_show_ground),
-                style = MaterialTheme.typography.bodyLarge
-            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
 
         // Checkboxes section
-        JlCheckbox(
-            checked = startPaused,
-            onCheckedChange = { startPaused = it },
-            label = stringResource(Res.string.gui_start_paused)
-        )
-        if (jlIsDesktop) {
+        if ("startpaused" in paramsWithUi) {
+            JlCheckbox(
+                checked = startPaused,
+                onCheckedChange = { startPaused = it },
+                label = stringResource(Res.string.gui_start_paused)
+            )
+        }
+        if ("mousepause" in paramsWithUi) {
             JlCheckbox(
                 checked = mousePause,
                 onCheckedChange = { mousePause = it },
                 label = stringResource(Res.string.gui_pause_on_mouse_away)
             )
         }
-        JlCheckbox(
-            checked = stereo,
-            onCheckedChange = { stereo = it },
-            label = stringResource(Res.string.gui_stereo_display)
-        )
-        JlCheckbox(
-            checked = catchSound,
-            onCheckedChange = { catchSound = it },
-            label = stringResource(Res.string.gui_catch_sounds)
-        )
-        JlCheckbox(
-            checked = bounceSound,
-            onCheckedChange = { bounceSound = it },
-            label = stringResource(Res.string.gui_bounce_sounds)
-        )
+        if ("stereo" in paramsWithUi) {
+            JlCheckbox(
+                checked = stereo,
+                onCheckedChange = { stereo = it },
+                label = stringResource(Res.string.gui_stereo_display)
+            )
+        }
+        if ("catchsound" in paramsWithUi) {
+            JlCheckbox(
+                checked = catchSound,
+                onCheckedChange = { catchSound = it },
+                label = stringResource(Res.string.gui_catch_sounds)
+            )
+        }
+        if ("bouncesound" in paramsWithUi) {
+            JlCheckbox(
+                checked = bounceSound,
+                onCheckedChange = { bounceSound = it },
+                label = stringResource(Res.string.gui_bounce_sounds)
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
 
         // Manual Settings section
