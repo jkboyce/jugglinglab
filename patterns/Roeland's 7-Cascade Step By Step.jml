@@ -1,0 +1,130 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+<title>Roeland&apos;s 7-Cascade Step By Step</title>
+
+<line display="Complete the 5-Cascade first before starting this list."/>
+
+<line display="1 ball out of a 7-Cascade" notation="siteswap">
+pattern=7000000;colors=mixed
+</line>
+
+<line display="🔮🔮"/>
+
+<line display="7007000" notation="siteswap">
+pattern=7007000;colors=mixed
+</line>
+
+<line display="7070000" notation="siteswap">
+pattern=7070000;colors=mixed
+</line>
+
+<line display="2 balls out of a 7-Cascade" notation="siteswap">
+pattern=7700000;colors=mixed
+</line>
+
+<line display="🔮🔮🔮"/>
+
+<line display="5070720" notation="siteswap">
+pattern=5070720;colors=mixed
+</line>
+
+<line display="7070205" notation="siteswap">
+pattern=7070205;hands=(5)(35).;colors=mixed;title=7070205 custom
+</line>
+
+<line display="720207" notation="siteswap">
+pattern=720207;colors=mixed
+</line>
+
+<line display="7070700" notation="siteswap">
+pattern=7070700;colors=mixed
+</line>
+
+<line display="3 balls out of a 7-Cascade" notation="siteswap">
+pattern=7770000;colors=mixed
+</line>
+
+<line display="🔮🔮🔮 🔮"/>
+
+<line display="7702" notation="siteswap">
+pattern=7702;colors=mixed
+</line>
+
+<line display="72722" notation="siteswap">
+pattern=72722;colors=mixed
+</line>
+
+<line display="77222" notation="siteswap">
+pattern=77222;colors=mixed
+</line>
+
+<line display="7070707" notation="siteswap">
+pattern=7070707;colors=mixed
+</line>
+
+<line display="7707700" notation="siteswap">
+pattern=7707700
+</line>
+
+<line display="4 balls out of a 7-Cascade" notation="siteswap">
+pattern=7777000;colors=mixed
+</line>
+
+<line display="🔮🔮🔮 🔮🔮"/>
+
+<line display="777720" notation="siteswap">
+pattern=777720;colors=mixed
+</line>
+
+<line display="72727" notation="siteswap">
+pattern=72727;colors=mixed
+</line>
+
+<line display="7777070" notation="siteswap">
+pattern=7777070;colors=mixed
+</line>
+
+<line display="7770770" notation="siteswap">
+pattern=7770770;colors=mixed
+</line>
+
+<line display="5 balls out of a 7-Cascade" notation="siteswap">
+pattern=7777700;colors=mixed
+</line>
+
+<line display="🔮🔮🔮 🔮🔮🔮"/>
+
+<line display="75" notation="siteswap">
+pattern=75;hands=(5)(35).;colors=mixed;title=75 custom
+</line>
+
+<line display="774" notation="siteswap">
+pattern=774;colors=mixed
+</line>
+
+<line display="77772" notation="siteswap">
+pattern=77772;colors=mixed
+</line>
+
+<line display="Throw 6 out of 7" notation="siteswap">
+pattern=[722][722][72][72]77022[22][22][222][222][222];colors=mixed
+</line>
+
+<line display="6 balls out of a 7-Cascade" notation="siteswap">
+pattern=7777770;colors=mixed
+</line>
+
+<line display="🔮🔮🔮 🔮🔮🔮 🔮"/>
+
+<line display="7 Default" notation="siteswap">
+pattern=7;colors=mixed
+</line>
+
+<line display="7 inside throws" notation="siteswap">
+pattern=7;hands=(10)(32.5).;colors=mixed;title=7 inside throws
+</line>
+
+</patternlist>
+</jml>

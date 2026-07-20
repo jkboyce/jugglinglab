@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<!DOCTYPE jml SYSTEM "file://jml.dtd">
+<jml version="3">
+<patternlist>
+<title>Roeland&apos;s Rolling patterns</title>
+
+<line display="3 balls"/>
+
+<line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=3B;hands=(33)(10,0,12).(33,0,12)(10,0).(33)(10,0,12).(33,0,12)(33).;colors=mixed;title=3B custom
+</line>
+
+<line display="3 columns" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=3B;hands=(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,24)(33,0,0).(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,24)(33,0,0).;colors=mixed;title=3B custom
+</line>
+
+<line display="1 loop of 2 + 1 column" notation="siteswap" animprefs="camangle=(180.0,0.0);view=simple">
+pattern=3B;hands=(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,24)(33,0,0).(33,0,0)(33,0,24).(33,0,12)(33,0,0).(33,0,24)(33,0,12).;colors=mixed;title=3B custom
+</line>
+
+<line display="Rolling after drag lift" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,2)*;hands=(10)(33).(33)(33).;colors=mixed;title=(4xB,2)* custom
+</line>
+
+<line display="1 loop + transition" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=3;hands=(33,0,24)(33,0,0).(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,0)(33,0,12).(33,0,24)(33,0,0).(33)(33,0,36).;colors=mixed;title=3 custom
+</line>
+
+<line display="Multiplex (hand &amp; underarm)" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple;hidejugglers=(2,3)">
+pattern=&lt;(2xB,0)|(2xB,0)|(2xB,0)&gt;*;hands=(25,0,10)(25,0,10). | (22,0,0)(22,0,0). | (20,0,0)(20,0,0).;body={ (0,0).|(0,0,-2).|(0,0,-14).};colors=mixed;title=&lt;(2xB,0)|(2xB,0)|(2xB,0)&gt;* custom
+</line>
+
+<line display="4 balls"/>
+
+<line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);bps=4;hands=(33)(33,0,12).(33,0,12)(33).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="4 columns: split" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);bps=4;hands=(33,0,0)(33,0,36).(33,0,24)(33,0,12).(33,0,36)(33,0,24).(33,0,12)(33,0,0). (33,0,24)(33,0,12).(33,0,0)(33,0,36).(33,0,12)(33,0,0).(33,0,36)(33,0,24).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="4 columns: wave" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);bps=4;hands=(33,0,36)(33,0,0).(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,24)(33,0,36). (33,0,12)(33,0,24).(33,0,36)(33,0,0).(33,0,24)(33,0,36).(33,0,0)(33,0,12).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="4 columns: 2 near + 2 far" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);bps=4;hands=(33,0,0)(33,0,36).(33,0,12)(33,0,24).(33,0,36)(33,0,12).(33,0,24)(33,0,0). (33,0,12)(33,0,24).(33,0,0)(33,0,36).(33,0,24)(33,0,0).(33,0,36)(33,0,12).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="2 loops entangled" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);hands=(33,0,0)(33,0,12).(33,0,24)(33,0,36).(33,0,36)(33,0,24).(33,0,12)(33,0,0).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="2 loops on 3 tracks" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);hands=(33,0,0)(33,0,12).(33,0,12)(33,0,24).(33,0,30)(33,0,12).(33,0,12)(33,0,0).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="2 loops: 1 outside + 1 inside" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);hands=(33,0,0)(33,0,12).(33,0,36)(33,0,24).(33,0,24)(33,0,36).(33,0,12)(33,0,0).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="2 loops: 1 near + 1 far" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(4xB,4xB);hands=(33,0,0)(33,0,24).(33,0,12)(33,0,36).(33,0,36)(33,0,12).(33,0,24)(33,0,0).;colors=mixed;title=(4xB,4xB) custom
+</line>
+
+<line display="Multiplex (hands)" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple;hidejugglers=(2)">
+pattern=&lt;(2xB,2xB)|(2xB,2xB)&gt;&lt;(2xB,2xB)|(2xB,2xB)&gt;;hands=(25,0,24)(25,0,0).(25,0,0)(25,0,24).(25,0,0)(25,0,24).(25,0,24)(25,0,0). | (22,0,24)(22,0,0).(22,0,0)(22,0,24).(22,0,0)(22,0,24).(22,0,24)(22,0,0).;body={ (0,0).|(0,0,-12).};colors=mixed;title=&lt;(2xB,2xB)|(2xB,2xB)&gt;&lt;(2xB,2xB)|(2xB,2xB)&gt; custom
+</line>
+
+<line display="5 and more balls"/>
+
+<line display="1 loop of 5 balls" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=5B;hands=(33)(33,0,12).(33,0,12)(33).;colors=mixed;title=5B custom
+</line>
+
+<line display="5 columns: wave" notation="siteswap" animprefs="camangle=(180.0,0.0);view=simple">
+pattern=5B;hands=(33,0,0)(33,0,11).(33,0,33)(33,0,44).(33,0,11)(33,0,22).(33,0,44)(33,0,0).(33,0,22)(33,0,33). (33,0,0)(33,0,11).(33,0,33)(33,0,44).(33,0,11)(33,0,22).(33,0,44)(33,0,0).(33,0,22)(33,0,33).;colors=mixed;title=5B custom
+</line>
+
+<line display="1 loop of 6 balls" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=(6xB,6xB);hands=(33)(33,0,12).(33,0,12)(33).;colors=mixed;title=(6xB,6xB) custom
+</line>
+
+<line display="Passing - max 2 balls"/>
+
+<line display="2 columns" notation="siteswap" animprefs="width=600;height=350;showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(0,2xpB)|(0,2xpB)&gt;&lt;(2xpB,0)|(2xpB,0)&gt;;colors=mixed
+</line>
+
+<line display="2 parallel columns" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2xpB)|(0,0)&gt;&lt;(0,0)|(2xpB,2xpB)&gt;;colors=mixed
+</line>
+
+<line display="Lane transition practice" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;2pB 0| 0 2pB&gt;&lt;0 2pB|2pB 0&gt;;colors=mixed
+</line>
+
+<line display="2 out of loop 4 balls" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,0)|(2xpB,0)&gt;&lt;(0,2xB)|(0,2xB)&gt;;colors=mixed
+</line>
+
+<line display="Z-shape" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(0,0)|(2xB,2pB)&gt;&lt;(0,2xB)|(0,2pB)&gt;&lt;(2xB,2pB)|(0,0)&gt;&lt;(0,2pB)|(0,2xB)&gt;;colors=mixed
+</line>
+
+<line display="Passing - max 3 balls"/>
+
+<line display="Basic box" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2xB) (2xB,0)|(0,2xB)(2xB,2xpB)&gt;;colors=mixed
+</line>
+
+<line display="Hour glass" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;2pB 3B 0 0 2 2 | 0 2 2 2pB 3B 0&gt;;bps=2;colors=mixed
+</line>
+
+<line display="A box" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xB,2xpB)|(2xB,0)&gt;&lt;(0,2xB)|(2xpB,2)&gt;&lt;(2xpB,2xB)|(0,2xB)&gt;&lt;(2xB,0)|(2,2xp)&gt;;colors=mixed
+</line>
+
+<line display="A box too" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xp,2x)|(2xp,0)&gt;&lt;(2xp,2)|(0,2x)&gt;&lt;(0,2xp)|(2x,2xp)&gt;&lt;(2x,0)|(2,2xp)&gt;;colors=mixed
+</line>
+
+<line display="Straight and crossed" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2)|(2,0)&gt;&lt;(0,2)|(2pB,2)&gt;&lt;(2,2xpB)|(0,2)&gt;&lt;(2,0)|(2,2pB)&gt;;colors=mixed
+</line>
+
+<line display="Passing - max 4 balls"/>
+
+<line display="4 columns: 2 inside,2 outside" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12). | (12)(24).;colors=mixed;title=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt; custom
+</line>
+
+<line display="4 columns: split" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12).(12)(24).(12)(24).(24)(12). | (24)(12).(12)(24).(12)(24).(24)(12).;colors=mixed;title=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt; custom
+</line>
+
+<line display="4 columns: transitions" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12).(12)(24). |(24)(12).(12)(24).;colors=mixed;title=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt; custom
+</line>
+
+<line display="1 loop" notation="siteswap" animprefs="width=600;height=350;showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt;;hands=(12)(12).(12)(12). |(12)(12).(12)(12).;colors=mixed;title=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt; custom
+</line>
+
+<line display="Passing - 5 and more balls"/>
+
+<line display="Straight / crossed passes" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;3pBHL|2pBHL&gt;;hands=(24)(24).;colors=mixed;title=&lt;3pBHL|2pBHL&gt; custom
+</line>
+
+<line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;3p|2&gt;&lt;2|3&gt;&lt;2|3p&gt;&lt;3|2&gt;;hands=(24)(24).;colors=mixed;title=&lt;3p|2&gt;&lt;2|3&gt;&lt;2|3p&gt;&lt;3|2&gt; custom
+</line>
+
+<line display="6 balls ultimate (on tracks)" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;3p|3p&gt;;bps=2;hands=(24)(12). | (12)(24).;colors=mixed;title=&lt;3p|3p&gt; custom
+</line>
+
+<line display="7 balls ultimate" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
+pattern=&lt;4pBHL|3pBHL&gt;;hands=(12)(36).;colors=mixed;title=&lt;4pBHL|3pBHL&gt; custom
+</line>
+
+</patternlist>
+</jml>
