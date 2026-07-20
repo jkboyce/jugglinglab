@@ -76,7 +76,7 @@ pattern=4;title=4-Fountain
 </pattern>
 </line>
 
-<line display="3 Balls out of a 5-Cascade" notation="jml">
+<line display="Baby juggling" notation="jml">
 <pattern>
 <title>3 Balls out of a 5-Cascade</title>
 <basepattern notation="siteswap">pattern=52512;title=3 Balls out of a 5-Cascade</basepattern>
