@@ -4,12 +4,17 @@
 <patternlist>
 <title>Roeland&apos;s 7-Cascade Step By Step</title>
 
-<line display="Complete the 5-Cascade first before starting this list."/>
+<line display="Complete the 5-Cascade first before"/>
+<line display="starting this list."/>
+
+<line display=""/>
+<line display="🔮"/>
 
 <line display="1 ball out of a 7-Cascade" notation="siteswap">
 pattern=7000000;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮"/>
 
 <line display="7007000" notation="siteswap">
@@ -24,6 +29,7 @@ pattern=7070000;colors=mixed
 pattern=7700000;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮🔮"/>
 
 <line display="5070720" notation="siteswap">
@@ -46,6 +52,7 @@ pattern=7070700;colors=mixed
 pattern=7770000;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮🔮 🔮"/>
 
 <line display="7702" notation="siteswap">
@@ -72,6 +79,7 @@ pattern=7707700
 pattern=7777000;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮🔮 🔮🔮"/>
 
 <line display="777720" notation="siteswap">
@@ -94,6 +102,7 @@ pattern=7770770;colors=mixed
 pattern=7777700;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮🔮 🔮🔮🔮"/>
 
 <line display="75" notation="siteswap">
@@ -116,6 +125,7 @@ pattern=[722][722][72][72]77022[22][22][222][222][222];colors=mixed
 pattern=7777770;colors=mixed
 </line>
 
+<line display=""/>
 <line display="🔮🔮🔮 🔮🔮🔮 🔮"/>
 
 <line display="7 Default" notation="siteswap">

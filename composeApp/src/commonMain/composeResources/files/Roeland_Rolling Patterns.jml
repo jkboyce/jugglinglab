@@ -2,8 +2,11 @@
 <!DOCTYPE jml SYSTEM "file://jml.dtd">
 <jml version="3">
 <patternlist>
-<title>Roeland&apos;s Rolling patterns</title>
+<title>Roeland&apos;s Rolling Patterns</title>
 
+<line display="Note: These patterns are viewed from above to emulate jugglers rolling balls on a flat surface. Reset Animation Preferences afterward to return to a normal viewing angle."/>
+
+<line display=""/>
 <line display="3 balls"/>
 
 <line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
@@ -30,6 +33,7 @@ pattern=3;hands=(33,0,24)(33,0,0).(33,0,12)(33,0,24).(33,0,0)(33,0,12).(33,0,0)(
 pattern=&lt;(2xB,0)|(2xB,0)|(2xB,0)&gt;*;hands=(25,0,10)(25,0,10). | (22,0,0)(22,0,0). | (20,0,0)(20,0,0).;body={ (0,0).|(0,0,-2).|(0,0,-14).};colors=mixed;title=&lt;(2xB,0)|(2xB,0)|(2xB,0)&gt;* custom
 </line>
 
+<line display=""/>
 <line display="4 balls"/>
 
 <line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
@@ -68,6 +72,7 @@ pattern=(4xB,4xB);hands=(33,0,0)(33,0,24).(33,0,12)(33,0,36).(33,0,36)(33,0,12).
 pattern=&lt;(2xB,2xB)|(2xB,2xB)&gt;&lt;(2xB,2xB)|(2xB,2xB)&gt;;hands=(25,0,24)(25,0,0).(25,0,0)(25,0,24).(25,0,0)(25,0,24).(25,0,24)(25,0,0). | (22,0,24)(22,0,0).(22,0,0)(22,0,24).(22,0,0)(22,0,24).(22,0,24)(22,0,0).;body={ (0,0).|(0,0,-12).};colors=mixed;title=&lt;(2xB,2xB)|(2xB,2xB)&gt;&lt;(2xB,2xB)|(2xB,2xB)&gt; custom
 </line>
 
+<line display=""/>
 <line display="5 and more balls"/>
 
 <line display="1 loop of 5 balls" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
@@ -82,6 +87,7 @@ pattern=5B;hands=(33,0,0)(33,0,11).(33,0,33)(33,0,44).(33,0,11)(33,0,22).(33,0,4
 pattern=(6xB,6xB);hands=(33)(33,0,12).(33,0,12)(33).;colors=mixed;title=(6xB,6xB) custom
 </line>
 
+<line display=""/>
 <line display="Passing - max 2 balls"/>
 
 <line display="2 columns" notation="siteswap" animprefs="width=600;height=350;showground=true;camangle=(180.0,0.0);view=simple">
@@ -104,6 +110,7 @@ pattern=&lt;(2xpB,0)|(2xpB,0)&gt;&lt;(0,2xB)|(0,2xB)&gt;;colors=mixed
 pattern=&lt;(0,0)|(2xB,2pB)&gt;&lt;(0,2xB)|(0,2pB)&gt;&lt;(2xB,2pB)|(0,0)&gt;&lt;(0,2pB)|(0,2xB)&gt;;colors=mixed
 </line>
 
+<line display=""/>
 <line display="Passing - max 3 balls"/>
 
 <line display="Basic box" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
@@ -126,6 +133,7 @@ pattern=&lt;(2xp,2x)|(2xp,0)&gt;&lt;(2xp,2)|(0,2x)&gt;&lt;(0,2xp)|(2x,2xp)&gt;&l
 pattern=&lt;(2xpB,2)|(2,0)&gt;&lt;(0,2)|(2pB,2)&gt;&lt;(2,2xpB)|(0,2)&gt;&lt;(2,0)|(2,2pB)&gt;;colors=mixed
 </line>
 
+<line display=""/>
 <line display="Passing - max 4 balls"/>
 
 <line display="4 columns: 2 inside,2 outside" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
@@ -144,6 +152,7 @@ pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12).(12)(24). |(24)(12).(12)(
 pattern=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt;;hands=(12)(12).(12)(12). |(12)(12).(12)(12).;colors=mixed;title=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt; custom
 </line>
 
+<line display=""/>
 <line display="Passing - 5 and more balls"/>
 
 <line display="Straight / crossed passes" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
