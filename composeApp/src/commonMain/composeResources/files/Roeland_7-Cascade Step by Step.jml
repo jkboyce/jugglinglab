@@ -4,44 +4,10 @@
 <patternlist>
 <title>Roeland&apos;s 7-Cascade Step By Step</title>
 
-<line display="Complete the 5-Cascade first before starting this list."/>
-
-<line display=""/>
-<line display="1 Ball"/>
-
-<line display="1 ball out of a 7-Cascade" notation="siteswap">
-pattern=7000000;colors=mixed
-</line>
-
-<line display=""/>
-<line display="2 Balls"/>
-
-<line display="7007000" notation="siteswap">
-pattern=7007000;colors=mixed
-</line>
-
-<line display="7070000" notation="siteswap">
-pattern=7070000;colors=mixed
-</line>
-
-<line display="2 balls out of a 7-Cascade" notation="siteswap">
-pattern=7700000;colors=mixed
-</line>
+<line display="Learn the 5-Cascade first before starting this list."/>
 
 <line display=""/>
 <line display="3 Balls"/>
-
-<line display="5070720" notation="siteswap">
-pattern=5070720;colors=mixed
-</line>
-
-<line display="7070205" notation="siteswap">
-pattern=7070205;hands=(5)(35).;colors=mixed;title=7070205 custom
-</line>
-
-<line display="720207" notation="siteswap">
-pattern=720207;colors=mixed
-</line>
 
 <line display="7070700" notation="siteswap">
 pattern=7070700;colors=mixed
@@ -54,16 +20,12 @@ pattern=7770000;colors=mixed
 <line display=""/>
 <line display="4 Balls"/>
 
-<line display="7702" notation="siteswap">
-pattern=7702;colors=mixed
+<line display="71" notation="siteswap">
+pattern=71;colors=mixed
 </line>
 
-<line display="72722" notation="siteswap">
-pattern=72722;colors=mixed
-</line>
-
-<line display="77222" notation="siteswap">
-pattern=77222;colors=mixed
+<line display="71 both directions" notation="siteswap">
+pattern=7272(71^5)2;colors=mixed
 </line>
 
 <line display="7070707" notation="siteswap">
@@ -89,6 +51,10 @@ pattern=777720;colors=mixed
 pattern=72727;colors=mixed
 </line>
 
+<line display="771" notation="siteswap">
+pattern=771;colors=mixed
+</line>
+
 <line display="7777070" notation="siteswap">
 pattern=7777070;colors=mixed
 </line>
@@ -105,7 +71,11 @@ pattern=7777700;colors=mixed
 <line display="6 Balls"/>
 
 <line display="75" notation="siteswap">
-pattern=75;hands=(5)(35).;colors=mixed;title=75 custom
+pattern=75;hands=(5)(35).;colors=mixed
+</line>
+
+<line display="777771" notation="siteswap">
+pattern=777771;colors=mixed
 </line>
 
 <line display="774" notation="siteswap">
@@ -127,12 +97,12 @@ pattern=7777770;colors=mixed
 <line display=""/>
 <line display="7 Balls"/>
 
-<line display="7 Default" notation="siteswap">
-pattern=7;colors=mixed
+<line display="7-Cascade Flash" notation="siteswap">
+pattern=[7222][722][722][72][72]7722[22][22][222][222][2222][222];colors=mixed
 </line>
 
-<line display="7 inside throws" notation="siteswap">
-pattern=7;hands=(10)(32.5).;colors=mixed;title=7 inside throws
+<line display="7-Cascade" notation="siteswap">
+pattern=7;colors=mixed
 </line>
 
 </patternlist>
