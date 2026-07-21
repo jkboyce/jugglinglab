@@ -33,7 +33,7 @@ pattern=7070707;colors=mixed
 </line>
 
 <line display="7707700" notation="siteswap">
-pattern=7707700
+pattern=7707700;colors=mixed
 </line>
 
 <line display="4 balls out of a 7-Cascade" notation="siteswap">
