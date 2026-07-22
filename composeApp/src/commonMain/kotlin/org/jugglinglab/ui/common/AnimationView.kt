@@ -13,6 +13,7 @@ package org.jugglinglab.ui.common
 import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.core.Constants
 import org.jugglinglab.core.PatternAnimationState
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.renderer.Renderer
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
@@ -137,9 +138,21 @@ fun AnimationView(
             try {
                 val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
                         (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
+                // Which avatar draws each juggler. The selection is global for
+                // now, so every juggler shares one stateless avatar instance;
+                // the default ("male") leaves the map empty and falls back to
+                // the renderer's default stick figure.
+                val avatars: Map<Int, Avatar> =
+                    if (state.prefs.avatar == AnimationPrefs.AVATAR_DEF) {
+                        emptyMap()
+                    } else {
+                        val a = Avatar.newAvatar(state.prefs.avatar)
+                        (1..state.pattern.numberOfJugglers).associateWith { a }
+                    }
                 renderer1.isAntiAlias = isAntiAlias
                 renderer1.backgroundColor = backgroundColor
                 renderer1.lineColor = colorScheme.onBackground
+                renderer1.setAvatars(avatars)
                 renderer1.setPattern(state.pattern)
                 renderer1.setGround(showGround)
                 renderer1.zoomLevel = state.zoom
@@ -147,6 +160,7 @@ fun AnimationView(
                     renderer2.isAntiAlias = isAntiAlias
                     renderer2.backgroundColor = backgroundColor
                     renderer2.lineColor = colorScheme.onBackground
+                    renderer2.setAvatars(avatars)
                     renderer2.setPattern(state.pattern)
                     renderer2.setGround(showGround)
                     renderer2.zoomLevel = state.zoom

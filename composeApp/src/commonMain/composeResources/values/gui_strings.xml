@@ -342,6 +342,9 @@ around settings to avoid confusion, and single quotes on macOS/Unix.
     <string name="gui_prefs_show_ground_auto">auto</string>
     <string name="gui_prefs_show_ground_yes">yes</string>
     <string name="gui_prefs_show_ground_no">no</string>
+    <string name="gui_juggler_avatar">Juggler avatar</string>
+    <string name="gui_avatar_male">Male</string>
+    <string name="gui_avatar_female">Female</string>
     <string name="gui_plpopup_insert_text___">Insert Text...</string>
     <string name="gui_plpopup_insert_pattern">Insert Pattern</string>
     <string name="gui_plpopup_change_display_text___">Change Display Text...</string>

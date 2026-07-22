@@ -37,12 +37,12 @@ fun AnimationPrefsControl(
     val paramsWithUi = if (jlIsDesktop) {
         listOf(
             "width", "height", "fps", "slowdown", "border",
-            "showground", "startpaused", "mousepause", "stereo",
+            "showground", "avatar", "startpaused", "mousepause", "stereo",
             "catchsound", "bouncesound"
         )
     } else {
         listOf(
-            "slowdown", "showground", "startpaused", "stereo",
+            "slowdown", "showground", "avatar", "startpaused", "stereo",
             "catchsound", "bouncesound"
         )
     }
@@ -65,6 +65,7 @@ fun AnimationPrefsControl(
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
     var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
     var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
+    var avatar by remember { mutableStateOf(initialPrefs.avatar) }
     var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
     var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
     var stereo by remember { mutableStateOf(initialPrefs.stereo) }
@@ -80,6 +81,7 @@ fun AnimationPrefsControl(
         slowdown = jlToStringRounded(prefs.slowdown, 2)
         border = prefs.borderPixels.toString()
         showGround = prefs.showGround
+        avatar = prefs.avatar
         startPaused = prefs.startPaused
         mousePause = prefs.mousePause
         stereo = prefs.stereo
@@ -113,7 +115,8 @@ fun AnimationPrefsControl(
                 mousePause = mousePause,
                 stereo = stereo,
                 catchSound = catchSound,
-                bounceSound = bounceSound
+                bounceSound = bounceSound,
+                avatar = avatar
             )
         } catch (e: Exception) {
             errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
@@ -216,6 +219,63 @@ fun AnimationPrefsControl(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     stringResource(Res.string.gui_prefs_show_ground),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        // Juggler avatar dropdown (Male / Female). Options mirror the built-in
+        // avatar registry; add a new row here when registering a new avatar.
+        if ("avatar" in paramsWithUi) {
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                var expanded by remember { mutableStateOf(false) }
+                val options = listOf(
+                    "male" to stringResource(Res.string.gui_avatar_male),
+                    "female" to stringResource(Res.string.gui_avatar_female)
+                )
+                val selectedText = options.find { it.first == avatar }?.second ?: ""
+
+                Box {
+                    OutlinedButton(
+                        onClick = { expanded = true },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier.width(100.dp).height(56.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                selectedText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        options.forEach { (value, label) ->
+                            DropdownMenuItem(
+                                text = { Text(text = label) },
+                                onClick = {
+                                    avatar = value
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(Res.string.gui_juggler_avatar),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }

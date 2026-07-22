@@ -234,13 +234,14 @@ abstract class Avatar {
 
         // Registry of selectable avatars, mirroring Prop.builtinProps. The
         // first entry is the default.
-        val builtinAvatars: List<String> = listOf("male")
+        val builtinAvatars: List<String> = listOf("male", "female")
 
         // Factory, mirroring Prop.newProp(). Adding a new avatar means adding a
         // subclass and one arm here.
         @Throws(JuggleExceptionUser::class)
         fun newAvatar(type: String): Avatar = when (type.lowercase()) {
             "male" -> MaleAvatar()
+            "female" -> FemaleAvatar()
             else -> throw JuggleExceptionUser("Unrecognized avatar type: '$type'")
         }
     }
