@@ -176,8 +176,17 @@ class DrawObject2D {
             if (contains(box, (x + 0.5).toFloat(), (y + 0.5).toFloat())) {
                 val zb =
                     (base.z - (tempv.x * (x - base.x) + tempv.y * (y - base.y)) / tempv.z)
+                // Clearly in front of the body's plane: the line wins.
                 if (line.coord[i].z < (zb - SLOP)) return -1
-                endinbb = true
+                // Only treat the endpoint as hidden when it is clearly BEHIND the
+                // plane. A point within SLOP is ON the body's surface — e.g. an
+                // arm's shoulder attachment — and must not force the body to cover
+                // the arm. This mirrors the front-side SLOP tolerance above.
+                // (The stick figure never reached this branch: its bounding box
+                // is the shoulder/waist trapezoid, so the shoulders sit on the box
+                // edge and are excluded. The wider dress makes them interior, which
+                // exposed the missing back-side tolerance.)
+                if (line.coord[i].z > (zb + SLOP)) endinbb = true
             }
         }
         if (endinbb) return 1
