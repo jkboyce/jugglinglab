@@ -99,6 +99,8 @@ fun JmlFileChooser(
             "Alanz_Multiplex etcetera.jml" to "Alan's Multiplex Etcetera",
             "Alanz_Some Patterns Without 3's.jml" to "Alan's Patterns Without 3's",
             "Alanz_Synchronous Favorites.jml" to "Alan's Synchronous Favorites",
+            "Roeland_7-Cascade Step by Step.jml" to "Roeland's 7-Cascade Step by Step",
+            "Roeland_Rolling Patterns.jml" to "Roeland's Rolling Patterns",
             "hss_2JugglersAsymmetric.jml" to "HSS: 2 Jugglers Asymmetric",
             "hss_2JugglersSymmetric.jml" to "HSS: 2 Jugglers Symmetric",
             "hss_2UnequalPassers.jml" to "HSS: 2 Unequal Passers",
