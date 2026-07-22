@@ -50,6 +50,7 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
     var connectedPatternsFlag: Boolean = false
     var symmetricPatternsFlag: Boolean = false
     var jugglerPermutationsFlag: Boolean = false
+    var groupByJuggler: Boolean = false
     var mode: Int = ASYNC
     var slotSize: Int = 0
 
@@ -95,6 +96,7 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
                 "-s" -> mode = SYNC
                 "-cp" -> connectedPatternsFlag = true
                 "-sym" -> symmetricPatternsFlag = true
+                "-group" -> groupByJuggler = true
                 "-mf" -> mpflag = 0
                 "-mc" -> mpClusteredFlag = false
                 "-mt" -> trueMultiplex = true

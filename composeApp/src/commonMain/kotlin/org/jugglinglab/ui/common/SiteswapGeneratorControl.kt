@@ -45,6 +45,7 @@ fun SiteswapGeneratorControl(
     var jugglerPermutations by state.jugglerPermutations
     var connectedPatterns by state.connectedPatterns
     var symmetricPatterns by state.symmetricPatterns
+    var groupThrowsByJuggler by state.groupThrowsByJuggler
     var noSqueezeCatches by state.noSqueezeCatches
     var noClusteredThrows by state.noClusteredThrows
     var trueMultiplexing by state.trueMultiplexing
@@ -97,6 +98,7 @@ fun SiteswapGeneratorControl(
             }
             if (connectedPatterns) sb.append(" -cp")
             if (symmetricPatterns) sb.append(" -sym")
+            if (groupThrowsByJuggler) sb.append(" -group")
         }
         // 0 = all (-f), 1 = non-obvious (default), 2 = prime (-prime)
         when (compositionIndex) {
@@ -301,6 +303,10 @@ fun SiteswapGeneratorControl(
                         stringResource(Res.string.gui_symmetric_patterns),
                         symmetricPatterns
                     ) { symmetricPatterns = it }
+                    JlCheckbox(
+                        stringResource(Res.string.gui_group_throws_by_juggler),
+                        groupThrowsByJuggler
+                    ) { groupThrowsByJuggler = it }
                 }
 
                 // Multiplexing checkboxes
@@ -383,6 +389,7 @@ class SiteswapGeneratorState {
     val jugglerPermutations = mutableStateOf(false)
     val connectedPatterns = mutableStateOf(true)
     val symmetricPatterns = mutableStateOf(false)
+    val groupThrowsByJuggler = mutableStateOf(false)
     val noSqueezeCatches = mutableStateOf(true)
     val noClusteredThrows = mutableStateOf(false)
     val trueMultiplexing = mutableStateOf(true)
@@ -405,6 +412,7 @@ class SiteswapGeneratorState {
         jugglerPermutations.value = false
         connectedPatterns.value = true
         symmetricPatterns.value = false
+        groupThrowsByJuggler.value = false
         noSqueezeCatches.value = true
         noClusteredThrows.value = false
         trueMultiplexing.value = true

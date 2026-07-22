@@ -35,6 +35,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
     private var cb15: JCheckBox
     private var cb17: JCheckBox
     private var cb18: JCheckBox
+    private var cbGroup: JCheckBox
 
     // Multiplexing Filters
     private var cb13: JCheckBox
@@ -190,18 +191,22 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         pRight.add(cb18)
         gb.setConstraints(cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0)))
 
+        cbGroup = JCheckBox(jlGetStringResource(Res.string.gui_group_throws_by_juggler), null)
+        pRight.add(cbGroup)
+        gb.setConstraints(cbGroup, jlConstraints(GridBagConstraints.LINE_START, 0, 8, Insets(0, 10, 0, 0)))
+
         // Multiplexing specific filters
         cb13 = JCheckBox(jlGetStringResource(Res.string.gui_no_simultaneous_catches), null)
         pRight.add(cb13)
-        gb.setConstraints(cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 8, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 9, Insets(0, 10, 0, 0)))
 
         cb14 = JCheckBox(jlGetStringResource(Res.string.gui_no_clustered_throws), null)
         pRight.add(cb14)
-        gb.setConstraints(cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 9, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 10, Insets(0, 10, 0, 0)))
 
         cb16 = JCheckBox(jlGetStringResource(Res.string.gui_true_multiplexing), null)
         pRight.add(cb16)
-        gb.setConstraints(cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 10, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 11, Insets(0, 10, 0, 0)))
 
         pMain.add(pRight)
         gb.setConstraints(pRight, jlConstraints(GridBagConstraints.FIRST_LINE_START, 1, 0))
@@ -249,6 +254,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
                 cb15.isEnabled = true
                 cb17.isEnabled = cb7.isSelected && cb8.isSelected
                 cb18.isEnabled = true
+                cbGroup.isEnabled = true
                 if (cb7.isSelected && !cb8.isSelected) {
                     lab4.isEnabled = true
                     tf7.isEnabled = true
@@ -260,6 +266,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
                 cb15.isEnabled = false
                 cb17.isEnabled = false
                 cb18.isEnabled = false
+                cbGroup.isEnabled = false
                 lab4.isEnabled = false
                 tf7.isEnabled = false
             }
@@ -313,6 +320,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         cb17.isSelected = false  // juggler permutations
         cb15.isSelected = true  // connected patterns
         cb18.isSelected = false  // symmetric patterns
+        cbGroup.isSelected = false // group throws by juggler
 
         cb13.isSelected = true  // no simultaneous catches
         cb14.isSelected = false  // allow clustered throws
@@ -329,6 +337,7 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         cb17.isEnabled = false
         cb15.isEnabled = false
         cb18.isEnabled = false
+        cbGroup.isEnabled = false
         lab4.isEnabled = false
         tf7.isEnabled = false
 
@@ -374,6 +383,9 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
                 }
                 if (cb18.isSelected) {
                     sb.append(" -sym")
+                }
+                if (cbGroup.isSelected) {
+                    sb.append(" -group")
                 }
             }
 

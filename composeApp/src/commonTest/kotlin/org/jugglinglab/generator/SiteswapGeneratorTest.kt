@@ -10,6 +10,7 @@ package org.jugglinglab.generator
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
 class SiteswapGeneratorTest {
@@ -108,6 +109,19 @@ class SiteswapGeneratorTest {
             // expected termination exception
         }
         assertEquals(10, patterns.size)
+    }
+
+    @Test
+    fun `generator grouping by juggler`() = runTest {
+        val patternsStandard = runGeneratorTestCase("6 4 2 -j 2 -f -se")
+        val patternsGrouped = runGeneratorTestCase("6 4 2 -j 2 -f -se -group")
+        assertEquals(patternsStandard.size, patternsGrouped.size)
+
+        // Check specific pattern transformation from beat-by-beat to grouped format
+        // E.g. "<3p|3p><3|3>" -> "<3p 3|3p 3>" (space inserted after 'p' when followed by digit)
+        val index = patternsStandard.indexOf("<3p|3p><3|3>")
+        assertTrue(index >= 0)
+        assertEquals("<3p 3|3p 3>", patternsGrouped[index])
     }
 
     // TODO:
