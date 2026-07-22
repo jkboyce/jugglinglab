@@ -14,7 +14,7 @@ For mobile development we recommend [Android Studio](https://developer.android.c
 
 ## Contributors
 
-Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing with the release of Java 1.2. Eventually Juggling Lab morphed into the desktop application it is today.
+Juggling Lab has been in development since 1997 – the earliest days of the Java language. It started as an AWT applet running in a browser, then migrated to Swing as a desktop application with the release of Java 1.2. In 2025–2026 we did a complete rewrite in Kotlin and Compose Multiplatform, allowing us to target desktop, Android, iOS, and the web with one code base.
 
 Over that long span of time the project has seen contributions from many people, including:
 
