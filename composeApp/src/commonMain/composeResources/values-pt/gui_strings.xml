@@ -12,12 +12,12 @@
     <string name="gui_hand_movement">Movimento das mãos</string>
     <string name="gui_body_movement">Movimento do corpo</string>
     <string name="gui_manual_settings">Ajustes manuais</string>
-    <string name="gui_transitions">Transitions</string>
+    <string name="gui_transitions">Transições</string>
     <string name="gui_generator">Gerador</string>
     <string name="gui_run">Começar</string>
-    <string name="gui_from_pattern">From pattern</string>
-    <string name="gui_to_pattern">To pattern</string>
-    <string name="gui_multiplexing_in_transitions">Multiplexing in transitions</string>
+    <string name="gui_from_pattern">Padrão de origem</string>
+    <string name="gui_to_pattern">Padrão de destino</string>
+    <string name="gui_multiplexing_in_transitions">Multiplexação em transições</string>
     <string name="gui_balls">Bolas</string>
     <string name="gui_max__throw">Tiro max.</string>
     <string name="gui_period">Período</string>
@@ -36,10 +36,10 @@
     <string name="gui_pattern_rotations">permutações do padrão</string>
     <string name="gui_juggler_permutations">permutacões de malabarista</string>
     <string name="gui_connected_patterns">padrões conectados somente</string>
-    <string name="gui_symmetric_patterns">symmetric patterns</string>
-    <string name="gui_group_throws_by_juggler">group throws by juggler</string>
+    <string name="gui_symmetric_patterns">Padrões simétricos</string>
+    <string name="gui_group_throws_by_juggler">Agrupar lançamentos por malabarista</string>
     <string name="gui_multiplexing">Multiplexação</string>
-    <string name="gui_multiplexing_none">none</string>
+    <string name="gui_multiplexing_none">Nenhum</string>
     <string name="gui_enable">permitir*</string>
     <string name="gui_simultaneous_throws">tiros simultâneos</string>
     <string name="gui_no_simultaneous_catches">sem capturas simultâneas</string>
@@ -50,103 +50,103 @@
     <string name="gui_passing_communication_delay">Retraso de comunicação ao passar</string>
     <string name="gui_file">Arquivo</string>
     <string name="gui_notation">Notação</string>
-    <string name="gui_window">Window</string>
+    <string name="gui_window">Janela</string>
     <string name="gui_help">Ajuda</string>
-    <string name="gui_new_pattern">Novo Padrão</string>
-    <string name="gui_new_pattern_list">Nova Lista de Padrões</string>
-    <string name="gui_open_jml___">Abrir Arquivo JML...</string>
+    <string name="gui_new_pattern">Novo padrão</string>
+    <string name="gui_new_pattern_list">Nova lista de padrões</string>
+    <string name="gui_open_jml___">Abrir JML...</string>
     <string name="gui_quit">Sair</string>
     <string name="gui_about_juggling_lab">Acerca de Juggling Lab</string>
-    <string name="gui_juggling_lab_online_help">Juggling Lab Online Help</string>
+    <string name="gui_juggling_lab_online_help">Ajuda online do Juggling Lab</string>
     <string name="gui_close">Fechar</string>
     <string name="gui_save_jml">Guardar</string>
-    <string name="gui_save_jml_as___">Guardar Como...</string>
-    <string name="gui_save_text_as___">Guardar Texto Como...</string>
+    <string name="gui_save_jml_as___">Salvar JML como...</string>
+    <string name="gui_save_text_as___">Salvar texto como...</string>
     <string name="gui_patterns">Padrões</string>
-    <string name="gui_view">Aspecto</string>
-    <string name="gui_save_animated_gif_as___">Guardar GIF Animado Como...</string>
-    <string name="gui_duplicate">Duplicate</string>
-    <string name="gui_change_title___">Modificar Título...</string>
-    <string name="gui_change_overall_timing___">Modificar Tempo...</string>
-    <string name="gui_color_props">Color Props</string>
-    <string name="gui_pcmenu_mixed">mixed</string>
-    <string name="gui_pcmenu_orbits">orbits</string>
-    <string name="gui_pcmenu_transparent">transparent</string>
-    <string name="gui_pcmenu_black">black</string>
-    <string name="gui_pcmenu_blue">blue</string>
-    <string name="gui_pcmenu_cyan">cyan</string>
-    <string name="gui_pcmenu_gray">gray</string>
-    <string name="gui_pcmenu_green">green</string>
-    <string name="gui_pcmenu_magenta">magenta</string>
-    <string name="gui_pcmenu_orange">orange</string>
-    <string name="gui_pcmenu_pink">pink</string>
-    <string name="gui_pcmenu_red">red</string>
-    <string name="gui_pcmenu_white">white</string>
-    <string name="gui_pcmenu_yellow">yellow</string>
-    <string name="gui_optimize">Optimize for Throwing Error</string>
-    <string name="gui_swap_hands">Swap Hands</string>
-    <string name="gui_flip_pattern_in_x">Flip Pattern in X</string>
-    <string name="gui_flip_pattern_in_time">Flip Pattern in Time</string>
-    <string name="gui_restart">Recomeçar</string>
+    <string name="gui_view">Visualizar</string>
+    <string name="gui_save_animated_gif_as___">Salvar GIF animado como...</string>
+    <string name="gui_duplicate">Duplicar</string>
+    <string name="gui_change_title___">Alterar título...</string>
+    <string name="gui_change_overall_timing___">Alterar tempo geral...</string>
+    <string name="gui_color_props">Cores dos objetos</string>
+    <string name="gui_pcmenu_mixed">Misto</string>
+    <string name="gui_pcmenu_orbits">Órbitas</string>
+    <string name="gui_pcmenu_transparent">Transparente</string>
+    <string name="gui_pcmenu_black">Preto</string>
+    <string name="gui_pcmenu_blue">Azul</string>
+    <string name="gui_pcmenu_cyan">Ciano</string>
+    <string name="gui_pcmenu_gray">Cinza</string>
+    <string name="gui_pcmenu_green">Verde</string>
+    <string name="gui_pcmenu_magenta">Magenta</string>
+    <string name="gui_pcmenu_orange">Laranja</string>
+    <string name="gui_pcmenu_pink">Rosa</string>
+    <string name="gui_pcmenu_red">Vermelho</string>
+    <string name="gui_pcmenu_white">Branco</string>
+    <string name="gui_pcmenu_yellow">Amarelo</string>
+    <string name="gui_optimize">Otimizar</string>
+    <string name="gui_swap_hands">Trocar mãos</string>
+    <string name="gui_flip_pattern_in_x">Inverter padrão em X</string>
+    <string name="gui_flip_pattern_in_time">Inverter padrão no tempo</string>
+    <string name="gui_restart">Reiniciar</string>
     <string name="gui_animation_preferences___">Preferéncias de Animação...</string>
-    <string name="gui_undo">Undo Changes</string>
-    <string name="gui_redo">Redo Changes</string>
-    <string name="gui_zoom_in">Zoom In</string>
-    <string name="gui_zoom_out">Zoom Out</string>
+    <string name="gui_undo">Desfazer</string>
+    <string name="gui_redo">Refazer</string>
+    <string name="gui_zoom_in">Aumentar zoom</string>
+    <string name="gui_zoom_out">Diminuir zoom</string>
     <string name="gui_simple">Simples</string>
-    <string name="gui_visual_editor">Editor Visual</string>
-    <string name="gui_pattern_editor">Editor de Padrão</string>
-    <string name="gui_selection_editor">Editor de Seleção</string>
+    <string name="gui_visual_editor">Editor visual</string>
+    <string name="gui_pattern_editor">Editor de padrões</string>
+    <string name="gui_selection_editor">Editor de seleção</string>
     <string name="gui_animation_preferences">Preferéncias de Animação</string>
-    <string name="gui_bring_all_to_front">Bring All To Front</string>
-    <string name="gui_solid_3d_display">Animação 3D sólida</string>
+    <string name="gui_bring_all_to_front">Trazer tudo para a frente</string>
+    <string name="gui_solid_3d_display">Exibição 3D sólida</string>
     <string name="gui_width">Largura</string>
     <string name="gui_height">Altura</string>
-    <string name="gui_frames_per_second">Freqüência de renovação (GIF)</string>
-    <string name="gui_slowdown_factor">Velocidade</string>
+    <string name="gui_frames_per_second">Quadros por segundo (GIF)</string>
+    <string name="gui_slowdown_factor">Fator de desaceleração</string>
     <string name="gui_border__pixels_">Beira (pixels)</string>
-    <string name="gui_double_buffered_animation">Animação dobro-protegida</string>
-    <string name="gui_start_paused">Começar pausado</string>
-    <string name="gui_pause_on_mouse_away">Fazer pausa ao afastar o mouse</string>
-    <string name="gui_stereo_display">Ver em estéreo</string>
+    <string name="gui_double_buffered_animation">Animação com buffer duplo</string>
+    <string name="gui_start_paused">Iniciar pausado</string>
+    <string name="gui_pause_on_mouse_away">Pausar ao afastar o mouse</string>
+    <string name="gui_stereo_display">Exibição estéreo</string>
     <string name="gui_catch_sounds">Dar som ao pegar com as mãos</string>
     <string name="gui_bounce_sounds">Dar som ao bater com o chão</string>
     <string name="gui_cancel">Cancelar</string>
     <string name="gui_ok">OK</string>
-    <string name="gui_change_title">Modificar título</string>
-    <string name="gui_change_timing">Modificar tempo</string>
-    <string name="gui_rescale_percentage">Nova escala (porcentagem)</string>
+    <string name="gui_change_title">Alterar título</string>
+    <string name="gui_change_timing">Alterar tempo</string>
+    <string name="gui_rescale_percentage">Porcentagem de redimensionamento</string>
     <string name="gui_add_event_to_l_hand">Adicionar evento à mão esquerda</string>
     <string name="gui_add_event_to_r_hand">Adicionar evento à mão direita</string>
     <string name="gui_add_position_to_juggler">Add position to juggler</string>
-    <string name="gui_remove_event">Tirar evento</string>
-    <string name="gui_remove_position">Remove position</string>
-    <string name="gui_define_prop___">Ajustar objeto...</string>
-    <string name="gui_make_last_in_event">Mudar para último neste evento</string>
-    <string name="gui_define_throw___">Ajustar tiro...</string>
-    <string name="gui_change_to_normal_catch">Mudar para captura</string>
-    <string name="gui_change_to_soft_catch">Mudar para captura leve</string>
-    <string name="gui_change_to_grab_catch">Mudar para captura grab</string>
-    <string name="gui_define_prop">Ajustar objeto</string>
+    <string name="gui_remove_event">Remover evento</string>
+    <string name="gui_remove_position">Remover posição</string>
+    <string name="gui_define_prop___">Definir objeto...</string>
+    <string name="gui_make_last_in_event">Tornar o último no evento</string>
+    <string name="gui_define_throw___">Definir lançamento...</string>
+    <string name="gui_change_to_normal_catch">Mudar para captura normal</string>
+    <string name="gui_change_to_soft_catch">Mudar para captura suave</string>
+    <string name="gui_change_to_grab_catch">Mudar para captura de agarre</string>
+    <string name="gui_define_prop">Definir objeto</string>
     <string name="gui_prop_type">Tipo de objeto</string>
-    <string name="gui_define_throw">Ajustar tiro</string>
-    <string name="gui_throw_type">Tipo de tiro</string>
-    <string name="gui_message_click_to_start">Começar</string>
-    <string name="gui_too_many_jugglers">At most %1$d jugglers supported</string>
-    <string name="gui_too_many_paths">At most %1$d objects supported</string>
-    <string name="gui_saving_animated_gif">Guardando GIF animado</string>
-    <string name="gui_message_gifsave_color_map">Construindo mapa de cor</string>
-    <string name="gui_message_gifsave_writing_frame">Gravando imagem</string>
+    <string name="gui_define_throw">Definir lançamento</string>
+    <string name="gui_throw_type">Tipo de lançamento</string>
+    <string name="gui_message_click_to_start">Clique para começar</string>
+    <string name="gui_too_many_jugglers">Muitos malabaristas para edição visual</string>
+    <string name="gui_too_many_paths">Muitos caminhos para edição visual</string>
+    <string name="gui_saving_animated_gif">Salvando GIF animado</string>
+    <string name="gui_message_gifsave_color_map">Criando mapa de cores</string>
+    <string name="gui_message_gifsave_writing_frame">Gravando quadro %1$d de %2$d</string>
     <string name="gui_patternview_compile_button">Compilar</string>
-    <string name="gui_patternview_revert_button">Restaurar</string>
-    <string name="gui_patternview_heading">Pattern view:</string>
-    <string name="gui_patternview_rb1_default">Base Pattern (none set)</string>
-    <string name="gui_patternview_rb1">Base Pattern (%1$s)</string>
-    <string name="gui_patternview_alert">Note: Applied JML edits will be lost if base pattern is updated</string>
-    <string name="gui_patternview_rb2">JML</string>
+    <string name="gui_patternview_revert_button">Reverter</string>
+    <string name="gui_patternview_heading">Padrão:</string>
+    <string name="gui_patternview_rb1_default">Usar padrão do Juggling Lab</string>
+    <string name="gui_patternview_rb1">Usar preferência do usuário:</string>
+    <string name="gui_patternview_alert">Você deve compilar o padrão para ver as preferências editadas aqui</string>
+    <string name="gui_patternview_rb2">Definir personalizado:</string>
     <string name="gui_pattern_list">Lista de padrões</string>
     <string name="gui_version">Versão %1$s</string>
-    <string name="gui_copyright_message">Copyright © 2002-%1$s Jack Boyce and the Juggling Lab contributors</string>
+    <string name="gui_copyright_message">Copyright © 2002-%1$s Jack Boyce e os colaboradores do Juggling Lab</string>
     <string name="gui_gpl_message">Este programa é encontram sob a Licença Pública Geral do GNU(GPL) v2</string>
     <string name="gui_continue">Continuar</string>
     <string name="gui_generator_stopped_title">Gerador terminado</string>
@@ -155,107 +155,276 @@
     <string name="gui_generator_patterns_1">1 padrão</string>
     <string name="gui_generator_patterns_ne1">%1$d padrões</string>
     <string name="gui_pattern_list_tab">Lista de padrões</string>
-    <string name="gui_generator_intro">This is the siteswap generator component of Juggling Lab. It finds juggling\npatterns in a generalized form of siteswap notation. For a full description of\nthis notation and the program's operation, consult the documentation at\nhttps://jugglinglab.org. All patterns satisfying the given constraints are\nlisted by the program. Solo asynchronous juggling is the default mode.\n\nUsage:   gen &lt;number&gt; &lt;max throw&gt; &lt;period&gt; [options]\n\nwhere options include:\n  -n             show number of patterns\n  -no            print number only\n  -se            hide starting/ending sequences for excited state patterns\n\n  -x &lt;regex&gt; ..  exclude listed regular expressions\n  -i &lt;regex&gt; ..  must include listed regular expressions\n  -lame          remove '11' sequence in async mode\n\n  -g             ground state patterns only\n  -ng            excited state patterns only\n  -f             full listing (including composite patterns)\n  -prime         prime patterns only\n  -rot           show all rotated versions of patterns (e.g., 645 and 564)\n\n  -m &lt;number&gt;    multiplexing with at most &lt;number&gt; simultaneous throws\n  -mf            allow simultaneous nontrivial catches (squeeze patterns)\n  -mc            disallow multiplex clustered throws (e.g., [33])\n  -mt            require at least one multiplexed throw with no holds\n\n  -s             find synchronous siteswaps\n\n  -j &lt;number&gt;    set number of jugglers\n  -cp            show only connected passing patterns\n  -sym           show only juggler-symmetric passing patterns\n  -group         group throws by juggler in passing patterns\n  -d &lt;number&gt;    passing communication delay (see docs)\n  -l &lt;number&gt;    passing leader person number (for use with -d)\n  -jp            show patterns with all juggler permutations\n\nNote: The value for &lt;max throw&gt; can be omitted by using the value '-', in which\ncase throw values are unbounded. Also &lt;period&gt; may be specified as a range,\nlike '1-5' or '-5' or '-'.\n\nExamples:\n  gen 5 7 5\n  gen 5 7 1-5 -x 2 3\n  gen 5 7 - -prime -n\n  gen 4 - 3 -f -rot -no\n  gen 4 6 6 -s -g\n  gen 5 6 4 -m 2 -g -mt\n  gen 6 4 2 -j 2 -g -jp -m 2 -d 1 -l 1</string>
-    <string name="gui_transitioner_intro">This is the siteswap transition-finding component of Juggling Lab. It finds\ntransitions between any two siteswap patterns, as long as the number of objects\nand jugglers are consistent.\n\nTransitions are not unique. The program handles this by generating a variety of\noptions for the transition from A to B, but only a single (minimal) transition\nfrom B back to A.\n\nUsage:   trans &lt;pattern A&gt; &lt;pattern B&gt; [-options]\n\nwhere options include:\n  -m &lt;number&gt;    multiplexing with at most &lt;number&gt; simultaneous throws\n  -mf            allow simultaneous nontrivial catches (squeeze patterns)\n  -mc            disallow multiplex clustered throws (e.g., [33])\n  -limits        turn off limits on run time and pattern count\n\nExamples:\n  trans 5 771\n  trans 5 771 -m 2\n  trans 645 '(6x,4)*'\n  trans '&lt;33|22&gt;' '&lt;55|00&gt;'</string>
-    <string name="gui_cli_help1">This is the command line interface to Juggling Lab. Recognized options:\n\n   jlab start\n      Launches the application.\n\n   jlab open &lt;file1.jml&gt; &lt;file2.jml&gt; ...\n      Launches the application and opens the listed JML files.\n\n   jlab anim &lt;pattern&gt; [-prefs &lt;prefs&gt;]\n      Opens a window with an animation of the given pattern, using the\n      given (optional) animation preferences.\n\n   jlab gen &lt;gen_options&gt; [-out &lt;path&gt;]\n      Runs the siteswap generator and prints a list of patterns, using the\n      given set of generator options to define the number of objects, etc.\n      Type "jlab gen" with no options for a help message. The output may\n      optionally be written to a file.\n\n   jlab trans &lt;pattern A&gt; &lt;pattern B&gt; [-options] [-out &lt;path&gt;]\n      Runs the siteswap transition-finder and prints a list of transitions\n      from pattern A to pattern B. Type "jlab trans" for a help message. The\n      output may optionally be written to a file.\n\n   jlab togif &lt;pattern&gt; [-prefs &lt;prefs&gt;] -out &lt;path&gt;\n      Saves a pattern animation to a file as an animated GIF, using the\n      given (optional) animation preferences.\n\n   jlab tojml &lt;pattern&gt; [-out &lt;path&gt;]\n      Converts a pattern to JML notation, Juggling Lab's internal XML-based\n      pattern description. This may optionally be written to a file.\n\n   jlab verify &lt;file1.jml&gt; &lt;file2.jml&gt; ... [-out &lt;path&gt;]\n      Checks the validity of the listed JML files. For pattern list files, the\n      validity of each line within the list is verified. The output may\n      optionally be written to a file.\n\nPattern input:\n   &lt;pattern&gt; can take one of three formats:\n\n   1. A pattern in siteswap notation, for example 771 or (6x,4)(4,6x).\n   2. A siteswap pattern annotated with additional settings, in a semi-\n      colon separated format. This is described in more detail at\n      https://jugglinglab.org/html/sspanel.html\n   3. A JML pattern read in from a file, using the format '-jml &lt;path&gt;'.\n\nAnimation preferences input:\n   &lt;prefs&gt; are optional and are used to override Juggling Lab's default\n   preferences. These are given in a semicolon-separated format. See\n   https://jugglinglab.org/html/animinfo.html\n\nNOTE: Care should be taken when using characters that may be interpreted in\nspecial ways by the command line interpreter. On Windows use double quotes\naround settings to avoid confusion, and single quotes on macOS/Unix.\n\n</string>
-    <string name="gui_cli_help2">Examples:\n   jlab anim '(6x,4)*'\n   jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif\n   jlab anim -jml my_favorite_pattern.jml\n   jlab anim 771 -prefs 'stereo=true;width=800;height=600'\n   jlab anim 5B -prefs 'bouncesound=true'\n   jlab gen 5 7 5\n   jlab trans 5 771</string>
-    <string name="gui_prop_name_ball">ball</string>
-    <string name="gui_prop_name_square">square</string>
-    <string name="gui_prop_name_ring">ring</string>
-    <string name="gui_prop_name_image">image</string>
-    <string name="gui_mhnhands_name_default">default</string>
-    <string name="gui_mhnhands_name_inside">inside throws</string>
-    <string name="gui_mhnhands_name_outside">outside throws</string>
-    <string name="gui_mhnhands_name_half">half shower</string>
+    <string name="gui_generator_intro"><![CDATA[Este é o componente gerador de siteswap do Juggling Lab. Ele encontra padrões
+de malabarismo em uma forma generalizada de notação siteswap. Para uma
+descrição completa desta notação e do funcionamento do programa, consulte a
+documentação em https://jugglinglab.org. Todos os padrões que satisfazem as
+restrições fornecidas são listados pelo programa. O malabarismo assíncrono
+solo é o modo padrão.
+
+Uso:   gen <número> <lançamento máx> <período> [opções]
+
+onde as opções incluem:
+  -n             mostrar número de padrões
+  -no            imprimir apenas o número
+  -se            ocultar sequências iniciais/finais para padrões de estado
+                 excitado
+
+  -x <regex> ..  excluir expressões regulares listadas
+  -i <regex> ..  incluir obrigatoriamente expressões regulares listadas
+  -lame          remover a sequência '11' no modo assíncrono
+
+  -g             apenas padrões de estado fundamental
+  -ng            apenas padrões de estado excitado
+  -f             listagem completa (incluindo padrões compostos)
+  -prime         apenas padrões primos
+  -rot           mostrar todas as versões rotacionadas dos padrões
+                 (ex. 645 e 564)
+
+  -m <número>    multiplexação com no máximo <número> lançamentos simultâneos
+  -mf            permitir capturas simultâneas não triviais (padrões squeeze)
+  -mc            não permitir lançamentos multiplexados agrupados (ex. [33])
+  -mt            exigir pelo menos um lançamento multiplexado sem retenções
+
+  -s             encontrar siteswaps síncronos
+
+  -j <número>    definir número de malabaristas
+  -cp            mostrar apenas padrões de passes conectados
+  -sym           mostrar apenas padrões de passes simétricos entre malabaristas
+  -group         agrupar lançamentos por malabarista em padrões de passes
+  -d <número>    atraso de comunicação em passes (ver documentação)
+  -l <número>    número do malabarista líder em passes (para uso com -d)
+  -jp            mostrar padrões com todas as permutações de malabaristas
+
+Nota: O valor para <lançamento máx> pode ser omitido usando o valor '-', caso
+em que os valores de lançamento não têm limite. O <período> também pode ser
+especificado como um intervalo, como '1-5' ou '-5' ou '-'.
+
+Exemplos:
+  gen 5 7 5
+  gen 5 7 1-5 -x 2 3
+  gen 5 7 - -prime -n
+  gen 4 - 3 -f -rot -no
+  gen 4 6 6 -s -g
+  gen 5 6 4 -m 2 -g -mt
+  gen 6 4 2 -j 2 -g -jp -m 2 -d 1 -l 1]]></string>
+    <string name="gui_transitioner_intro"><![CDATA[Este é o componente localizador de transições siteswap do Juggling Lab. Ele
+encontra transições entre dois padrões siteswap quaisquer, desde que o número
+de objetos e malabaristas sejam consistentes.
+
+As transições não são únicas. O programa lida com isso gerando uma variedade
+de opções para a transição de A para B, mas apenas uma transição (mínima) de B
+de volta para A.
+
+Uso:   trans <padrão A> <padrão B> [-opções]
+
+onde as opções incluem:
+  -m <número>    multiplexação com no máximo <número> lançamentos simultâneos
+  -mf            permitir capturas simultâneas não triviais (padrões squeeze)
+  -mc            não permitir lançamentos multiplexados agrupados (ex. [33])
+  -limits        desativar limites de tempo de execução e contagem de padrões
+
+Exemplos:
+  trans 5 771
+  trans 5 771 -m 2
+  trans 645 '(6x,4)*'
+  trans '<33|22>' '<55|00>']]></string>
+    <string name="gui_cli_help1"><![CDATA[Interface de linha de comando do Juggling Lab. Opções reconhecidas:
+
+   jlab start
+      Inicia o aplicativo.
+
+   jlab open <arquivo1.jml> <arquivo2.jml> ...
+      Inicia o aplicativo e abre os arquivos JML listados.
+
+   jlab anim <padrão> [-prefs <preferências>]
+      Abre uma janela com a animação do padrão fornecido.
+
+   jlab gen <opções_gen> [-out <caminho>]
+      Executa o gerador de siteswap e imprime uma lista de padrões.
+      Digite "jlab gen" sem opções para ver a ajuda. A saída pode ser gravada
+      em um arquivo.
+
+   jlab trans <padrão A> <padrão B> [-opções] [-out <caminho>]
+      Executa o localizador de transições siteswap e imprime uma lista de
+      transições do padrão A para o B.
+
+   jlab togif <padrão> [-prefs <preferências>] -out <caminho>
+      Salva a animação de um padrão como um GIF animado.
+
+   jlab tojml <padrão> [-out <caminho>]
+      Converte um padrão para a notação JML, a descrição XML interna do
+      Juggling Lab.
+
+   jlab verify [-tojml] <arquivo1.jml> <arquivo2.jml> ... [-out <caminho>]
+      Verifica a validade dos arquivos JML listados.
+
+Entrada de padrão:
+   <padrão> pode ter um de três formatos:
+   1. Um padrão em notação siteswap, por exemplo 771 ou (6x,4)(4,6x).
+   2. Um padrão siteswap anotado com configurações adicionais em formato
+      separado por ponto e vírgula.
+   3. Um padrão JML lido de um arquivo usando '-jml <caminho>'.
+
+Preferências de animação:
+   <preferências> são opcionais e usadas para substituir as preferências padrão.
+   Veja https://jugglinglab.org/html/animinfo.html]]></string>
+    <string name="gui_cli_help2"><![CDATA[Exemplos:
+   jlab anim '(6x,4)*'
+   jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
+   jlab anim -jml meu_padrao_favorito.jml
+   jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab anim 5B -prefs 'bouncesound=true'
+   jlab gen 5 7 5
+   jlab trans 5 771]]></string>
+    <string name="gui_prop_name_ball">bolinha</string>
+    <string name="gui_prop_name_square">quadrado</string>
+    <string name="gui_prop_name_ring">anel</string>
+    <string name="gui_prop_name_image">imagem</string>
+    <string name="gui_param_color">cor</string>
+    <string name="gui_param_diam">diâm</string>
+    <string name="gui_param_highlight">destacar</string>
+    <string name="gui_param_g">g</string>
+    <string name="gui_param_bounces">quiques</string>
+    <string name="gui_param_bounceplane">plano de quique</string>
+    <string name="gui_param_bouncefrac">frac. de quique</string>
+    <string name="gui_param_forced">forçado</string>
+    <string name="gui_param_hyper">hiper</string>
+    <string name="gui_param_inside">interior</string>
+    <string name="gui_param_outside">exterior</string>
+    <string name="gui_param_width">largura</string>
+    <string name="gui_param_image">imagem</string>
+    <string name="gui_throw_name_toss">arremesso</string>
+    <string name="gui_throw_name_bounce">quique</string>
+    <string name="gui_mhnhands_name_default">padrão</string>
+    <string name="gui_mhnhands_name_inside">lançamentos internos</string>
+    <string name="gui_mhnhands_name_outside">lançamentos externos</string>
+    <string name="gui_mhnhands_name_half">meio chuveiro</string>
     <string name="gui_mhnhands_name_mills">Mills Mess</string>
-    <string name="gui_mhnhands_name_custom">custom</string>
-    <string name="gui_mhnbody_name_default">default</string>
-    <string name="gui_mhnbody_name_line">line</string>
-    <string name="gui_mhnbody_name_feed">feed</string>
-    <string name="gui_mhnbody_name_backtoback">back to back</string>
-    <string name="gui_mhnbody_name_sidetoside">side to side</string>
-    <string name="gui_mhnbody_name_circles">circles</string>
-    <string name="gui_mhnbody_name_custom">custom</string>
-    <string name="gui_new_version_available">New Version Available</string>
-    <string name="gui_new_version_text1">Version %1$s of Juggling Lab is available for</string>
-    <string name="gui_new_version_text2">download. You are currently running version %1$s.</string>
-    <string name="gui_new_version_text3">Would you like to visit the download site?</string>
-    <string name="gui_update_cancel">Cancel</string>
-    <string name="gui_update_yes">Yes</string>
-    <string name="gui_download_message">Please visit %1$s to download.</string>
-    <string name="gui_mutator_header1">Mutation Types</string>
-    <string name="gui_mutator_type1">Change event positions</string>
-    <string name="gui_mutator_type2">Change event times</string>
-    <string name="gui_mutator_type3">Adjust overall timing</string>
-    <string name="gui_mutator_type4">Add new events</string>
-    <string name="gui_mutator_type5">Remove events</string>
-    <string name="gui_mutator_header2">Mutation Rate</string>
-    <string name="gui_mutation_rate_low">Low</string>
-    <string name="gui_mutation_rate_medium">Medium</string>
-    <string name="gui_mutation_rate_high">High</string>
-    <string name="gui_prefs_show_ground">Show ground</string>
-    <string name="gui_prefs_show_ground_auto">auto</string>
-    <string name="gui_prefs_show_ground_yes">yes</string>
-    <string name="gui_prefs_show_ground_no">no</string>
-    <string name="gui_plpopup_insert_text___">Insert Text...</string>
-    <string name="gui_plpopup_insert_pattern">Insert Pattern</string>
-    <string name="gui_plpopup_change_display_text___">Change Display Text...</string>
-    <string name="gui_plpopup_remove_line">Remove Line</string>
-    <string name="gui_pldialog_insert_text">Insert text</string>
-    <string name="gui_pldialog_change_title">Change title</string>
-    <string name="gui_pldialog_change_display_text">Change display text</string>
-    <string name="gui_plwindow_default_window_title">Pattern list</string>
-    <string name="gui_plwindow_unsaved_changes_message">Do you want to save the changes to "%1$s"?</string>
-    <string name="gui_plwindow_unsaved_changes_title">Confirm</string>
-    <string name="gui_pwindow_default_window_title">Pattern</string>
-    <string name="gui_jfc_file_exists_message">"%1$s" already exists.\nDo you want to replace it?</string>
-    <string name="gui_jfc_file_exists_title">Existing file</string>
-    <string name="gui_mobile_nav_animation">Animation View</string>
-    <string name="gui_mobile_nav_notation">Notation Control</string>
-    <string name="gui_mobile_nav_pattern_list">Pattern List</string>
-    <string name="gui_mobile_nav_generator">Generator Control</string>
-    <string name="gui_mobile_nav_info">Info</string>
-    <string name="gui_mobile_nav_filechooser">Open Pattern List</string>
+    <string name="gui_mhnhands_name_custom">personalizado</string>
+    <string name="gui_mhnbody_name_default">padrão</string>
+    <string name="gui_mhnbody_name_line">linha</string>
+    <string name="gui_mhnbody_name_feed">alimentar</string>
+    <string name="gui_mhnbody_name_backtoback">costas com costas</string>
+    <string name="gui_mhnbody_name_sidetoside">lado a lado</string>
+    <string name="gui_mhnbody_name_circles">círculos</string>
+    <string name="gui_mhnbody_name_custom">personalizado</string>
+    <string name="gui_new_version_available">Nova versão disponível</string>
+    <string name="gui_new_version_text1">A versão %1$s do Juggling Lab está disponível para</string>
+    <string name="gui_new_version_text2">download. Você está executando a versão %1$s.</string>
+    <string name="gui_new_version_text3">Deseja visitar o site de download?</string>
+    <string name="gui_update_cancel">Cancelar</string>
+    <string name="gui_update_yes">Sim</string>
+    <string name="gui_download_message">Por favor visite %1$s para baixar.</string>
+    <string name="gui_mutator_header1">modos de alteração</string>
+    <string name="gui_mutator_type1">alterar espaço</string>
+    <string name="gui_mutator_type2">alterar ritmo</string>
+    <string name="gui_mutator_type3">alterar todo o tempo</string>
+    <string name="gui_mutator_type4">criar novo objeto</string>
+    <string name="gui_mutator_type5">remover objeto</string>
+    <string name="gui_mutator_header2">taxa de mutação</string>
+    <string name="gui_mutation_rate_low">baixa</string>
+    <string name="gui_mutation_rate_medium">média</string>
+    <string name="gui_mutation_rate_high">alta</string>
+    <string name="gui_prefs_show_ground">Mostrar estado fundamental</string>
+    <string name="gui_prefs_show_ground_auto">automático</string>
+    <string name="gui_prefs_show_ground_yes">sim</string>
+    <string name="gui_prefs_show_ground_no">não</string>
+    <string name="gui_plpopup_insert_text___">Inserir texto...</string>
+    <string name="gui_plpopup_insert_pattern">Inserir padrão</string>
+    <string name="gui_plpopup_change_display_text___">Alterar texto de exibição...</string>
+    <string name="gui_plpopup_remove_line">Remover linha</string>
+    <string name="gui_pldialog_insert_text">Inserir texto</string>
+    <string name="gui_pldialog_change_title">Alterar título</string>
+    <string name="gui_pldialog_change_display_text">Alterar texto de exibição</string>
+    <string name="gui_plwindow_default_window_title">Lista de padrões</string>
+    <string name="gui_plwindow_unsaved_changes_message">Deseja salvar as alterações em &quot;%1$s&quot;?</string>
+    <string name="gui_plwindow_unsaved_changes_title">Confirmar</string>
+    <string name="gui_pwindow_default_window_title">Padrão</string>
+    <string name="gui_jfc_file_exists_message">&quot;%1$s&quot; já existe.\nDeseja substituí-lo?</string>
+    <string name="gui_jfc_file_exists_title">Arquivo existente</string>
+    <string name="gui_mobile_nav_animation">Visualização de animação</string>
+    <string name="gui_mobile_nav_notation">Controle de notação</string>
+    <string name="gui_mobile_nav_pattern_list">Lista de padrões</string>
+    <string name="gui_mobile_nav_generator">Controle do gerador</string>
+    <string name="gui_mobile_nav_info">Informações</string>
+    <string name="gui_mobile_nav_filechooser">Abrir lista de padrões</string>
     <string name="gui_mobile_share_subject">Juggling Lab: %1$s</string>
-    <string name="gui_mobile_share_html">Click to open in Juggling Lab: &lt;a href=\"%1$s\"&gt;%2$s&lt;/a&gt;</string>
-    <string name="gui_mobile_pattern_list_unsaved">%1$s (unsaved)</string>
+    <string name="gui_mobile_share_html">Clique para abrir no Juggling Lab: &lt;a href=&quot;%1$s&quot;&gt;%2$s&lt;/a&gt;</string>
+    <string name="gui_mobile_pattern_list_unsaved">%1$s (não salvo)</string>
     <string name="gui_mobile_menu">Menu</string>
-    <string name="gui_mobile_load___">Open...</string>
-    <string name="gui_mobile_load_favorites">Open Favorites</string>
-    <string name="gui_mobile_favorites">Favorites</string>
-    <string name="gui_mobile_rename___">Rename...</string>
-    <string name="gui_mobile_export_as_jml___">Export as JML...</string>
-    <string name="gui_mobile_delete_list">Delete List</string>
-    <string name="gui_mobile_move_up">Move Up</string>
-    <string name="gui_mobile_move_down">Move Down</string>
-    <string name="gui_mobile_add_to_favorites">Add to Favorites</string>
-    <string name="gui_mobile_pause">Pause</string>
-    <string name="gui_mobile_unpause">Unpause</string>
-    <string name="gui_mobile_remove_from_favorites">Remove from Favorites</string>
-    <string name="gui_mobile_share">Share</string>
-    <string name="gui_mobile_insert_current_pattern">Insert Current Pattern</string>
-    <string name="gui_mobile_collapse">Collapse</string>
-    <string name="gui_mobile_expand">Expand</string>
-    <string name="gui_mobile_juggling_lab_logo">Juggling Lab Logo</string>
+    <string name="gui_mobile_load___">Abrir...</string>
+    <string name="gui_mobile_load_favorites">Abrir Favoritos</string>
+    <string name="gui_mobile_favorites">Favoritos</string>
+    <string name="gui_mobile_rename___">Renomear...</string>
+    <string name="gui_mobile_export_as_jml___">Exportar como JML...</string>
+    <string name="gui_mobile_delete_list">Excluir lista</string>
+    <string name="gui_mobile_move_up">Mover para cima</string>
+    <string name="gui_mobile_move_down">Mover para baixo</string>
+    <string name="gui_mobile_add_to_favorites">Adicionar aos Favoritos</string>
+    <string name="gui_mobile_pause">Pausar</string>
+    <string name="gui_mobile_unpause">Retomar</string>
+    <string name="gui_mobile_remove_from_favorites">Remover dos Favoritos</string>
+    <string name="gui_mobile_share">Compartilhar</string>
+    <string name="gui_mobile_insert_current_pattern">Inserir padrão atual</string>
+    <string name="gui_mobile_collapse">Recolher</string>
+    <string name="gui_mobile_expand">Expandir</string>
+    <string name="gui_mobile_juggling_lab_logo">Logotipo do Juggling Lab</string>
     <string name="gui_mobile_juggling_lab">Juggling Lab</string>
-    <string name="gui_mobile_android_leads">Android leads: Romain Richard, Frédéric Rayar, Jack Boyce.</string>
-    <string name="gui_mobile_info_animation">Animation</string>
-    <string name="gui_mobile_info_pattern_entry">Pattern Entry</string>
-    <string name="gui_mobile_info_pattern_list">Pattern List</string>
-    <string name="gui_mobile_info_generator">Generator</string>
-    <string name="gui_mobile_info_favorites">Favorites</string>
-    <string name="gui_mobile_info_library">How to Juggle</string>
-    <string name="gui_mobile_theme_system">System</string>
-    <string name="gui_mobile_theme_light">Light</string>
-    <string name="gui_mobile_theme_dark">Dark</string>
-    <string name="gui_mobile_rename_title">Rename</string>
-    <string name="gui_mobile_save_as">Save as</string>
-    <string name="gui_mobile_delete">Delete</string>
-    <string name="gui_mobile_plpopup_insert_text_title">Insert text</string>
-    <string name="gui_mobile_plpopup_change_display_text_title">Change display text</string>
-    <string name="gui_mobile_plpopup_insert_text___">Insert Text...</string>
-    <string name="gui_mobile_plpopup_change_display_text___">Change Display Text...</string>
-    <string name="gui_mobile_plpopup_remove_line">Remove Line</string>
-    <string name="gui_share_url">Copy Share URL</string>
-    <string name="gui_share_url_copied">Pattern URL copied to clipboard</string>
+    <string name="gui_mobile_android_leads">Líderes do Android: Romain Richard, Frédéric Rayar, Jack Boyce.</string>
+    <string name="gui_mobile_info_animation">Animação</string>
+    <string name="gui_mobile_info_pattern_entry">Entrada de padrão</string>
+    <string name="gui_mobile_info_pattern_list">Lista de padrões</string>
+    <string name="gui_mobile_info_generator">Gerador</string>
+    <string name="gui_mobile_info_favorites">Favoritos</string>
+    <string name="gui_mobile_info_library">Aprender a fazer malabares</string>
+    <string name="gui_mobile_info_open_jml_file">Abrir arquivo JML</string>
+    <string name="gui_mobile_theme_system">Sistema</string>
+    <string name="gui_mobile_theme_light">Claro</string>
+    <string name="gui_mobile_theme_dark">Escuro</string>
+    <string name="gui_mobile_filechooser_my_lists">Minhas listas</string>
+    <string name="gui_mobile_filechooser_pattern_library">Biblioteca de padrões</string>
+    <string name="gui_mobile_filechooser_other">Outros</string>
+    <string name="gui_mobile_rename_title">Renomear arquivo</string>
+    <string name="gui_mobile_save_as">Salvar como</string>
+    <string name="gui_mobile_delete">Excluir</string>
+    <string name="gui_mobile_plpopup_insert_text_title">Inserir texto</string>
+    <string name="gui_mobile_plpopup_change_display_text_title">Alterar texto de exibição</string>
+    <string name="gui_mobile_plpopup_insert_text___">Inserir texto...</string>
+    <string name="gui_mobile_plpopup_change_display_text___">Alterar texto de exibição...</string>
+    <string name="gui_mobile_plpopup_remove_line">Remover linha</string>
+    <string name="gui_share_url">Copiar URL de compartilhamento</string>
+    <string name="gui_share_url_copied">URL do padrão copiada para a área de transferência</string>
+
+    <!-- Mobile onboarding walkthrough strings -->
+    <string name="gui_walkthrough_take_tour">Fazer o tour</string>
+    <string name="gui_walkthrough_step_header">TOUR: PASSO %1$d DE %2$d</string>
+    <string name="gui_walkthrough_exit">Sair do tour</string>
+    <string name="gui_walkthrough_finish">Concluir</string>
+    <string name="gui_walkthrough_web_note">\n\nImportante: As listas de padrões no aplicativo web não são salvas entre as sessões do navegador.</string>
+    <string name="gui_walkthrough_step1">Bem-vindo ao Juggling Lab! Esta é a tela inicial – volte aqui selecionando este ícone. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step2">Vá aqui para abrir e ver padrões de malabarismo.</string>
+    <string name="gui_walkthrough_step3">Vá aqui para ver seus padrões favoritos.</string>
+    <string name="gui_walkthrough_step4_touch">Esta é a visualização de animação. Toque para pausar/despausar, arraste para mover a câmera e use o gesto de pinça com dois dedos para dar zoom.</string>
+    <string name="gui_walkthrough_step4_mouse">Esta é a visualização de animação. Clique para pausar/despausar, arraste para mover a câmera e use a roda do mouse para dar zoom.</string>
+    <string name="gui_walkthrough_step5">Selecione isto para acessar o menu do padrão. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step6">Selecione isto para abrir a visualização do diagrama de escada. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step7_touch">Este é o diagrama de escada. Arraste o marcador de tempo para cima e para baixo para ajustar o tempo. A escada também é ajustável com o gesto de pinça.</string>
+    <string name="gui_walkthrough_step7_mouse">Este é o diagrama de escada. Arraste o marcador de tempo para cima e para baixo para ajustar o tempo. A escada também é ajustável com a roda do mouse.</string>
+    <string name="gui_walkthrough_step8_touch">Um toque longo dentro do diagrama de escada acessa os recursos de edição.</string>
+    <string name="gui_walkthrough_step8_mouse">Um clique com o botão direito dentro do diagrama de escada acessa os recursos de edição.</string>
+    <string name="gui_walkthrough_step9">Isto representa uma transição, neste caso um lançamento. Selecione-o para destacá-lo. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step10">Quando a transição está selecionada, esta caixa representa sua localização. Arraste a caixa para alterar a localização do evento.</string>
+    <string name="gui_walkthrough_step11_touch">Toque longo na transição para acessar mais recursos de edição.</string>
+    <string name="gui_walkthrough_step11_mouse">Clique com o botão direito na transição para acessar mais recursos de edição.</string>
+    <string name="gui_walkthrough_step12_touch">Isto representa um evento. Arraste-o para cima e para baixo para alterar seu tempo, ou toque longo para recursos adicionais.</string>
+    <string name="gui_walkthrough_step12_mouse">Isto representa um evento. Arraste-o para cima e para baixo para alterar seu tempo, ou clique com o botão direito para recursos adicionais.</string>
+    <string name="gui_walkthrough_step13">Selecione isto para fechar o diagrama de escada. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step14">Selecione o ícone Lista de Padrões para abrir uma lista de padrões. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step15">Esta é a tela de abertura da lista de padrões. Esta seção na parte superior é onde ficam suas listas de padrões criadas. Crie quantas quiser e compartilhe-as!</string>
+    <string name="gui_walkthrough_step16">Estas são as listas de padrões que vêm com o Juggling Lab. Selecione esta para abri-la. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step17_touch">Cada linha é um padrão separado. Selecione um para iniciar uma animação ou faça um toque longo para opções adicionais. O menu no canto superior direito acessa recursos para toda a lista.</string>
+    <string name="gui_walkthrough_step17_mouse">Cada linha é um padrão separado. Selecione um para iniciar uma animação ou clique com o botão direito para opções adicionais. O menu no canto superior direito acessa recursos para toda a lista.</string>
+    <string name="gui_walkthrough_step18">Selecione isto para fechar uma lista de padrões e carregar uma nova. (Por favor, faça isso para continuar.)</string>
+    <string name="gui_walkthrough_step19">Isso conclui o tour. Esperamos que você goste do Juggling Lab!</string>
 </resources>

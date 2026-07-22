@@ -11,12 +11,13 @@
 
 package org.jugglinglab
 
+import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.ui.mobile.App
 import org.jugglinglab.util.crashReporter
-import org.jugglinglab.util.prewarmWasmStringResources
 import org.jugglinglab.util.CrashReporter
+import org.jugglinglab.util.prewarmWasmStringResources
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.mutableStateOf
@@ -72,12 +73,62 @@ fun main() {
         }
         if (isReady) {
             val href = kotlinx.browser.window.location.href
-            val startUrl = if (href.contains("?") && href.substringAfter("?").isNotEmpty()) href else null
-            App(
-                prefsRepo = themeRepo,
-                localFilesDir = localFilesDir,
-                startUrl = startUrl
+            val startUrl =
+                if (href.contains("?") && href.substringAfter("?").isNotEmpty()) href else null
+
+            // add Hebrew fonts; often missing in browser sandbox
+            val webFontFamily = androidx.compose.ui.text.font.FontFamily(
+                org.jetbrains.compose.resources.Font(
+                    Res.font.noto_sans_hebrew_regular,
+                    androidx.compose.ui.text.font.FontWeight.Normal
+                ),
+                org.jetbrains.compose.resources.Font(
+                    Res.font.noto_sans_hebrew_bold,
+                    androidx.compose.ui.text.font.FontWeight.Bold
+                )
             )
+            val defaultTypography = androidx.compose.material3.MaterialTheme.typography
+            val webTypography = remember(webFontFamily) {
+                androidx.compose.material3.Typography(
+                    displayLarge = defaultTypography.displayLarge.copy(fontFamily = webFontFamily),
+                    displayMedium = defaultTypography.displayMedium.copy(fontFamily = webFontFamily),
+                    displaySmall = defaultTypography.displaySmall.copy(fontFamily = webFontFamily),
+                    headlineLarge = defaultTypography.headlineLarge.copy(fontFamily = webFontFamily),
+                    headlineMedium = defaultTypography.headlineMedium.copy(fontFamily = webFontFamily),
+                    headlineSmall = defaultTypography.headlineSmall.copy(fontFamily = webFontFamily),
+                    titleLarge = defaultTypography.titleLarge.copy(fontFamily = webFontFamily),
+                    titleMedium = defaultTypography.titleMedium.copy(fontFamily = webFontFamily),
+                    titleSmall = defaultTypography.titleSmall.copy(fontFamily = webFontFamily),
+                    bodyLarge = defaultTypography.bodyLarge.copy(fontFamily = webFontFamily),
+                    bodyMedium = defaultTypography.bodyMedium.copy(fontFamily = webFontFamily),
+                    bodySmall = defaultTypography.bodySmall.copy(fontFamily = webFontFamily),
+                    labelLarge = defaultTypography.labelLarge.copy(fontFamily = webFontFamily),
+                    labelMedium = defaultTypography.labelMedium.copy(fontFamily = webFontFamily),
+                    labelSmall = defaultTypography.labelSmall.copy(fontFamily = webFontFamily)
+                )
+            }
+
+            // switch page to RTL layout if necessary
+            val lang = kotlinx.browser.window.navigator.language.lowercase()
+            val isRtl = lang.startsWith("he") || lang.startsWith("ar")
+            val webLayoutDirection = if (isRtl) {
+                document.documentElement?.setAttribute("dir", "rtl")
+                androidx.compose.ui.unit.LayoutDirection.Rtl
+            } else {
+                document.documentElement?.setAttribute("dir", "ltr")
+                androidx.compose.ui.unit.LayoutDirection.Ltr
+            }
+
+            androidx.compose.runtime.CompositionLocalProvider(
+                androidx.compose.ui.platform.LocalLayoutDirection provides webLayoutDirection
+            ) {
+                App(
+                    prefsRepo = themeRepo,
+                    localFilesDir = localFilesDir,
+                    startUrl = startUrl,
+                    typography = webTypography
+                )
+            }
         }
     }
 }
@@ -91,11 +142,13 @@ class LocalStorageDataStore : DataStore<Preferences> {
 
         val initialPrefs = emptyPreferences().toMutablePreferences().apply {
             if (themeVal != null) {
-                val themeKey = androidx.datastore.preferences.core.intPreferencesKey("theme_setting")
+                val themeKey =
+                    androidx.datastore.preferences.core.intPreferencesKey("theme_setting")
                 this[themeKey] = themeVal
             }
             if (onboardingVal != null) {
-                val onboardingKey = androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
+                val onboardingKey =
+                    androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
                 this[onboardingKey] = onboardingVal
             }
         }
@@ -110,7 +163,8 @@ class LocalStorageDataStore : DataStore<Preferences> {
         stateFlow.value = newPrefs
 
         val themeKey = androidx.datastore.preferences.core.intPreferencesKey("theme_setting")
-        val onboardingKey = androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
+        val onboardingKey =
+            androidx.datastore.preferences.core.booleanPreferencesKey("onboarding_completed")
 
         val themeVal = newPrefs[themeKey]
         if (themeVal != null) {

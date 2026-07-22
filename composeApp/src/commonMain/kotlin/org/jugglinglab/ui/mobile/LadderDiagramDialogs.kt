@@ -15,6 +15,9 @@ import org.jugglinglab.prop.Prop
 import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.ParameterDescriptor
 import org.jugglinglab.util.jlParseFiniteDouble
+import org.jugglinglab.util.jlGetLocalizedPropName
+import org.jugglinglab.util.jlGetLocalizedParamName
+import org.jugglinglab.util.jlGetLocalizedChoiceName
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -171,6 +174,7 @@ fun DefinePropDialog(
         typeLabel = stringResource(Res.string.gui_prop_type),
         availableTypes = propTypes,
         selectedType = selectedType,
+        typeFormatter = { jlGetLocalizedPropName(it) },
         onTypeChange = { selectedType = it },
         descriptors = descriptors,
         onConfirm = { mod -> onConfirm(selectedType, mod) },
@@ -201,6 +205,7 @@ fun DefineThrowDialog(
         typeLabel = stringResource(Res.string.gui_throw_type),
         availableTypes = pathTypes,
         selectedType = selectedType,
+        typeFormatter = { jlGetLocalizedChoiceName(it) },
         onTypeChange = { selectedType = it },
         descriptors = descriptors,
         onConfirm = { mod -> onConfirm(selectedType, mod) },
@@ -215,30 +220,34 @@ fun ParameterEditDialog(
     typeLabel: String,
     availableTypes: List<String>,
     selectedType: String,
+    typeFormatter: (String) -> String = { jlGetLocalizedPropName(it) },
     onTypeChange: (String) -> Unit,
     descriptors: List<ParameterDescriptor>,
     onConfirm: (String?) -> Unit,
     onDismissRequest: () -> Unit
 ) {
-    // State for parameter values. Key is param name.
     val paramValues = remember(descriptors) {
         mutableStateMapOf<String, Any?>().apply {
             descriptors.forEach { pd ->
-                this[pd.name] = pd.value ?: pd.defaultValue
+                put(pd.name, pd.value ?: pd.defaultValue)
             }
         }
     }
 
     Dialog(onDismissRequest = onDismissRequest) {
         Card(
-            shape = RoundedCornerShape(8.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
             modifier = Modifier
-                .width(400.dp)
+                .fillMaxWidth()
+                .padding(16.dp)
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp)
-            ) {
-                Text(text = title, style = MaterialTheme.typography.titleLarge)
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleLarge
+                )
+
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Type Selector
@@ -250,7 +259,7 @@ fun ParameterEditDialog(
                         onExpandedChange = { typeExpanded = it }
                     ) {
                         TextField(
-                            value = selectedType,
+                            value = typeFormatter(selectedType),
                             onValueChange = {},
                             readOnly = true,
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = typeExpanded) },
@@ -263,7 +272,7 @@ fun ParameterEditDialog(
                         ) {
                             availableTypes.forEach { type ->
                                 DropdownMenuItem(
-                                    text = { Text(type) },
+                                    text = { Text(typeFormatter(type)) },
                                     onClick = {
                                         onTypeChange(type)
                                         typeExpanded = false
@@ -322,7 +331,7 @@ fun ParameterRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(vertical = 4.dp)
     ) {
-        Text(text = descriptor.name, modifier = Modifier.width(140.dp))
+        Text(text = jlGetLocalizedParamName(descriptor.name), modifier = Modifier.width(140.dp))
 
         when (descriptor.type) {
             ParameterDescriptor.TYPE_BOOLEAN -> {
@@ -376,7 +385,7 @@ fun ParameterRow(
 
                 Box {
                     OutlinedButton(onClick = { expanded = true }) {
-                        Text(selectedChoice.ifEmpty { "Select..." })
+                        Text(jlGetLocalizedChoiceName(selectedChoice.ifEmpty { "Select..." }))
                     }
                     DropdownMenu(
                         expanded = expanded,
@@ -384,7 +393,7 @@ fun ParameterRow(
                     ) {
                         choices.forEach { choice ->
                             DropdownMenuItem(
-                                text = { Text(choice) },
+                                text = { Text(jlGetLocalizedChoiceName(choice)) },
                                 leadingIcon = if (descriptor.name == "color") {
                                     val colorIndex = Prop.colorNames.indexOf(choice)
                                     if (colorIndex >= 0) {

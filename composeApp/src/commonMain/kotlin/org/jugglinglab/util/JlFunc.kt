@@ -362,6 +362,58 @@ fun jlErrorIfNotSanitized(fname: String) {
 
 expect fun jlGetStringResource(key: StringResource, vararg args: Any?): String
 
+fun jlGetLocalizedPropName(propType: String): String {
+    return when (propType.lowercase()) {
+        "ball" -> jlGetStringResource(Res.string.gui_prop_name_ball)
+        "square" -> jlGetStringResource(Res.string.gui_prop_name_square)
+        "ring" -> jlGetStringResource(Res.string.gui_prop_name_ring)
+        "image" -> jlGetStringResource(Res.string.gui_prop_name_image)
+        else -> propType
+    }
+}
+
+fun jlGetLocalizedParamName(paramName: String): String {
+    return when (paramName.lowercase()) {
+        "color" -> jlGetStringResource(Res.string.gui_param_color)
+        "diam" -> jlGetStringResource(Res.string.gui_param_diam)
+        "highlight" -> jlGetStringResource(Res.string.gui_param_highlight)
+        "g" -> jlGetStringResource(Res.string.gui_param_g)
+        "bounces" -> jlGetStringResource(Res.string.gui_param_bounces)
+        "bounceplane" -> jlGetStringResource(Res.string.gui_param_bounceplane)
+        "bouncefrac" -> jlGetStringResource(Res.string.gui_param_bouncefrac)
+        "forced" -> jlGetStringResource(Res.string.gui_param_forced)
+        "hyper" -> jlGetStringResource(Res.string.gui_param_hyper)
+        "inside" -> jlGetStringResource(Res.string.gui_param_inside)
+        "outside" -> jlGetStringResource(Res.string.gui_param_outside)
+        "width" -> jlGetStringResource(Res.string.gui_param_width)
+        "image" -> jlGetStringResource(Res.string.gui_param_image)
+        else -> paramName
+    }
+}
+
+fun jlGetLocalizedChoiceName(choice: String): String {
+    return when (choice.lowercase()) {
+        "black" -> jlGetStringResource(Res.string.gui_pcmenu_black)
+        "blue" -> jlGetStringResource(Res.string.gui_pcmenu_blue)
+        "cyan" -> jlGetStringResource(Res.string.gui_pcmenu_cyan)
+        "gray" -> jlGetStringResource(Res.string.gui_pcmenu_gray)
+        "green" -> jlGetStringResource(Res.string.gui_pcmenu_green)
+        "magenta" -> jlGetStringResource(Res.string.gui_pcmenu_magenta)
+        "orange" -> jlGetStringResource(Res.string.gui_pcmenu_orange)
+        "pink" -> jlGetStringResource(Res.string.gui_pcmenu_pink)
+        "red" -> jlGetStringResource(Res.string.gui_pcmenu_red)
+        "white" -> jlGetStringResource(Res.string.gui_pcmenu_white)
+        "yellow" -> jlGetStringResource(Res.string.gui_pcmenu_yellow)
+        "ball" -> jlGetStringResource(Res.string.gui_prop_name_ball)
+        "square" -> jlGetStringResource(Res.string.gui_prop_name_square)
+        "ring" -> jlGetStringResource(Res.string.gui_prop_name_ring)
+        "image" -> jlGetStringResource(Res.string.gui_prop_name_image)
+        "toss" -> jlGetStringResource(Res.string.gui_throw_name_toss)
+        "bounce" -> jlGetStringResource(Res.string.gui_throw_name_bounce)
+        else -> choice
+    }
+}
+
 // Drop-in replacement for java.lang.String.format()
 
 internal fun jlFormatString(format: String, vararg args: Any?): String {

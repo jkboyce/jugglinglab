@@ -48,6 +48,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.layout.ContentScale
@@ -157,7 +158,7 @@ private fun InfoHeader(
             if (onStartWalkthrough != null) {
                 Spacer(modifier = Modifier.width(32.dp))
                 Text(
-                    text = "Take a Tour",
+                    text = stringResource(Res.string.gui_walkthrough_take_tour),
                     modifier = Modifier.clickable { onStartWalkthrough.invoke() },
                     color = MaterialTheme.colorScheme.primary,
                     textDecoration = TextDecoration.Underline,
@@ -206,7 +207,7 @@ private fun NavGrid(
             if (jlIsWeb) {
                 NavButton(
                     modifier = Modifier.weight(1f),
-                    title = "Open JML File",
+                    title = stringResource(Res.string.gui_mobile_info_open_jml_file),
                     icon = Icons.Default.FileOpen
                 ) { onOpenJmlClick() }
             } else {
@@ -246,7 +247,8 @@ private fun NavButton(
         Text(
             text = title,
             color = MaterialTheme.colorScheme.primary,
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.titleMedium,
+            textAlign = TextAlign.Center
         )
     }
 }
@@ -278,7 +280,10 @@ private fun ThemeSelector(
                     onClick = { onThemeChange(option) },
                     selected = themeSetting == option
                 ) {
-                    Text(labels[index])
+                    Text(
+                        text = labels[index],
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

@@ -9,10 +9,13 @@
 
 package org.jugglinglab.ui.mobile
 
+import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.StoredPreferencesRepository
 import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.util.jlIsWeb
 import org.jugglinglab.util.jlIsTouchInterface
+import org.jugglinglab.util.jlGetStringResource
+import org.jetbrains.compose.resources.StringResource
 import androidx.compose.runtime.*
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.Modifier
@@ -36,15 +39,11 @@ class WalkthroughCoordinator(
     val activeStepData: Pair<String, String>?
         get() {
             val step = WALKTHROUGH_STEPS.getOrNull(walkthroughStep) ?: return null
-            var text = step.second
-            if (!jlIsTouchInterface) {
-                text = text.replace("long press", "right click")
-                text = text.replace("Long press", "Right click")
-                text = text.replace("a two finger pinch gesture", "the scroll wheel")
-                text = text.replace("a pinch gesture", "the scroll wheel")
-            }
+            val resPair = step.second ?: return null
+            val resId = if (jlIsTouchInterface) resPair.first else (resPair.second ?: resPair.first)
+            var text = jlGetStringResource(resId)
             if (jlIsWeb && step.first == "file_my_lists") {
-                text += "\n\nImportant: Pattern lists in the web application are not saved between browser sessions."
+                text += jlGetStringResource(Res.string.gui_walkthrough_web_note)
             }
             return Pair(step.first, text)
         }
@@ -142,82 +141,45 @@ fun Modifier.walkthroughTarget(key: String, condition: Boolean = true): Modifier
     }
 }
 
-private val WALKTHROUGH_STEPS = listOf(
-    Pair("", ""),  // Step 0 placeholder
-    Pair(
-        "nav_info",
-        "Welcome to Juggling Lab! This is the home screen – come back here by selecting this icon. (Please do so to advance.)"
-    ),
-    Pair(
-        "info_pattern_list",
-        "Go here to open juggling patterns to view."
-    ),
-    Pair(
-        "info_favorites",
-        "Go here to see your favorited patterns."
-    ),
+private val WALKTHROUGH_STEPS: List<Pair<String, Pair<StringResource, StringResource?>?>> = listOf(
+    Pair("", null),  // Step 0 placeholder
+    Pair("nav_info", Pair(Res.string.gui_walkthrough_step1, null)),
+    Pair("info_pattern_list", Pair(Res.string.gui_walkthrough_step2, null)),
+    Pair("info_favorites", Pair(Res.string.gui_walkthrough_step3, null)),
     Pair(
         "anim_center",
-        "This is the animation view. Tap to pause/unpause, drag to move the camera, and use a two finger pinch gesture to zoom in/out."
+        Pair(Res.string.gui_walkthrough_step4_touch, Res.string.gui_walkthrough_step4_mouse)
     ),
+    Pair("anim_menu", Pair(Res.string.gui_walkthrough_step5, null)),
+    Pair("anim_ladder_toggle", Pair(Res.string.gui_walkthrough_step6, null)),
     Pair(
-        "anim_menu",
-        "Select this to access the pattern menu. (Please do so to advance.)"
-    ),
-    Pair(
-        "anim_ladder_toggle",
-        "Select this to open the ladder diagram view. (Please do so to advance.)"
+        "ladder_center",
+        Pair(Res.string.gui_walkthrough_step7_touch, Res.string.gui_walkthrough_step7_mouse)
     ),
     Pair(
         "ladder_center",
-        "This is the ladder diagram. Drag the time tracker up and down to cue the time. The ladder is also zoomable with a pinch gesture."
+        Pair(Res.string.gui_walkthrough_step8_touch, Res.string.gui_walkthrough_step8_mouse)
     ),
-    Pair(
-        "ladder_center",
-        "A long press inside the ladder diagram accesses editing features."
-    ),
+    Pair("ladder_transition", Pair(Res.string.gui_walkthrough_step9, null)),
+    Pair("anim_box", Pair(Res.string.gui_walkthrough_step10, null)),
     Pair(
         "ladder_transition",
-        "This represents a transition, in this case a throw. Select this to highlight it. (Please do so to advance.)"
-    ),
-    Pair(
-        "anim_box",
-        "When the transition is selected, this box represents its location. Drag the box to change the event's location."
-    ),
-    Pair(
-        "ladder_transition",
-        "Long press on the transition to access more editing features."
+        Pair(Res.string.gui_walkthrough_step11_touch, Res.string.gui_walkthrough_step11_mouse)
     ),
     Pair(
         "ladder_event",
-        "This represents an event. Drag it up and down to change its time, or long press for additional features."
+        Pair(Res.string.gui_walkthrough_step12_touch, Res.string.gui_walkthrough_step12_mouse)
     ),
-    Pair(
-        "anim_ladder_toggle",
-        "Select this to close the ladder diagram. (Please do so to advance.)"
-    ),
-    Pair(
-        "info_pattern_list",
-        "Select the Pattern List icon to open a list of patterns. (Please do so to advance.)"
-    ),
-    Pair(
-        "file_my_lists",
-        "This is the pattern list opening screen. This section at the top is where your user-created pattern lists go. Create as many as you want and share them with others!"
-    ),
-    Pair(
-        "file_how_to_juggle",
-        "These are the pattern lists that come with Juggling Lab. Select this one to open it. (Please do so to advance.)"
-    ),
+    Pair("anim_ladder_toggle", Pair(Res.string.gui_walkthrough_step13, null)),
+    Pair("info_pattern_list", Pair(Res.string.gui_walkthrough_step14, null)),
+    Pair("file_my_lists", Pair(Res.string.gui_walkthrough_step15, null)),
+    Pair("file_how_to_juggle", Pair(Res.string.gui_walkthrough_step16, null)),
     Pair(
         "pattern_list_line",
-        "Each line is a separate pattern. Select one to launch an animation, or long press for additional options. The menu at the upper right accesses features for the entire list."
+        Pair(Res.string.gui_walkthrough_step17_touch, Res.string.gui_walkthrough_step17_mouse)
     ),
-    Pair(
-        "pattern_list_close",
-        "Select this to close a pattern list and load a new one. (Please do so to advance.)"
-    ),
-    Pair(
-        "",
-        "This completes the tour. We hope you enjoy Juggling Lab!"
-    )
+    Pair("pattern_list_close", Pair(Res.string.gui_walkthrough_step18, null)),
+    Pair("", Pair(Res.string.gui_walkthrough_step19, null))
 )
+
+

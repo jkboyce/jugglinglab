@@ -190,7 +190,7 @@ fun JmlFileChooser(
             ) {
                 item {
                     FileChooserHeader(
-                        text = "My lists",
+                        text = stringResource(Res.string.gui_mobile_filechooser_my_lists),
                         modifier = Modifier.walkthroughTarget("file_my_lists")
                     )
                 }
@@ -259,7 +259,10 @@ fun JmlFileChooser(
 
                 if (staticFilesBasic.isNotEmpty()) {
                     item {
-                        FileChooserHeader("Pattern library", showDividerAbove = true)
+                        FileChooserHeader(
+                            stringResource(Res.string.gui_mobile_filechooser_pattern_library),
+                            showDividerAbove = true
+                        )
                     }
                 }
 
@@ -283,7 +286,7 @@ fun JmlFileChooser(
                 if (staticFilesOther.isNotEmpty()) {
                     item {
                         FileChooserHeader(
-                            "Other",
+                            stringResource(Res.string.gui_mobile_filechooser_other),
                             showDividerAbove = localFiles.isNotEmpty() || staticFilesBasic.isNotEmpty()
                         )
                     }

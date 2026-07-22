@@ -50,6 +50,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.Typography
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -85,6 +86,7 @@ fun App(
     onJmlContentHandled: () -> Unit = {},
     onStartErrorHandled: () -> Unit = {},
     isMigrationDialogShown: Boolean = false,
+    typography: Typography = MaterialTheme.typography
 ) {
     // Theme Settings
 
@@ -241,7 +243,10 @@ fun App(
 
     // Visual Hierarchy
 
-    MaterialTheme(colorScheme = colorScheme) {
+    MaterialTheme(
+        colorScheme = colorScheme,
+        typography = typography
+    ) {
         Surface(
             modifier = Modifier.fillMaxSize()
                 .backGestureHandler(enabled = customBackStack.size > 1, onBack = goBack),

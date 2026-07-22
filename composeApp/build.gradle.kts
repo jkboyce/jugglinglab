@@ -6,6 +6,7 @@
 //
 // - `./gradlew run` to build and run the desktop app
 // - `./gradlew run -PJLcompose` to build and run with a Compose UI
+// - `./gradlew run -Duser.language=fr` to run with a given language
 // - `./gradlew jvmTest` to run JVM test cases
 // - `./gradlew check` to run test cases and quality checks for all targets
 // - `./gradlew desktopBuild` to build bin/JugglingLab.jar
@@ -268,7 +269,8 @@ tasks.named("build") {
     dependsOn(unpackOrtNatives)
 }
 
-// Configure the run task to use the unpacked native libraries
+// Configure the run task to use the unpacked native libraries, and a
+// non-default language / country
 tasks.withType<JavaExec>().configureEach {
     dependsOn(unpackOrtNatives)
 
@@ -277,12 +279,27 @@ tasks.withType<JavaExec>().configureEach {
     val isMac = osName.contains("mac")
     val isArm64 = osArch.contains("aarch64") || osArch.contains("arm64")
     val classifier =
-        if (isMac && isArm64) "darwin-aarch64" else if (isMac) "darwin-x86-64" else if (osName.contains(
-                "win"
-            )
-        ) "win32-x86-64" else "linux-x86-64"
-
+        if (isMac && isArm64) {
+            "darwin-aarch64"
+        } else if (isMac) {
+            "darwin-x86-64"
+        } else if (osName.contains("win")) {
+            "win32-x86-64"
+        } else {
+            "linux-x86-64"
+        }
     systemProperty("java.library.path", "${project.rootDir}/bin/ortools-lib/ortools-$classifier")
+
+    // Forward user.language / user.country from Gradle process to runtime
+    // (e.g., ./gradlew run -Duser.language=fr)
+    val lang = System.getProperty("user.language")
+    if (!lang.isNullOrEmpty()) {
+        systemProperty("user.language", lang)
+    }
+    val country = System.getProperty("user.country")
+    if (!country.isNullOrEmpty()) {
+        systemProperty("user.country", country)
+    }
 }
 
 // Log test output to console during build

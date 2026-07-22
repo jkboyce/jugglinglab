@@ -97,12 +97,22 @@ fun PatternListView(
                     )
                 }
             }
-            val heading = patternListPath?.name?.removeSuffix(".jml")
-                ?: patternList.title?.let { if (isEditable) "$it (unsaved)" else it }
-                ?: if (isEditable) stringResource(
+            val defaultTitle = stringResource(Res.string.gui_plwindow_default_window_title)
+            val rawName = patternListPath?.name?.removeSuffix(".jml")
+            val baseTitle = if (isFavoritesList || rawName == "Favorites" || patternList.title == "Favorites") {
+                stringResource(Res.string.gui_mobile_favorites)
+            } else {
+                rawName ?: patternList.title
+            }
+            val heading = baseTitle?.let {
+                if (isEditable && patternListPath == null) stringResource(
                     Res.string.gui_mobile_pattern_list_unsaved,
-                    stringResource(Res.string.gui_plwindow_default_window_title)
-                ) else stringResource(Res.string.gui_plwindow_default_window_title)
+                    it
+                ) else it
+            } ?: if (isEditable && patternListPath == null) stringResource(
+                Res.string.gui_mobile_pattern_list_unsaved,
+                defaultTitle
+            ) else defaultTitle
             Text(
                 text = heading,
                 modifier = Modifier.weight(1f),
@@ -141,7 +151,7 @@ fun PatternListView(
                             onClick = {
                                 showMainMenu = false
                                 activeDialog =
-                                    PatternListDialog.SaveAs(heading.removeSuffix(" (unsaved)"))
+                                    PatternListDialog.SaveAs(patternList.title ?: defaultTitle)
                             }
                         )
                     } else {
@@ -207,7 +217,7 @@ fun PatternListView(
                 items(displaySize) { index ->
                     val record = patternList.model[index]
                     val inFavorites = !jlIsWeb && record.canAnimate && record.jlHashCode != 0 &&
-                        favoritesHashCodes.contains(record.jlHashCode)
+                            favoritesHashCodes.contains(record.jlHashCode)
                     val hasFavoriteStar = inFavorites && !isFavoritesList
 
                     PatternListItem(

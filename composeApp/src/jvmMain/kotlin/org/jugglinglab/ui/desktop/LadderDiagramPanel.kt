@@ -26,6 +26,9 @@ import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.jlJfc
+import org.jugglinglab.util.jlGetLocalizedPropName
+import org.jugglinglab.util.jlGetLocalizedParamName
+import org.jugglinglab.util.jlGetLocalizedChoiceName
 import org.jugglinglab.util.jlParseFiniteDouble
 import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.ui.graphics.toAwtImage
@@ -225,13 +228,14 @@ class LadderDiagramPanel(
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox(prtypes.toTypedArray())
+        val localizedTypes = prtypes.map { jlGetLocalizedPropName(it) }.toTypedArray()
+        val cb1 = JComboBox(localizedTypes)
         p1.add(cb1)
         gb.setConstraints(
             cb1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
         cb1.addActionListener { _: ActionEvent? ->
-            val type = cb1.getItemAt(cb1.getSelectedIndex())
+            val type = prtypes[cb1.selectedIndex]
             try {
                 val pt = if (type.equals(startprop.type, ignoreCase = true)) {
                     startprop
@@ -248,7 +252,7 @@ class LadderDiagramPanel(
         val bp: List<String> = Prop.builtinProps
         for (i in bp.indices) {
             if (bp[i].equals(startprop.type, ignoreCase = true)) {
-                cb1.setSelectedIndex(i)
+                cb1.selectedIndex = i
                 break
             }
         }
@@ -268,7 +272,7 @@ class LadderDiagramPanel(
             okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
         okbutton.addActionListener { _: ActionEvent? ->
-            val type = cb1.getItemAt(cb1.getSelectedIndex())
+            val type = prtypes[cb1.selectedIndex]
             val mod: String?
 
             try {
@@ -335,13 +339,14 @@ class LadderDiagramPanel(
         val p2 = JPanel()
         p2.setLayout(gb)
 
-        val cb1 = JComboBox(pptypes.toTypedArray())
+        val localizedTypes = pptypes.map { jlGetLocalizedChoiceName(it) }.toTypedArray()
+        val cb1 = JComboBox(localizedTypes)
         p1.add(cb1)
         gb.setConstraints(
             cb1, jlConstraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 10, 0, 0))
         )
         cb1.addActionListener { _: ActionEvent? ->
-            val type = cb1.getItemAt(cb1.getSelectedIndex())
+            val type = pptypes[cb1.selectedIndex]
             try {
                 val ppt = newPath(type)
                 if (type.equals(tr.throwType, ignoreCase = true)) {
@@ -358,7 +363,7 @@ class LadderDiagramPanel(
         val bpp: List<String> = Path.builtinPaths
         for (i in bpp.indices) {
             if (bpp[i].equals(tr.throwType, ignoreCase = true)) {
-                cb1.setSelectedIndex(i)
+                cb1.selectedIndex = i
                 break
             }
         }
@@ -378,7 +383,7 @@ class LadderDiagramPanel(
             okbutton, jlConstraints(GridBagConstraints.LINE_END, 1, 0, Insets(0, 10, 0, 0))
         )
         okbutton.addActionListener { _: ActionEvent? ->
-            val type = cb1.getItemAt(cb1.getSelectedIndex())
+            val type = pptypes[cb1.selectedIndex]
             val mod = try {
                 this.dialogParameterList
             } catch (jeu: JuggleExceptionUser) {
@@ -429,7 +434,7 @@ class LadderDiagramPanel(
         pdp.setLayout(gb)
 
         for (i in pd.indices) {
-            val lab = JLabel(pd[i].name)
+            val lab = JLabel(jlGetLocalizedParamName(pd[i].name))
             pdp.add(lab)
             gb.setConstraints(
                 lab, jlConstraints(GridBagConstraints.LINE_START, 0, i, Insets(0, 0, 0, 0))
@@ -456,7 +461,8 @@ class LadderDiagramPanel(
                 tf.text = def.toString()
             } else if (pd[i].type == ParameterDescriptor.TYPE_CHOICE) {
                 val choices = pd[i].range!!.toTypedArray()
-                val jcb = JComboBox(choices)
+                val localizedChoices = choices.map { jlGetLocalizedChoiceName(it) }.toTypedArray()
+                val jcb = JComboBox(localizedChoices)
                 jcb.setMaximumRowCount(15)
                 pdp.add(jcb)
                 gb.setConstraints(

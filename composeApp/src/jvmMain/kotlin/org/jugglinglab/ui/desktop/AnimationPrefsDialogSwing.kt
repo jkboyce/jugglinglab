@@ -143,7 +143,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         cbStereo = JCheckBox(jlGetStringResource(Res.string.gui_stereo_display))
         cbCatchsounds = JCheckBox(jlGetStringResource(Res.string.gui_catch_sounds))
         cbBouncesounds = JCheckBox(jlGetStringResource(Res.string.gui_bounce_sounds))
-        val labOther = JLabel("Manual settings")
+        val labOther = JLabel(jlGetStringResource(Res.string.gui_manual_settings))
         tfOther = JTextField(15)
         // buttons at the bottom
         butCancel = JButton(jlGetStringResource(Res.string.gui_cancel))

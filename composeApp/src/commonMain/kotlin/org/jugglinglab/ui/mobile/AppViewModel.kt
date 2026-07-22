@@ -108,8 +108,8 @@ class AppViewModel(
                 val path = localFilesDir / "Favorites.jml"
                 jmlStorageRepository.initializeFavorites(path, DEFAULT_FAVORITES_JML)
                 val pl = jmlStorageRepository.loadList(path)
-                if (pl.title == null) {
-                    pl.title = "Favorites"
+                if (pl.title == null || pl.title == "Favorites") {
+                    pl.title = getString(Res.string.gui_mobile_favorites)
                 }
                 favoritesList.clearModel()
                 favoritesList.title = pl.title
