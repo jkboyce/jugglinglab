@@ -136,7 +136,7 @@ data class AnimationPrefs(
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false
         const val VIEW_DEF: Int = VIEW_NONE
-        const val AVATAR_DEF: String = "male"
+        const val AVATAR_DEF: String = Avatar.DEFAULT
 
         // Constructing AnimationPrefs
 

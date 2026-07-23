@@ -73,7 +73,7 @@ class Renderer {
     // Which avatar draws each juggler (by juggler number, 1-based); jugglers
     // absent from the map use the default. Avatars are stateless (see Avatar),
     // so instances may be shared freely across jugglers and renderers.
-    private val defaultAvatar = MaleAvatar()
+    private val defaultAvatar = DefaultAvatar()
     private var avatars: Map<Int, Avatar> = emptyMap()
 
     fun avatarFor(juggler: Int): Avatar = avatars[juggler] ?: defaultAvatar

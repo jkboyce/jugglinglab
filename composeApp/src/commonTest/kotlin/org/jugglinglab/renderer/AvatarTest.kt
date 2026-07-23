@@ -19,10 +19,10 @@ import kotlin.test.assertTrue
 
 class AvatarTest {
     @Test
-    fun `male avatar uses exactly the core skeleton`() {
-        val male = MaleAvatar()
-        assertEquals(Avatar.CORE_POINT_COUNT, male.pointCount)
-        assertEquals(Avatar.TORSO_AND_HEAD_POINTS, male.boundsPoints)
+    fun `default avatar uses exactly the core skeleton`() {
+        val avatar = DefaultAvatar()
+        assertEquals(Avatar.CORE_POINT_COUNT, avatar.pointCount)
+        assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
     }
 
     @Test
@@ -53,7 +53,7 @@ class AvatarTest {
     fun `hands and elbows stay out of the body bounds`() {
         // Arms are separate line objects; including them in the body bbox
         // would change the painter's-algorithm cheap-reject behavior.
-        for (avatar in listOf(MaleAvatar(), FemaleAvatar())) {
+        for (avatar in listOf(DefaultAvatar(), FemaleAvatar())) {
             for (p in listOf(
                 Avatar.LEFT_HAND, Avatar.RIGHT_HAND, Avatar.LEFT_ELBOW, Avatar.RIGHT_ELBOW
             )) {
@@ -64,7 +64,7 @@ class AvatarTest {
 
     @Test
     fun `factory produces the registered avatars`() {
-        assertIs<MaleAvatar>(Avatar.newAvatar("male"))
+        assertIs<DefaultAvatar>(Avatar.newAvatar("default"))
         assertIs<FemaleAvatar>(Avatar.newAvatar("female"))
         assertIs<FemaleAvatar>(Avatar.newAvatar("Female")) // case-insensitive
 

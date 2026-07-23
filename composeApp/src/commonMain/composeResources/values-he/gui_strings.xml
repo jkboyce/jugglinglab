@@ -322,7 +322,7 @@
     <string name="gui_prefs_show_ground_yes">כן</string>
     <string name="gui_prefs_show_ground_no">לא</string>
     <string name="gui_juggler_avatar">אוואטר ג'אגלר</string>
-    <string name="gui_avatar_male">זכר</string>
+    <string name="gui_avatar_default">ברירת מחדל</string>
     <string name="gui_avatar_female">נקבה</string>
     <string name="gui_plpopup_insert_text___">הכנס טקסט...</string>
     <string name="gui_plpopup_insert_pattern">הכנס תבנית</string>

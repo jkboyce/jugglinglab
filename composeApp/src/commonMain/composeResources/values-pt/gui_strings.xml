@@ -331,7 +331,7 @@ Preferências de animação:
     <string name="gui_prefs_show_ground_yes">sim</string>
     <string name="gui_prefs_show_ground_no">não</string>
     <string name="gui_juggler_avatar">Avatar do malabarista</string>
-    <string name="gui_avatar_male">masculino</string>
+    <string name="gui_avatar_default">padrão</string>
     <string name="gui_avatar_female">feminino</string>
     <string name="gui_plpopup_insert_text___">Inserir texto...</string>
     <string name="gui_plpopup_insert_pattern">Inserir padrão</string>

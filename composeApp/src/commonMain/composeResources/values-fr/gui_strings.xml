@@ -335,7 +335,7 @@ Préférences d'animation :
     <string name="gui_prefs_show_ground_yes">oui</string>
     <string name="gui_prefs_show_ground_no">non</string>
     <string name="gui_juggler_avatar">Avatar du jongleur</string>
-    <string name="gui_avatar_male">homme</string>
+    <string name="gui_avatar_default">par défaut</string>
     <string name="gui_avatar_female">femme</string>
     <string name="gui_plpopup_insert_text___">Insérer texte...</string>
     <string name="gui_plpopup_insert_pattern">Insérer figure</string>

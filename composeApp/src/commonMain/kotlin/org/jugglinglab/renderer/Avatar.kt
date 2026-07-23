@@ -238,15 +238,18 @@ abstract class Avatar {
         private val headCos = DoubleArray(POLYSIDES) { cos(it.toDouble() * 2.0 * PI / POLYSIDES) }
         private val headSin = DoubleArray(POLYSIDES) { sin(it.toDouble() * 2.0 * PI / POLYSIDES) }
 
+        // The default avatar's id: the classic stick figure. First in the registry.
+        const val DEFAULT: String = "default"
+
         // Registry of selectable avatars, mirroring Prop.builtinProps. The
         // first entry is the default.
         val builtinAvatars: List<String> = listOf(
-            "male",
+            DEFAULT,
             "female"
         )
 
         val builtinAvatarsStringResources: List<StringResource> = listOf(
-            Res.string.gui_avatar_male,
+            Res.string.gui_avatar_default,
             Res.string.gui_avatar_female
         )
 
@@ -254,7 +257,7 @@ abstract class Avatar {
         // subclass and one arm here.
         @Throws(JuggleExceptionUser::class)
         fun newAvatar(type: String): Avatar = when (type.lowercase()) {
-            "male" -> MaleAvatar()
+            DEFAULT -> DefaultAvatar()
             "female" -> FemaleAvatar()
             else -> {
                 val message = jlGetStringResource(Res.string.error_unrecognized_avatar, type)

@@ -4,7 +4,7 @@
 // The shared juggler body model: the physical dimensions (in centimeters) used
 // by the pattern layout and by every avatar, plus the two-bone inverse
 // kinematics for the elbows. How a juggler is *drawn* lives in the Avatar
-// hierarchy (Avatar / MaleAvatar / FemaleAvatar / ...).
+// hierarchy (Avatar / DefaultAvatar / FemaleAvatar / ...).
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //

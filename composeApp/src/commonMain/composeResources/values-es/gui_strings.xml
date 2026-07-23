@@ -341,7 +341,7 @@ NOTA: Tenga cuidado al usar caracteres especiales en la consola de comandos.]]><
     <string name="gui_prefs_show_ground_yes">sí</string>
     <string name="gui_prefs_show_ground_no">no</string>
     <string name="gui_juggler_avatar">Avatar de malabarista</string>
-    <string name="gui_avatar_male">masculino</string>
+    <string name="gui_avatar_default">predeterminado</string>
     <string name="gui_avatar_female">femenino</string>
     <string name="gui_plpopup_insert_text___">Insertar texto...</string>
     <string name="gui_plpopup_insert_pattern">Insertar patrón</string>
