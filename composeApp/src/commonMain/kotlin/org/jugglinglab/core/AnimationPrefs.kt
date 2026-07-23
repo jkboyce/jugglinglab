@@ -279,12 +279,16 @@ data class AnimationPrefs(
                 }
             }
             if ((pl.removeParameter("avatar").also { value = it }) != null) {
-                val a = value!!.trim().lowercase()
-                if (a !in Avatar.builtinAvatars) {
-                    val message = jlGetStringResource(Res.string.error_unrecognized_avatar, value)
-                    throw JuggleExceptionUser(message)
+                // A single id ("female") or a comma list ("default,female") for
+                // passing patterns. Validate each id against the registry.
+                val ids = value!!.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+                for (id in ids) {
+                    if (id !in Avatar.builtinAvatars) {
+                        val message = jlGetStringResource(Res.string.error_unrecognized_avatar, id)
+                        throw JuggleExceptionUser(message)
+                    }
                 }
-                result = result.copy(avatar = a)
+                result = result.copy(avatar = if (ids.isEmpty()) AVATAR_DEF else ids.joinToString(","))
             }
             return result
         }

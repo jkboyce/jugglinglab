@@ -79,6 +79,22 @@ class AvatarTest {
     }
 
     @Test
+    fun `avatar map assigns a comma list cyclically to jugglers`() {
+        val map = Avatar.avatarMap("default,female", 3)
+        assertIs<DefaultAvatar>(map.getValue(1))
+        assertIs<FemaleAvatar>(map.getValue(2))
+        assertIs<DefaultAvatar>(map.getValue(3)) // wraps around
+    }
+
+    @Test
+    fun `avatar map is empty for an all-default spec`() {
+        // Every juggler falls back to the renderer's default, so existing
+        // (single-juggler, no-avatar) patterns are unchanged.
+        assertTrue(Avatar.avatarMap("default", 3).isEmpty())
+        assertTrue(Avatar.avatarMap("default,default", 2).isEmpty())
+    }
+
+    @Test
     fun `female config drives the dress dimensions`() {
         val longDress = FemaleAvatar(FemaleConfig(hemH = -60.0))
         // Same point layout regardless of configuration

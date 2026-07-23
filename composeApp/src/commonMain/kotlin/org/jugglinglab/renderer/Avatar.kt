@@ -264,5 +264,19 @@ abstract class Avatar {
                 throw JuggleExceptionUser(message)
             }
         }
+
+        // Build the per-juggler avatar map from a spec such as "default",
+        // "female", or "default,female". Multiple ids are assigned cyclically by
+        // juggler number (jugglers 1,3,5 -> first id, 2,4,6 -> second, ...), so a
+        // passing pattern can mix figures. A pure-default spec yields an empty
+        // map, so every juggler falls back to the renderer's default figure and
+        // existing patterns are unchanged.
+        @Throws(JuggleExceptionUser::class)
+        fun avatarMap(spec: String, numberOfJugglers: Int): Map<Int, Avatar> {
+            val ids = spec.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+            if (ids.isEmpty() || ids.all { it == DEFAULT }) return emptyMap()
+            val instances = ids.distinct().associateWith { newAvatar(it) }
+            return (1..numberOfJugglers).associateWith { instances.getValue(ids[(it - 1) % ids.size]) }
+        }
     }
 }

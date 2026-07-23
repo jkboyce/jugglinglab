@@ -138,17 +138,11 @@ fun AnimationView(
             try {
                 val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
                         (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
-                // Which avatar draws each juggler. The selection is global for
-                // now, so every juggler shares one stateless avatar instance;
-                // the default ("male") leaves the map empty and falls back to
-                // the renderer's default stick figure.
+                // Which avatar draws each juggler. `avatar` is a single id
+                // ("female") or a comma list ("default,female") assigned
+                // cyclically to the jugglers, so passing patterns can mix figures.
                 val avatars: Map<Int, Avatar> =
-                    if (state.prefs.avatar == AnimationPrefs.AVATAR_DEF) {
-                        emptyMap()
-                    } else {
-                        val a = Avatar.newAvatar(state.prefs.avatar)
-                        (1..state.pattern.numberOfJugglers).associateWith { a }
-                    }
+                    Avatar.avatarMap(state.prefs.avatar, state.pattern.numberOfJugglers)
                 renderer1.isAntiAlias = isAntiAlias
                 renderer1.backgroundColor = backgroundColor
                 renderer1.lineColor = colorScheme.onBackground
