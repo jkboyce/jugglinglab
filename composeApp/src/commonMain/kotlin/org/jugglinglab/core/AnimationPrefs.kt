@@ -9,6 +9,7 @@
 package org.jugglinglab.core
 
 import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
 import org.jugglinglab.util.jlGetStringResource
@@ -28,9 +29,9 @@ data class AnimationPrefs(
     val bounceSound: Boolean = BOUNCESOUND_DEF,
     val defaultCameraAngle: List<Double>? = null,
     val defaultView: Int = VIEW_DEF, // one of the values in View
-    val hideJugglers: List<Int> = listOf()
+    val hideJugglers: List<Int> = listOf(),
+    val avatar: String = AVATAR_DEF // registered avatar id drawing every juggler
 ) {
-    @Suppress("KotlinConstantConditions")
     override fun toString(): String {
         val sb = StringBuilder()
         if (width != WIDTH_DEF) {
@@ -88,6 +89,9 @@ data class AnimationPrefs(
             }
             sb.append(");")
         }
+        if (avatar != AVATAR_DEF) {
+            sb.append("avatar=$avatar;")
+        }
         if (sb.isNotEmpty()) {
             sb.setLength(sb.length - 1)
         }
@@ -132,6 +136,7 @@ data class AnimationPrefs(
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false
         const val VIEW_DEF: Int = VIEW_NONE
+        const val AVATAR_DEF: String = Avatar.DEFAULT
 
         // Constructing AnimationPrefs
 
@@ -272,6 +277,18 @@ data class AnimationPrefs(
                     val message = jlGetStringResource(Res.string.error_number_format, "hidejugglers")
                     throw JuggleExceptionUser(message)
                 }
+            }
+            if ((pl.removeParameter("avatar").also { value = it }) != null) {
+                // A single id ("female") or a comma list ("default,female") for
+                // passing patterns. Validate each id against the registry.
+                val ids = value!!.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+                for (id in ids) {
+                    if (id !in Avatar.builtinAvatars) {
+                        val message = jlGetStringResource(Res.string.error_unrecognized_avatar, id)
+                        throw JuggleExceptionUser(message)
+                    }
+                }
+                result = result.copy(avatar = if (ids.isEmpty()) AVATAR_DEF else ids.joinToString(","))
             }
             return result
         }
