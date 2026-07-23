@@ -12,7 +12,9 @@
 // Occlusion contract for TYPE_BODY objects: the depth plane is the triangle
 // LEFT_SHOULDER / RIGHT_SHOULDER / RIGHT_WAIST (Avatar's shared skeleton), and
 // body-vs-body ordering compares the summed depth of the shoulders and waist.
-// Avatars may add any points beyond the skeleton without affecting these tests.
+// The screen bounding box is computed from the avatar's declared boundsPoints.
+// An avatar may also declare silhouettePoints; lines are then occluded by the
+// drawn outline itself instead of the bounding box.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -154,6 +156,11 @@ class DrawObject2D {
     }
 
     private fun isBoxCoveringLine(box: DrawObject2D, line: DrawObject2D): Int {
+        // A body that declares its drawn outline is compared as that shape.
+        if (box.type == TYPE_BODY) {
+            box.avatar?.silhouettePoints?.let { return isSilhouetteCoveringLine(box, it, line) }
+        }
+
         // The reference point/plane of `box`: a body uses its occlusion plane,
         // a prop is treated as a screen-parallel plane through its center.
         val base: JlVector
@@ -176,17 +183,8 @@ class DrawObject2D {
             if (contains(box, (x + 0.5).toFloat(), (y + 0.5).toFloat())) {
                 val zb =
                     (base.z - (tempv.x * (x - base.x) + tempv.y * (y - base.y)) / tempv.z)
-                // Clearly in front of the body's plane: the line wins.
                 if (line.coord[i].z < (zb - SLOP)) return -1
-                // Only treat the endpoint as hidden when it is clearly BEHIND the
-                // plane. A point within SLOP is ON the body's surface — e.g. an
-                // arm's shoulder attachment — and must not force the body to cover
-                // the arm. This mirrors the front-side SLOP tolerance above.
-                // (The stick figure never reached this branch: its bounding box
-                // is the shoulder/waist trapezoid, so the shoulders sit on the box
-                // edge and are excluded. The wider dress makes them interior, which
-                // exposed the missing back-side tolerance.)
-                if (line.coord[i].z > (zb + SLOP)) endinbb = true
+                endinbb = true
             }
         }
         if (endinbb) return 1
@@ -229,6 +227,54 @@ class DrawObject2D {
         return if (intersection) 1 else 0
     }
 
+    // Verdict for a body with a declared outline: the part of the line that
+    // overlaps the drawn shape decides, by its mean depth against the body
+    // plane. Ties go to "in front" (arms attach to the front of the body).
+    private fun isSilhouetteCoveringLine(
+        box: DrawObject2D, outline: List<Int>, line: DrawObject2D
+    ): Int {
+        box.bodyPlaneNormal(tempv)
+        if (tempv.z == 0.0) return 0
+        val base = box.coord[PLANE_A]
+        val x0 = line.coord[0].x
+        val y0 = line.coord[0].y
+        val z0 = line.coord[0].z
+        val dx = line.coord[1].x - x0
+        val dy = line.coord[1].y - y0
+        val dz = line.coord[1].z - z0
+
+        var inside = 0
+        var margin = 0.0
+        for (i in 0..SILHOUETTE_SAMPLES) {
+            val t = i.toDouble() / SILHOUETTE_SAMPLES
+            val x = x0 + dx * t
+            val y = y0 + dy * t
+            if (!insideOutline(box, outline, x, y)) continue
+            val zb = base.z - (tempv.x * (x - base.x) + tempv.y * (y - base.y)) / tempv.z
+            margin += (z0 + dz * t) - zb
+            inside++
+        }
+        if (inside == 0) return 0
+        return if (margin / inside < SLOP) -1 else 1
+    }
+
+    // Even-odd test of a screen point against the projected outline.
+    private fun insideOutline(box: DrawObject2D, outline: List<Int>, x: Double, y: Double): Boolean {
+        var odd = false
+        var j = outline.size - 1
+        for (i in outline.indices) {
+            val a = box.coord[outline[i]]
+            val b = box.coord[outline[j]]
+            if ((a.y > y) != (b.y > y) &&
+                x < a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y)
+            ) {
+                odd = !odd
+            }
+            j = i
+        }
+        return odd
+    }
+
     private fun contains(box: DrawObject2D, x: Float, y: Float): Boolean {
         return x >= box.bbLeft && x < box.bbRight && y >= box.bbTop && y < box.bbBottom
     }
@@ -263,5 +309,8 @@ class DrawObject2D {
         )
 
         private const val SLOP: Double = 3.0
+
+        // Samples along a line for the silhouette occlusion test.
+        private const val SILHOUETTE_SAMPLES = 16
     }
 }

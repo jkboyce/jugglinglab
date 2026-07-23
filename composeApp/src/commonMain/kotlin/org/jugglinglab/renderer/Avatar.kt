@@ -81,6 +81,12 @@ abstract class Avatar {
     // deliberately excluded (they belong to the separately-drawn arm lines).
     open val boundsPoints: List<Int> get() = TORSO_AND_HEAD_POINTS
 
+    // Ordered outline of the drawn figure, or null to occlude lines with the
+    // classic bounding-box test. An avatar whose drawn shape differs from its
+    // bounding box (e.g. a flared dress) declares its outline so lines are
+    // occluded by the shape actually on screen (see DrawObject2D).
+    open val silhouettePoints: List<Int>? get() = null
+
     //--------------------------------------------------------------------------
     // Geometry: assemble the avatar's 3D points for one juggler at `time`
     //--------------------------------------------------------------------------

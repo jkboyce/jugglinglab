@@ -15,6 +15,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class AvatarTest {
@@ -26,27 +28,36 @@ class AvatarTest {
     }
 
     @Test
+    fun `default keeps the classic box occlusion`() {
+        // No silhouette declared => the classic code path, byte for byte.
+        val avatar = DefaultAvatar()
+        assertNull(avatar.silhouettePoints)
+        assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
+    }
+
+    @Test
     fun `female avatar extends the core skeleton without renumbering it`() {
         val female = FemaleAvatar()
         assertEquals(FemaleAvatar.EXTENDED_POINT_COUNT, female.pointCount)
         assertTrue(female.pointCount > Avatar.CORE_POINT_COUNT)
 
         // Its own points start after the shared skeleton
-        assertEquals(Avatar.CORE_POINT_COUNT, FemaleAvatar.LEFT_HIP)
+        assertEquals(Avatar.CORE_POINT_COUNT, FemaleAvatar.LEFT_HEM)
         assertTrue(FemaleAvatar.PONYTAIL_TIP == female.pointCount - 1)
     }
 
     @Test
-    fun `female bounds include the dress but not the ponytail`() {
-        val bounds = FemaleAvatar().boundsPoints
-        // Everything the shared skeleton contributes is still there
-        assertTrue(bounds.containsAll(Avatar.TORSO_AND_HEAD_POINTS))
-        // The skirt participates in occlusion bounds
-        assertTrue(FemaleAvatar.LEFT_HEM in bounds && FemaleAvatar.RIGHT_HEM in bounds)
-        assertTrue(FemaleAvatar.LEFT_HIP in bounds && FemaleAvatar.RIGHT_HIP in bounds)
-        // The ponytail deliberately does not (see FemaleAvatar)
-        assertFalse(FemaleAvatar.PONYTAIL_ANCHOR in bounds)
-        assertFalse(FemaleAvatar.PONYTAIL_TIP in bounds)
+    fun `female occludes with her drawn dress outline`() {
+        val female = FemaleAvatar()
+        val outline = female.silhouettePoints
+        assertNotNull(outline)
+        // The outline is the drawn shape: head, shoulders, dress waist, hem.
+        assertTrue(Avatar.LEFT_HEAD_TOP in outline)
+        assertTrue(FemaleAvatar.RIGHT_DRESS_WAIST in outline)
+        assertTrue(FemaleAvatar.LEFT_HEM in outline)
+        // The bounding box covers every outline point, keeping the cheap
+        // overlap reject valid for the whole drawn figure.
+        assertTrue(outline.all { it in female.boundsPoints })
     }
 
     @Test
