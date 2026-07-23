@@ -10,6 +10,7 @@ package org.jugglinglab.ui.common
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.ui.components.*
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
@@ -224,8 +225,7 @@ fun AnimationPrefsControl(
             }
         }
 
-        // Juggler avatar dropdown (Male / Female). Options mirror the built-in
-        // avatar registry; add a new row here when registering a new avatar.
+        // Juggler avatar dropdown
         if ("avatar" in paramsWithUi) {
             Spacer(modifier = Modifier.height(4.dp))
 
@@ -234,10 +234,9 @@ fun AnimationPrefsControl(
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
                 var expanded by remember { mutableStateOf(false) }
-                val options = listOf(
-                    "male" to stringResource(Res.string.gui_avatar_male),
-                    "female" to stringResource(Res.string.gui_avatar_female)
-                )
+                val options = Avatar.builtinAvatars.zip(Avatar.builtinAvatarsStringResources) { id, res ->
+                    id to stringResource(res)
+                }
                 val selectedText = options.find { it.first == avatar }?.second ?: ""
 
                 Box {

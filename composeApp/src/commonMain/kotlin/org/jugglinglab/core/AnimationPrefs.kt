@@ -32,7 +32,6 @@ data class AnimationPrefs(
     val hideJugglers: List<Int> = listOf(),
     val avatar: String = AVATAR_DEF // registered avatar id drawing every juggler
 ) {
-    @Suppress("KotlinConstantConditions")
     override fun toString(): String {
         val sb = StringBuilder()
         if (width != WIDTH_DEF) {

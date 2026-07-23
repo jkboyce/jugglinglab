@@ -261,6 +261,11 @@ class Renderer {
             segment = { a, b -> drawAaLine(lineColor, a, b, strokeWidth = strokeWidth1) }
         )
 
+        // Maximum object count in the scene:
+        // - 1 for each juggler's body
+        // - 4 for each juggler's arms
+        // - 1 for each prop
+        // - 18 for the lines constituting the ground
         var numObjects = 5 * pattern.numberOfJugglers + pattern.numberOfPaths + 18
 
         for (i in 0..<numObjects) {
@@ -414,7 +419,7 @@ class Renderer {
                     }
                     
                     var allCoveringDrawn = true
-                    for (k in 0 until obj[i].covering.size) {
+                    for (k in obj[i].covering.indices) {
                         if (!obj[i].covering[k].drawn) {
                             allCoveringDrawn = false
                             break

@@ -10,6 +10,7 @@ package org.jugglinglab.ui.desktop
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.JuggleExceptionInternal
@@ -32,6 +33,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
     private lateinit var tfSlowdown: JTextField
     private lateinit var tfBorder: JTextField
     private lateinit var comboShowground: JComboBox<String>
+    private lateinit var comboAvatar: JComboBox<String>
     private lateinit var cbPaused: JCheckBox
     private lateinit var cbMousepause: JCheckBox
     private lateinit var cbStereo: JCheckBox
@@ -66,6 +68,8 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         tfSlowdown.text = jlToStringRounded(oldPrefs.slowdown, 2)
         tfBorder.text = oldPrefs.borderPixels.toString()
         comboShowground.setSelectedIndex(oldPrefs.showGround)
+        val avatarIndex = Avatar.builtinAvatars.indexOf(oldPrefs.avatar.lowercase()).coerceAtLeast(0)
+        comboAvatar.selectedIndex = avatarIndex
         cbPaused.setSelected(oldPrefs.startPaused)
         cbMousepause.setSelected(oldPrefs.mousePause)
         cbStereo.setSelected(oldPrefs.stereo)
@@ -83,6 +87,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 "slowdown",
                 "border",
                 "showground",
+                "avatar",
                 "stereo",
                 "startpaused",
                 "mousepause",
@@ -137,6 +142,12 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_yes))
             addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_no))
         }
+        val lab7 = JLabel(jlGetStringResource(Res.string.gui_juggler_avatar))
+        comboAvatar = JComboBox<String>().apply {
+            for (res in Avatar.builtinAvatarsStringResources) {
+                addItem(jlGetStringResource(res))
+            }
+        }
         // checkboxes farther down
         cbPaused = JCheckBox(jlGetStringResource(Res.string.gui_start_paused))
         cbMousepause = JCheckBox(jlGetStringResource(Res.string.gui_pause_on_mouse_away))
@@ -166,6 +177,8 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             add(tfBorder)
             add(lab6)
             add(comboShowground)
+            add(lab7)
+            add(comboAvatar)
         }
         gb.setConstraints(
             lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
@@ -203,6 +216,13 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         gb.setConstraints(
             comboShowground,
             constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab7, constraints(GridBagConstraints.LINE_START, 1, 6, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            comboAvatar,
+            constraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 0, 0, 0))
         )
 
         val p2 = JPanel().apply {
@@ -328,8 +348,12 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
         }
 
+        val selectedAvatarIndex = comboAvatar.selectedIndex
+        val selectedAvatar = Avatar.builtinAvatars.getOrElse(selectedAvatarIndex) { Avatar.builtinAvatars.first() }
+
         newjc = newjc.copy(
             showGround = comboShowground.getSelectedIndex(),
+            avatar = selectedAvatar,
             startPaused = cbPaused.isSelected,
             mousePause = cbMousepause.isSelected,
             stereo = cbStereo.isSelected,

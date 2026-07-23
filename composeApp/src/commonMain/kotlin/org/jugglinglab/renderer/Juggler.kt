@@ -15,15 +15,11 @@ import org.jugglinglab.util.JuggleExceptionInternal
 import kotlin.math.*
 
 object Juggler {
-    // juggler dimensions, in centimeters
     const val SHOULDER_HW: Double = 23.0 // shoulder half-width (cm)
     const val SHOULDER_H: Double = 40.0 // throw pos. to shoulder
     const val WAIST_HW: Double = 17.0 // waist half-width
     const val WAIST_H: Double = -5.0
 
-    // public final static double ELBOW_HW = 30;  // elbow "home"
-    // public final static double ELBOW_H = 6;
-    // public final static double ELBOW_SLOP = 12;
     const val HAND_OUT: Double = 5.0 // outside width of hand
     const val HAND_IN: Double = 5.0
     const val HEAD_HW: Double = 10.0 // head half-width
@@ -43,15 +39,11 @@ object Juggler {
     const val LOWER_TOTAL: Double = LOWER_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
     const val UPPER_TOTAL: Double = UPPER_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
 
-    // the remaining are used only for the 3d display
-    // public final static double SHOULDER_RADIUS = 6;
-    // public final static double ELBOW_RADIUS = 4;
-    // public final static double WRIST_RADIUS = 2;
-
     // Two-bone inverse kinematics: given a shoulder and hand position (render
     // space), return the elbow position — or null when the hand is beyond
     // arm's reach (the arm is then drawn as a straight shoulder-to-hand line).
     // Shared by every avatar, so arms bend identically whatever is drawn.
+
     @Suppress("LocalVariableName")
     @Throws(JuggleExceptionInternal::class)
     fun elbow(shoulder: JlVector, hand: JlVector): JlVector? {

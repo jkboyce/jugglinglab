@@ -185,6 +185,7 @@
     <string name="error_unused_param">Paramètre d'entrée non utilisé : %1$s</string>
     <string name="error_unused_params">Paramètres d'entrée non utilisés : %1$s</string>
     <string name="error_unrecognized_view">Type de vue non reconnu : &quot;%1$s&quot;</string>
+    <string name="error_unrecognized_avatar">Type d'avatar non reconnu : &quot;%1$s&quot;</string>
     <string name="error_optimizer_unavailable">Bibliothèque d'optimisation indisponible</string>
     <string name="error_optimizer_failed">L'optimiseur n'a pas pu trouver de solution</string>
     <string name="error_optimizer_no_passing">L'optimiseur ne prend pas en charge les motifs de passe</string>

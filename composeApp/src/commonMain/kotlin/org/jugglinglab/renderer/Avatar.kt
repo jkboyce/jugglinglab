@@ -5,23 +5,24 @@
 //
 // The base class computes the shared skeleton (hands, shoulders, elbows, waist,
 // head) and draws the parts common to all avatars (torso outline + head), while
-// concrete avatars override dimensions, add their own points, and draw their own
-// silhouette and adornments. The hierarchy mirrors Prop / BallProp / RingProp:
-// the Renderer stays ignorant of which avatar it is drawing.
+// concrete avatars override dimensions, add their own points, and draw their
+// own silhouette and adornments. The hierarchy mirrors Prop / BallProp /
+// RingProp: the Renderer stays ignorant of which avatar it is drawing.
 //
 // Avatars are purely visual. The simulation, timing, hand paths and physics are
-// identical whatever avatar is selected; the layout-facing body model (dimensions
-// and elbow IK) stays in the Juggler object, shared by every avatar.
+// identical whatever avatar is selected; the layout-facing body model
+// (dimensions and elbow IK) stays in the Juggler object, shared by every
+// avatar.
 //
 // Adding a new avatar: subclass Avatar, then add one arm to newAvatar() and one
-// entry to builtinAvatars. Nothing else changes. Rule of thumb: a new silhouette
-// or species is a subclass; new proportions/styling of an existing silhouette
-// should be a parameter of that subclass.
+// entry to builtinAvatars. Nothing else changes. Rule of thumb: a new
+// silhouette or species is a subclass; new proportions/styling of an existing
+// silhouette should be a parameter of that subclass.
 //
 // Contracts every avatar must honor:
-// - Points 0..11 are the shared skeleton (see the named constants below), in the
-//   same order the classic renderer used. Avatar-specific points start at index
-//   CORE_POINT_COUNT and are named privately by the subclass.
+// - Points 0..11 are the shared skeleton (see the named constants below), in
+//   the same order the classic renderer used. Avatar-specific points start at
+//   index CORE_POINT_COUNT and are named privately by the subclass.
 // - The occlusion plane used by the painter's algorithm is the triangle
 //   LEFT_SHOULDER / RIGHT_SHOULDER / RIGHT_WAIST (see DrawObject2D); an avatar
 //   may add any points, but those three define its depth.
@@ -34,14 +35,17 @@
 
 package org.jugglinglab.renderer
 
+import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.toRadians
+import org.jugglinglab.util.jlGetStringResource
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Path
+import org.jetbrains.compose.resources.StringResource
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.cos
@@ -49,11 +53,13 @@ import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-// The drawing primitives handed to an avatar so it can paint itself without
-// knowing about the Renderer's paint/anti-aliasing internals or theme colors.
-// fill = fill a closed path with the background color (used to occlude objects
-// behind the body), stroke = outline a path in the line color, segment = draw a
-// single line segment in the line color.
+// Helper class so an avatar can paint itself without knowing about the
+// Renderer's paint/anti-aliasing internals or theme colors.
+// - fill = fill a closed path with the background color (used to occlude
+//   objects behind the body)
+// - stroke = outline a path in the line color
+// - segment = draw a single line segment in the line color.
+
 class AvatarContext(
     val fill: (Path) -> Unit,
     val stroke: (Path) -> Unit,
@@ -234,7 +240,15 @@ abstract class Avatar {
 
         // Registry of selectable avatars, mirroring Prop.builtinProps. The
         // first entry is the default.
-        val builtinAvatars: List<String> = listOf("male", "female")
+        val builtinAvatars: List<String> = listOf(
+            "male",
+            "female"
+        )
+
+        val builtinAvatarsStringResources: List<StringResource> = listOf(
+            Res.string.gui_avatar_male,
+            Res.string.gui_avatar_female
+        )
 
         // Factory, mirroring Prop.newProp(). Adding a new avatar means adding a
         // subclass and one arm here.
@@ -242,7 +256,10 @@ abstract class Avatar {
         fun newAvatar(type: String): Avatar = when (type.lowercase()) {
             "male" -> MaleAvatar()
             "female" -> FemaleAvatar()
-            else -> throw JuggleExceptionUser("Unrecognized avatar type: '$type'")
+            else -> {
+                val message = jlGetStringResource(Res.string.error_unrecognized_avatar, type)
+                throw JuggleExceptionUser(message)
+            }
         }
     }
 }
