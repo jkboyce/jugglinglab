@@ -30,6 +30,11 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
+// The invariant we want to maintain:
+// Every element of AnimationPrefs should be exposed via this UI, on every
+// platform. That is, if two AnimationPrefs objects look the same in this UI
+// then they must be identical. (No "hidden preferences")
+
 @Composable
 fun AnimationPrefsControl(
     initialPrefs: AnimationPrefs,
@@ -51,7 +56,11 @@ fun AnimationPrefsControl(
     // Extra parameters not covered by UI fields
     val initialManualSettings = try {
         val pl = ParameterList(initialPrefs.toString())
-        for (param in paramsWithUi) {
+        val paramsRemove = paramsWithUi.toMutableList()
+        if (initialPrefs.avatar !in Avatar.builtinAvatars) {
+            paramsRemove.remove("avatar")
+        }
+        for (param in paramsRemove) {
             pl.removeParameter(param)
         }
         pl.toString()
@@ -234,16 +243,17 @@ fun AnimationPrefsControl(
                 modifier = Modifier.padding(vertical = 4.dp)
             ) {
                 var expanded by remember { mutableStateOf(false) }
+                val manualOptionLabel = stringResource(Res.string.gui_avatar_manual)
                 val options = Avatar.builtinAvatars.zip(Avatar.builtinAvatarsStringResources) { id, res ->
                     id to stringResource(res)
-                }
-                val selectedText = options.find { it.first == avatar }?.second ?: ""
+                } + listOf("" to manualOptionLabel)
+                val selectedText = options.find { it.first == avatar }?.second ?: manualOptionLabel
 
                 Box {
                     OutlinedButton(
                         onClick = { expanded = true },
                         contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
-                        modifier = Modifier.width(100.dp).height(56.dp)
+                        modifier = Modifier.width(110.dp).height(56.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
@@ -264,7 +274,30 @@ fun AnimationPrefsControl(
                             DropdownMenuItem(
                                 text = { Text(text = label) },
                                 onClick = {
-                                    avatar = value
+                                    if (value.isNotEmpty()) {
+                                        avatar = value
+                                        try {
+                                            val pl = ParameterList(manualSettings)
+                                            if (pl.removeParameter("avatar") != null) {
+                                                manualSettings = pl.toString()
+                                            }
+                                        } catch (_: Exception) {}
+                                    } else {
+                                        val currentAvatar = avatar
+                                        avatar = ""
+                                        try {
+                                            val pl = ParameterList(manualSettings)
+                                            if (pl.getParameter("avatar") == null) {
+                                                val valToAdd = currentAvatar.ifEmpty { AnimationPrefs.AVATAR_DEF }
+                                                pl.addParameter("avatar", valToAdd)
+                                                manualSettings = pl.toString()
+                                            }
+                                        } catch (_: Exception) {
+                                            if (manualSettings.isBlank()) {
+                                                manualSettings = "avatar=${currentAvatar.ifEmpty { AnimationPrefs.AVATAR_DEF }}"
+                                            }
+                                        }
+                                    }
                                     expanded = false
                                 }
                             )

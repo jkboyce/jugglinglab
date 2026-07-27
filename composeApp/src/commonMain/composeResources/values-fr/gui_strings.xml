@@ -337,6 +337,7 @@ Préférences d'animation :
     <string name="gui_juggler_avatar">Avatar du jongleur</string>
     <string name="gui_avatar_classic">classique</string>
     <string name="gui_avatar_female">femme</string>
+    <string name="gui_avatar_manual">(manuel)</string>
     <string name="gui_plpopup_insert_text___">Insérer texte...</string>
     <string name="gui_plpopup_insert_pattern">Insérer figure</string>
     <string name="gui_plpopup_change_display_text___">Changer titre de figure...</string>

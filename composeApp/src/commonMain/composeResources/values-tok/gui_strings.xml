@@ -306,6 +306,7 @@ Ejemplos:
     <string name="gui_juggler_avatar">sitelen jan</string>
     <string name="gui_avatar_classic">jan majuna</string>
     <string name="gui_avatar_female">jan meli</string>
+    <string name="gui_avatar_manual">(kepeken toki ilo)</string>
     <string name="gui_plpopup_insert_text___">o pana e sitelen...</string>
     <string name="gui_plpopup_insert_pattern">o pana e musi tawa</string>
     <string name="gui_plpopup_change_display_text___">o ante e sitelen lukin...</string>

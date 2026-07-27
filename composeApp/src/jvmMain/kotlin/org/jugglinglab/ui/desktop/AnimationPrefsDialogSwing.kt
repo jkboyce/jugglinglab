@@ -68,8 +68,42 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         tfSlowdown.text = jlToStringRounded(oldPrefs.slowdown, 2)
         tfBorder.text = oldPrefs.borderPixels.toString()
         comboShowground.setSelectedIndex(oldPrefs.showGround)
-        val avatarIndex = Avatar.builtinAvatars.indexOf(oldPrefs.avatar.lowercase()).coerceAtLeast(0)
+        val isSingleAvatar = oldPrefs.avatar.lowercase() in Avatar.builtinAvatars
+        val avatarIndex = if (isSingleAvatar) {
+            Avatar.builtinAvatars.indexOf(oldPrefs.avatar.lowercase()).coerceAtLeast(0)
+        } else {
+            Avatar.builtinAvatars.size
+        }
         comboAvatar.selectedIndex = avatarIndex
+
+        comboAvatar.addActionListener {
+            val selectedIndex = comboAvatar.selectedIndex
+            if (selectedIndex in Avatar.builtinAvatars.indices) {
+                val otherText = tfOther.text.trim()
+                if (otherText.isNotEmpty()) {
+                    try {
+                        val pl = ParameterList(otherText)
+                        if (pl.removeParameter("avatar") != null) {
+                            tfOther.text = pl.toString()
+                        }
+                    } catch (_: Exception) {}
+                }
+            } else if (selectedIndex == Avatar.builtinAvatars.size) {
+                val otherText = tfOther.text.trim()
+                try {
+                    val pl = ParameterList(otherText)
+                    if (pl.getParameter("avatar") == null) {
+                        pl.addParameter("avatar", oldPrefs.avatar.ifEmpty { AnimationPrefs.AVATAR_DEF })
+                        tfOther.text = pl.toString()
+                    }
+                } catch (_: Exception) {
+                    if (otherText.isEmpty()) {
+                        tfOther.text = "avatar=${oldPrefs.avatar.ifEmpty { AnimationPrefs.AVATAR_DEF }}"
+                    }
+                }
+            }
+        }
+
         cbPaused.setSelected(oldPrefs.startPaused)
         cbMousepause.setSelected(oldPrefs.mousePause)
         cbStereo.setSelected(oldPrefs.stereo)
@@ -80,20 +114,22 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             // filter out all the explicit settings above to populate the
             // manual settings box
             val pl = ParameterList(oldPrefs.toString())
-            val paramsRemove = arrayOf(
+            val paramsRemove = mutableListOf(
                 "width",
                 "height",
                 "fps",
                 "slowdown",
                 "border",
                 "showground",
-                "avatar",
                 "stereo",
                 "startpaused",
                 "mousepause",
                 "catchsound",
                 "bouncesound",
             )
+            if (isSingleAvatar) {
+                paramsRemove.add("avatar")
+            }
             for (param in paramsRemove) {
                 pl.removeParameter(param)
             }
@@ -147,6 +183,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             for (res in Avatar.builtinAvatarsStringResources) {
                 addItem(jlGetStringResource(res))
             }
+            addItem(jlGetStringResource(Res.string.gui_avatar_manual))
         }
         // checkboxes farther down
         cbPaused = JCheckBox(jlGetStringResource(Res.string.gui_start_paused))
@@ -349,11 +386,13 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         }
 
         val selectedAvatarIndex = comboAvatar.selectedIndex
-        val selectedAvatar = Avatar.builtinAvatars.getOrElse(selectedAvatarIndex) { Avatar.builtinAvatars.first() }
+        if (selectedAvatarIndex in Avatar.builtinAvatars.indices) {
+            val selectedAvatar = Avatar.builtinAvatars[selectedAvatarIndex]
+            newjc = newjc.copy(avatar = selectedAvatar)
+        }
 
         newjc = newjc.copy(
             showGround = comboShowground.getSelectedIndex(),
-            avatar = selectedAvatar,
             startPaused = cbPaused.isSelected,
             mousePause = cbMousepause.isSelected,
             stereo = cbStereo.isSelected,

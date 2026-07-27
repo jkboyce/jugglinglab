@@ -28,9 +28,9 @@ data class AnimationPrefs(
     val catchSound: Boolean = CATCHSOUND_DEF,
     val bounceSound: Boolean = BOUNCESOUND_DEF,
     val defaultCameraAngle: List<Double>? = null,
-    val defaultView: Int = VIEW_DEF, // one of the values in View
+    val defaultView: Int = VIEW_DEF,
     val hideJugglers: List<Int> = listOf(),
-    val avatar: String = AVATAR_DEF // registered avatar id drawing every juggler
+    val avatar: String = AVATAR_DEF
 ) {
     override fun toString(): String {
         val sb = StringBuilder()

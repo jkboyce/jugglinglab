@@ -324,6 +324,7 @@
     <string name="gui_juggler_avatar">אוואטר ג'אגלר</string>
     <string name="gui_avatar_classic">קלאסי</string>
     <string name="gui_avatar_female">נקבה</string>
+    <string name="gui_avatar_manual">(ידני)</string>
     <string name="gui_plpopup_insert_text___">הכנס טקסט...</string>
     <string name="gui_plpopup_insert_pattern">הכנס תבנית</string>
     <string name="gui_plpopup_change_display_text___">שנה טקסט לתצוגה...</string>
