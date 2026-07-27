@@ -136,7 +136,7 @@ data class AnimationPrefs(
         const val CATCHSOUND_DEF: Boolean = false
         const val BOUNCESOUND_DEF: Boolean = false
         const val VIEW_DEF: Int = VIEW_NONE
-        const val AVATAR_DEF: String = Avatar.DEFAULT
+        const val AVATAR_DEF: String = "classic"  // one of Avatar.builtinAvatars
 
         // Constructing AnimationPrefs
 
@@ -145,7 +145,7 @@ data class AnimationPrefs(
             var result = AnimationPrefs()
             var tempint: Int
             var tempdouble: Double
-            var value: String?
+            var value: String? = null
 
             if ((pl.removeParameter("width").also { value = it }) != null) {
                 try {
@@ -274,21 +274,25 @@ data class AnimationPrefs(
                         }.toList()
                     )
                 } catch (_: NumberFormatException) {
-                    val message = jlGetStringResource(Res.string.error_number_format, "hidejugglers")
+                    val message =
+                        jlGetStringResource(Res.string.error_number_format, "hidejugglers")
                     throw JuggleExceptionUser(message)
                 }
             }
             if ((pl.removeParameter("avatar").also { value = it }) != null) {
-                // A single id ("female") or a comma list ("default,female") for
+                // A single id ("female") or a comma list ("classic,female") for
                 // passing patterns. Validate each id against the registry.
-                val ids = value!!.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
+                val ids =
+                    value!!.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
                 for (id in ids) {
                     if (id !in Avatar.builtinAvatars) {
                         val message = jlGetStringResource(Res.string.error_unrecognized_avatar, id)
                         throw JuggleExceptionUser(message)
                     }
                 }
-                result = result.copy(avatar = if (ids.isEmpty()) AVATAR_DEF else ids.joinToString(","))
+                result = result.copy(
+                    avatar = if (ids.isEmpty()) AVATAR_DEF else ids.joinToString(",")
+                )
             }
             return result
         }

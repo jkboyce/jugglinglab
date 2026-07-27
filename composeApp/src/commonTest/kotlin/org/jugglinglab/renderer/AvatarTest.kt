@@ -21,16 +21,16 @@ import kotlin.test.assertTrue
 
 class AvatarTest {
     @Test
-    fun `default avatar uses exactly the core skeleton`() {
-        val avatar = DefaultAvatar()
+    fun `classic avatar uses exactly the core skeleton`() {
+        val avatar = ClassicAvatar()
         assertEquals(Avatar.CORE_POINT_COUNT, avatar.pointCount)
         assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
     }
 
     @Test
-    fun `default keeps the classic box occlusion`() {
+    fun `classic keeps the classic box occlusion`() {
         // No silhouette declared => the classic code path, byte for byte.
-        val avatar = DefaultAvatar()
+        val avatar = ClassicAvatar()
         assertNull(avatar.silhouettePoints)
         assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
     }
@@ -64,7 +64,7 @@ class AvatarTest {
     fun `hands and elbows stay out of the body bounds`() {
         // Arms are separate line objects; including them in the body bbox
         // would change the painter's-algorithm cheap-reject behavior.
-        for (avatar in listOf(DefaultAvatar(), FemaleAvatar())) {
+        for (avatar in listOf(ClassicAvatar(), FemaleAvatar())) {
             for (p in listOf(
                 Avatar.LEFT_HAND, Avatar.RIGHT_HAND, Avatar.LEFT_ELBOW, Avatar.RIGHT_ELBOW
             )) {
@@ -75,7 +75,7 @@ class AvatarTest {
 
     @Test
     fun `factory produces the registered avatars`() {
-        assertIs<DefaultAvatar>(Avatar.newAvatar("default"))
+        assertIs<ClassicAvatar>(Avatar.newAvatar("classic"))
         assertIs<FemaleAvatar>(Avatar.newAvatar("female"))
         assertIs<FemaleAvatar>(Avatar.newAvatar("Female")) // case-insensitive
 
@@ -91,18 +91,18 @@ class AvatarTest {
 
     @Test
     fun `avatar map assigns a comma list cyclically to jugglers`() {
-        val map = Avatar.avatarMap("default,female", 3)
-        assertIs<DefaultAvatar>(map.getValue(1))
+        val map = Avatar.avatarMap("classic,female", 3)
+        assertIs<ClassicAvatar>(map.getValue(1))
         assertIs<FemaleAvatar>(map.getValue(2))
-        assertIs<DefaultAvatar>(map.getValue(3)) // wraps around
+        assertIs<ClassicAvatar>(map.getValue(3)) // wraps around
     }
 
     @Test
     fun `avatar map is empty for an all-default spec`() {
         // Every juggler falls back to the renderer's default, so existing
         // (single-juggler, no-avatar) patterns are unchanged.
-        assertTrue(Avatar.avatarMap("default", 3).isEmpty())
-        assertTrue(Avatar.avatarMap("default,default", 2).isEmpty())
+        assertTrue(Avatar.avatarMap("classic", 3).isEmpty())
+        assertTrue(Avatar.avatarMap("classic,classic", 2).isEmpty())
     }
 
     @Test

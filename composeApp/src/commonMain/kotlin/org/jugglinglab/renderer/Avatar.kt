@@ -1,7 +1,7 @@
 //
 // Avatar.kt
 //
-// A drawable representation of a juggler (stick figure, female figure, ...).
+// A drawable representation of a juggler.
 //
 // The base class computes the shared skeleton (hands, shoulders, elbows, waist,
 // head) and draws the parts common to all avatars (torso outline + head), while
@@ -36,6 +36,7 @@
 package org.jugglinglab.renderer
 
 import org.jugglinglab.composeapp.generated.resources.*
+import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
@@ -244,26 +245,21 @@ abstract class Avatar {
         private val headCos = DoubleArray(POLYSIDES) { cos(it.toDouble() * 2.0 * PI / POLYSIDES) }
         private val headSin = DoubleArray(POLYSIDES) { sin(it.toDouble() * 2.0 * PI / POLYSIDES) }
 
-        // The default avatar's id: the classic stick figure. First in the registry.
-        const val DEFAULT: String = "default"
-
-        // Registry of selectable avatars, mirroring Prop.builtinProps. The
-        // first entry is the default.
+        // Registry of selectable avatars.
         val builtinAvatars: List<String> = listOf(
-            DEFAULT,
+            "classic",
             "female"
         )
 
         val builtinAvatarsStringResources: List<StringResource> = listOf(
-            Res.string.gui_avatar_default,
+            Res.string.gui_avatar_classic,
             Res.string.gui_avatar_female
         )
 
-        // Factory, mirroring Prop.newProp(). Adding a new avatar means adding a
-        // subclass and one arm here.
+        // Factory method to create an avatar.
         @Throws(JuggleExceptionUser::class)
         fun newAvatar(type: String): Avatar = when (type.lowercase()) {
-            DEFAULT -> DefaultAvatar()
+            "classic" -> ClassicAvatar()
             "female" -> FemaleAvatar()
             else -> {
                 val message = jlGetStringResource(Res.string.error_unrecognized_avatar, type)
@@ -271,8 +267,8 @@ abstract class Avatar {
             }
         }
 
-        // Build the per-juggler avatar map from a spec such as "default",
-        // "female", or "default,female". Multiple ids are assigned cyclically by
+        // Build the per-juggler avatar map from a spec such as "classic",
+        // "female", or "classic,female". Multiple ids are assigned cyclically by
         // juggler number (jugglers 1,3,5 -> first id, 2,4,6 -> second, ...), so a
         // passing pattern can mix figures. A pure-default spec yields an empty
         // map, so every juggler falls back to the renderer's default figure and
@@ -280,7 +276,7 @@ abstract class Avatar {
         @Throws(JuggleExceptionUser::class)
         fun avatarMap(spec: String, numberOfJugglers: Int): Map<Int, Avatar> {
             val ids = spec.split(",").map { it.trim().lowercase() }.filter { it.isNotEmpty() }
-            if (ids.isEmpty() || ids.all { it == DEFAULT }) return emptyMap()
+            if (ids.isEmpty() || ids.all { it == AnimationPrefs.AVATAR_DEF }) return emptyMap()
             val instances = ids.distinct().associateWith { newAvatar(it) }
             return (1..numberOfJugglers).associateWith { instances.getValue(ids[(it - 1) % ids.size]) }
         }

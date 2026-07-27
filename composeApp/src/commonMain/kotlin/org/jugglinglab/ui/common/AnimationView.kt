@@ -134,15 +134,12 @@ fun AnimationView(
             isAntiAlias,
             colorScheme
         ) {
-            // configure the renderers
             try {
-                val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
-                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
-                // Which avatar draws each juggler. `avatar` is a single id
-                // ("female") or a comma list ("default,female") assigned
-                // cyclically to the jugglers, so passing patterns can mix figures.
+                // configure the renderers
                 val avatars: Map<Int, Avatar> =
                     Avatar.avatarMap(state.prefs.avatar, state.pattern.numberOfJugglers)
+                val showGround = (state.prefs.showGround == AnimationPrefs.GROUND_ON ||
+                        (state.prefs.showGround == AnimationPrefs.GROUND_AUTO && state.pattern.isBouncePattern))
                 renderer1.isAntiAlias = isAntiAlias
                 renderer1.backgroundColor = backgroundColor
                 renderer1.lineColor = colorScheme.onBackground
