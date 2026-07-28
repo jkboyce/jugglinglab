@@ -4,7 +4,7 @@
 // Unit tests for the Avatar hierarchy: the point-index and bounds contracts
 // that the renderer relies on, and the avatar factory/registry.
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.renderer
@@ -43,7 +43,7 @@ class AvatarTest {
 
         // Its own points start after the shared skeleton
         assertEquals(Avatar.CORE_POINT_COUNT, FemaleAvatar.LEFT_HEM)
-        assertTrue(FemaleAvatar.PONYTAIL_TIP == female.pointCount - 1)
+        assertEquals(FemaleAvatar.PONYTAIL_TIP, female.pointCount - 1)
     }
 
     @Test
@@ -120,5 +120,30 @@ class AvatarTest {
         // Growing is monotonic; asking for less never shrinks
         ob.ensureCapacity(2)
         assertTrue(ob.coord.size >= FemaleAvatar.EXTENDED_POINT_COUNT)
+    }
+
+    @Test
+    fun `elbow IK calculates valid position for reachable hand and null for unreachable`() {
+        val shoulder = JlVector(0.0, 40.0, 0.0)
+        val upperArmLength = 41.0
+        val lowerArmLength = 41.0
+
+        val reachableHand = JlVector(0.0, 0.0, 30.0)
+        val elbowPos = Avatar.elbow(
+            shoulder = shoulder,
+            hand = reachableHand,
+            upperArmLength = upperArmLength,
+            lowerArmLength = lowerArmLength
+        )
+        assertNotNull(elbowPos)
+
+        val unreachableHand = JlVector(0.0, 0.0, 500.0)
+        val outOfReach = Avatar.elbow(
+            shoulder = shoulder,
+            hand = unreachableHand,
+            upperArmLength = upperArmLength,
+            lowerArmLength = lowerArmLength
+        )
+        assertNull(outOfReach)
     }
 }

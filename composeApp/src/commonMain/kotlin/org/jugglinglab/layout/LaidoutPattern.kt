@@ -21,7 +21,7 @@ import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlTransition
 import org.jugglinglab.path.BouncePath
-import org.jugglinglab.renderer.Juggler
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.ui.common.AnimationLayout
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.JuggleExceptionInternal
@@ -918,7 +918,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         val origin = Coordinate()
         getJugglerPosition(juggler, time, origin)
         val angle = (getJugglerAngle(juggler, time)).toRadians()
-        lc.y += Juggler.PATTERN_Y
+        lc.y += Avatar.JUGGLE_PLANE_OFFSET
 
         return Coordinate(
             origin.x + lc.x * cos(angle) - lc.y * sin(angle),
@@ -941,7 +941,7 @@ class LaidoutPattern(val pat: JmlPattern) {
                 -c2.x * sin(angle) + c2.y * cos(angle),
                 c2.z
             )
-        lc.y -= Juggler.PATTERN_Y
+        lc.y -= Avatar.JUGGLE_PLANE_OFFSET
         return lc
     }
 
@@ -1155,26 +1155,17 @@ class LaidoutPattern(val pat: JmlPattern) {
     }
 
     val handWindowMax: Coordinate
-        get() = Coordinate(Juggler.HAND_OUT, 0.0, 1.0)
+        get() = Avatar.handClearanceMax
 
     val handWindowMin: Coordinate
-        get() = Coordinate(-Juggler.HAND_IN, 0.0, -1.0)
+        get() = Avatar.handClearanceMin
 
     val jugglerWindowMax: Coordinate by lazy {
         var max = getJugglerMax(1)
         for (i in 2..pat.numberOfJugglers) {
             max = Coordinate.max(max, getJugglerMax(i))
         }
-
-        max = Coordinate.add(
-            max,
-            Coordinate(
-                Juggler.SHOULDER_HW,
-                Juggler.SHOULDER_HW,  // Juggler.HEAD_HW,
-                Juggler.SHOULDER_H + Juggler.NECK_H + Juggler.HEAD_H
-            )
-        )
-        max!!
+        Coordinate.add(max, Avatar.bodyClearanceMax)!!
     }
 
     val jugglerWindowMin: Coordinate by lazy {
@@ -1182,12 +1173,7 @@ class LaidoutPattern(val pat: JmlPattern) {
         for (i in 2..pat.numberOfJugglers) {
             min = Coordinate.min(min, getJugglerMin(i))
         }
-
-        min = Coordinate.add(
-            min,
-            Coordinate(-Juggler.SHOULDER_HW, -Juggler.SHOULDER_HW, 0.0)
-        )
-        min!!
+        Coordinate.add(min, Avatar.bodyClearanceMin)!!
     }
 
     val overallBoundingBox: Pair<Coordinate, Coordinate> by lazy {

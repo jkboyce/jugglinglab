@@ -7,7 +7,7 @@
 // Every dimension lives in FemaleConfig so the figure can be tuned (dress
 // length, hem width, ponytail, ...) without code changes.
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.renderer
@@ -67,12 +67,12 @@ class FemaleAvatar(private val cfg: FemaleConfig = FemaleConfig()) : Avatar() {
 
         // Ponytail anchor/tip: a side offset keeps it visible from the front,
         // a back offset keeps it visible from the side.
-        val neckTop = Juggler.SHOULDER_H + Juggler.NECK_H
+        val neckTop = SHOULDER_H + NECK_H
         out[PONYTAIL_ANCHOR] = ponytailPoint(
-            pos, cfg.ponytailSide, cfg.ponytailBack, neckTop + cfg.ponytailAnchorH * Juggler.HEAD_H, s, c
+            pos, cfg.ponytailSide, cfg.ponytailBack, neckTop + cfg.ponytailAnchorH * HEAD_H, s, c
         )
         out[PONYTAIL_TIP] = ponytailPoint(
-            pos, cfg.ponytailTipSide, cfg.ponytailTipBack, neckTop + cfg.ponytailTipH * Juggler.HEAD_H, s, c
+            pos, cfg.ponytailTipSide, cfg.ponytailTipBack, neckTop + cfg.ponytailTipH * HEAD_H, s, c
         )
     }
 

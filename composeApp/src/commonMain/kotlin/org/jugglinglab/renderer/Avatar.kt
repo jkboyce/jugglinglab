@@ -30,7 +30,7 @@
 //   any number of jugglers and by both stereo renderers. All per-frame mutable
 //   state lives on the DrawObject2D being drawn.
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.renderer
@@ -49,10 +49,12 @@ import androidx.compose.ui.graphics.Path
 import org.jetbrains.compose.resources.StringResource
 import kotlin.math.PI
 import kotlin.math.abs
+import kotlin.math.asin
 import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 import kotlin.math.sqrt
+import kotlin.math.tan
 
 // Helper class so an avatar can paint itself without knowing about the
 // Renderer's paint/anti-aliasing internals or theme colors.
@@ -70,8 +72,8 @@ class AvatarContext(
 abstract class Avatar {
     // Body dimensions used for the shared skeleton. Defaults are the classic
     // stick figure's; avatars with a different frame override these.
-    protected open val shoulderHW: Double get() = Juggler.SHOULDER_HW
-    protected open val waistHW: Double get() = Juggler.WAIST_HW
+    protected open val shoulderHW: Double get() = SHOULDER_HW
+    protected open val waistHW: Double get() = WAIST_HW
 
     // Total number of points computePoints() writes; also sizes the point
     // buffers. Core skeleton = CORE_POINT_COUNT; subclasses add their own.
@@ -104,10 +106,10 @@ abstract class Avatar {
         pat.layout.getHandCoordinate(juggler, JmlEvent.LEFT_HAND, time, leftHandCoord)
         pat.layout.getHandCoordinate(juggler, JmlEvent.RIGHT_HAND, time, rightHandCoord)
         val lefthand = JlVector(
-            leftHandCoord.x, leftHandCoord.z + Juggler.LOWER_HAND_HEIGHT, leftHandCoord.y
+            leftHandCoord.x, leftHandCoord.z + LOWER_HAND_HEIGHT, leftHandCoord.y
         )
         val righthand = JlVector(
-            rightHandCoord.x, rightHandCoord.z + Juggler.LOWER_HAND_HEIGHT, rightHandCoord.y
+            rightHandCoord.x, rightHandCoord.z + LOWER_HAND_HEIGHT, rightHandCoord.y
         )
 
         pat.layout.getJugglerPosition(juggler, time, pos)
@@ -115,21 +117,33 @@ abstract class Avatar {
         val s = sin(angle)
         val c = cos(angle)
 
-        val neckTop = Juggler.SHOULDER_H + Juggler.NECK_H
-        val headTop = neckTop + Juggler.HEAD_H
+        val neckTop = SHOULDER_H + NECK_H
+        val headTop = neckTop + HEAD_H
+        val upperArmTotal = UPPER_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
+        val lowerArmTotal = LOWER_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
 
         out[LEFT_HAND] = lefthand
         out[RIGHT_HAND] = righthand
-        out[LEFT_SHOULDER] = bodyPoint(pos, -shoulderHW, Juggler.SHOULDER_H, s, c)
-        out[RIGHT_SHOULDER] = bodyPoint(pos, shoulderHW, Juggler.SHOULDER_H, s, c)
-        out[LEFT_ELBOW] = Juggler.elbow(out[LEFT_SHOULDER]!!, lefthand)
-        out[RIGHT_ELBOW] = Juggler.elbow(out[RIGHT_SHOULDER]!!, righthand)
-        out[LEFT_WAIST] = bodyPoint(pos, -waistHW, Juggler.WAIST_H, s, c)
-        out[RIGHT_WAIST] = bodyPoint(pos, waistHW, Juggler.WAIST_H, s, c)
-        out[LEFT_HEAD_BOTTOM] = bodyPoint(pos, -Juggler.HEAD_HW, neckTop, s, c)
-        out[LEFT_HEAD_TOP] = bodyPoint(pos, -Juggler.HEAD_HW, headTop, s, c)
-        out[RIGHT_HEAD_BOTTOM] = bodyPoint(pos, Juggler.HEAD_HW, neckTop, s, c)
-        out[RIGHT_HEAD_TOP] = bodyPoint(pos, Juggler.HEAD_HW, headTop, s, c)
+        out[LEFT_SHOULDER] = bodyPoint(pos, -shoulderHW, SHOULDER_H, s, c)
+        out[RIGHT_SHOULDER] = bodyPoint(pos, shoulderHW, SHOULDER_H, s, c)
+        out[LEFT_ELBOW] = elbow(
+            shoulder = out[LEFT_SHOULDER]!!,
+            hand = lefthand,
+            upperArmLength = upperArmTotal,
+            lowerArmLength = lowerArmTotal
+        )
+        out[RIGHT_ELBOW] = elbow(
+            shoulder = out[RIGHT_SHOULDER]!!,
+            hand = righthand,
+            upperArmLength = upperArmTotal,
+            lowerArmLength = lowerArmTotal
+        )
+        out[LEFT_WAIST] = bodyPoint(pos, -waistHW, WAIST_H, s, c)
+        out[RIGHT_WAIST] = bodyPoint(pos, waistHW, WAIST_H, s, c)
+        out[LEFT_HEAD_BOTTOM] = bodyPoint(pos, -HEAD_HW, neckTop, s, c)
+        out[LEFT_HEAD_TOP] = bodyPoint(pos, -HEAD_HW, headTop, s, c)
+        out[RIGHT_HEAD_BOTTOM] = bodyPoint(pos, HEAD_HW, neckTop, s, c)
+        out[RIGHT_HEAD_TOP] = bodyPoint(pos, HEAD_HW, headTop, s, c)
 
         computeExtraPoints(pos, s, c, out)
     }
@@ -146,9 +160,9 @@ abstract class Avatar {
     // position, in the juggler's rotated frame.
     protected fun bodyPoint(pos: Coordinate, side: Double, h: Double, s: Double, c: Double) =
         JlVector(
-            pos.x + side * c - Juggler.SHOULDER_Y * s,
+            pos.x + side * c - SHOULDER_Y * s,
             pos.z + h,
-            pos.y + side * s + Juggler.SHOULDER_Y * c
+            pos.y + side * s + SHOULDER_Y * c
         )
 
     //--------------------------------------------------------------------------
@@ -211,6 +225,39 @@ abstract class Avatar {
     }
 
     companion object {
+        // Shared juggler body model dimensions (in centimeters)
+        const val SHOULDER_HW: Double = 23.0 // shoulder half-width (cm)
+        const val SHOULDER_H: Double = 40.0 // throw pos. to shoulder
+        const val WAIST_HW: Double = 17.0 // waist half-width
+        const val WAIST_H: Double = -5.0
+
+        const val HEAD_HW: Double = 10.0 // head half-width
+        const val HEAD_H: Double = 26.0 // head height
+        const val NECK_H: Double = 5.0 // neck height
+        const val SHOULDER_Y: Double = 0.0
+        const val UPPER_LENGTH: Double = 41.0
+        const val LOWER_LENGTH: Double = 40.0
+
+        const val UPPER_GAP_ELBOW: Double = 0.0
+        const val UPPER_GAP_SHOULDER: Double = 0.0
+        const val LOWER_GAP_WRIST: Double = 1.0
+        const val LOWER_GAP_ELBOW: Double = 0.0
+        const val LOWER_HAND_HEIGHT: Double = 0.0
+
+        const val HAND_OUT: Double = 5.0
+        const val HAND_IN: Double = 5.0
+
+        // Distance from rotational center of body to juggling plane (cm)
+        const val JUGGLE_PLANE_OFFSET: Double = 30.0
+
+        // Viewpoint clearance geometry used by LaidoutPattern.
+        // - `body` is relative to the juggler's unrotated position
+        // - `hand` is relative to the hand's position
+        val bodyClearanceMin = Coordinate(-SHOULDER_HW, -SHOULDER_HW, 0.0)
+        val bodyClearanceMax = Coordinate(SHOULDER_HW, SHOULDER_HW, SHOULDER_H + NECK_H + HEAD_H)
+        val handClearanceMin = Coordinate(-HAND_IN, 0.0, -1.0)
+        val handClearanceMax = Coordinate(HAND_OUT, 0.0, 1.0)
+
         // The shared skeleton: indices into the point buffers, identical in 3D
         // (computePoints output) and 2D (DrawObject2D.coord after projection).
         // Same order as the classic renderer's 12-slot jugglerVec.
@@ -279,6 +326,53 @@ abstract class Avatar {
             if (ids.isEmpty() || ids.all { it == AnimationPrefs.AVATAR_DEF }) return emptyMap()
             val instances = ids.distinct().associateWith { newAvatar(it) }
             return (1..numberOfJugglers).associateWith { instances.getValue(ids[(it - 1) % ids.size]) }
+        }
+
+        // Two-bone inverse kinematics: given a shoulder and hand position
+        // (render space), return the elbow position — or null when the hand is
+        // beyond arm's reach (the arm is then drawn as a straight shoulder-to-
+        // hand line).
+        @Suppress("LocalVariableName", "UnnecessaryVariable")
+        @Throws(JuggleExceptionInternal::class)
+        fun elbow(
+            shoulder: JlVector,
+            hand: JlVector,
+            upperArmLength: Double,
+            lowerArmLength: Double
+        ): JlVector? {
+            val U = upperArmLength
+            val L = lowerArmLength
+            val delta = JlVector.sub(hand, shoulder)
+            val D = delta.length
+            if (D > (U + L)) return null
+
+            // Perpendicular distance from the elbow to the shoulder-hand line
+            // (law of cosines), then a droop toward the ground so elbows hang
+            // naturally at any hand height.
+            val r = sqrt(
+                (4.0 * U * U * L * L - (U * U + L * L - D * D) * (U * U + L * L - D * D))
+                        / (4.0 * D * D)
+            )
+            if (r.isNaN()) {
+                throw JuggleExceptionInternal("NaN in elbow radius")
+            }
+
+            var factor = sqrt(U * U - r * r) / D
+            if (factor.isNaN()) {
+                throw JuggleExceptionInternal("NaN in elbow factor")
+            }
+            val xsc = JlVector.scale(factor, delta)
+            val alpha = asin(delta.y / D)
+            if (alpha.isNaN()) {
+                throw JuggleExceptionInternal("NaN in elbow angle")
+            }
+
+            factor = 1.0 + r * tan(alpha) / (factor * D)
+            return JlVector(
+                shoulder.x + xsc.x * factor,
+                shoulder.y + xsc.y - r * cos(alpha),
+                shoulder.z + xsc.z * factor
+            )
         }
     }
 }
