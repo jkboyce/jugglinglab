@@ -1,14 +1,15 @@
 //
 // AvatarTest.kt
 //
-// Unit tests for the Avatar hierarchy: the point-index and bounds contracts
-// that the renderer relies on, and the avatar factory/registry.
+// Unit tests for the Avatar hierarchy: computeObjects, polygon structure,
+// factory/registry, and DrawObject2D reusability.
 //
 // Copyright 2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.renderer
 
+import org.jugglinglab.notation.SiteswapPattern
 import org.jugglinglab.util.JuggleExceptionUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,56 +22,36 @@ import kotlin.test.assertTrue
 
 class AvatarTest {
     @Test
-    fun `classic avatar uses exactly the core skeleton`() {
+    fun `classic avatar produces head and torso polygons plus arm lines`() {
         val avatar = ClassicAvatar()
-        assertEquals(Avatar.CORE_POINT_COUNT, avatar.pointCount)
-        assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
+        val pat = SiteswapPattern().fromString("3").asJmlPattern()
+        val pool = DrawObjectPool()
+        val objs = avatar.computeObjects(pat, 1, 0.0, pool)
+
+        val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
+        val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
+
+        // Head (40 points) and Torso (4 points)
+        assertEquals(2, polys.size)
+        assertTrue(polys.all { it.isClosed })
+        assertTrue(lines.isNotEmpty())
     }
 
     @Test
-    fun `classic keeps the classic box occlusion`() {
-        // No silhouette declared => the classic code path, byte for byte.
-        val avatar = ClassicAvatar()
-        assertNull(avatar.silhouettePoints)
-        assertEquals(Avatar.TORSO_AND_HEAD_POINTS, avatar.boundsPoints)
-    }
-
-    @Test
-    fun `female avatar extends the core skeleton without renumbering it`() {
+    fun `female avatar produces head ponytail torso and skirt polygons`() {
         val female = FemaleAvatar()
-        assertEquals(FemaleAvatar.EXTENDED_POINT_COUNT, female.pointCount)
-        assertTrue(female.pointCount > Avatar.CORE_POINT_COUNT)
+        val pat = SiteswapPattern().fromString("3").asJmlPattern()
+        val pool = DrawObjectPool()
+        val objs = female.computeObjects(pat, 1, 0.0, pool)
 
-        // Its own points start after the shared skeleton
-        assertEquals(Avatar.CORE_POINT_COUNT, FemaleAvatar.LEFT_HEM)
-        assertEquals(FemaleAvatar.PONYTAIL_TIP, female.pointCount - 1)
-    }
+        val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
+        val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
 
-    @Test
-    fun `female occludes with her drawn dress outline`() {
-        val female = FemaleAvatar()
-        val outline = female.silhouettePoints
-        assertNotNull(outline)
-        // The outline is the drawn shape: head, shoulders, dress waist, hem.
-        assertTrue(Avatar.LEFT_HEAD_TOP in outline)
-        assertTrue(FemaleAvatar.RIGHT_DRESS_WAIST in outline)
-        assertTrue(FemaleAvatar.LEFT_HEM in outline)
-        // The bounding box covers every outline point, keeping the cheap
-        // overlap reject valid for the whole drawn figure.
-        assertTrue(outline.all { it in female.boundsPoints })
-    }
-
-    @Test
-    fun `hands and elbows stay out of the body bounds`() {
-        // Arms are separate line objects; including them in the body bbox
-        // would change the painter's-algorithm cheap-reject behavior.
-        for (avatar in listOf(ClassicAvatar(), FemaleAvatar())) {
-            for (p in listOf(
-                Avatar.LEFT_HAND, Avatar.RIGHT_HAND, Avatar.LEFT_ELBOW, Avatar.RIGHT_ELBOW
-            )) {
-                assertFalse(p in avatar.boundsPoints)
-            }
-        }
+        // Head, Ponytail (closed) and Torso, Skirt (unclosed at waist)
+        assertEquals(4, polys.size)
+        assertEquals(2, polys.count { it.isClosed })
+        assertEquals(2, polys.count { !it.isClosed })
+        assertTrue(lines.isNotEmpty())
     }
 
     @Test
@@ -99,27 +80,28 @@ class AvatarTest {
 
     @Test
     fun `avatar map is empty for an all-default spec`() {
-        // Every juggler falls back to the renderer's default, so existing
-        // (single-juggler, no-avatar) patterns are unchanged.
         assertTrue(Avatar.avatarMap("classic", 3).isEmpty())
         assertTrue(Avatar.avatarMap("classic,classic", 2).isEmpty())
     }
 
     @Test
-    fun `female config drives the dress dimensions`() {
-        val longDress = FemaleAvatar(FemaleConfig(hemH = -60.0))
-        // Same point layout regardless of configuration
-        assertEquals(FemaleAvatar.EXTENDED_POINT_COUNT, longDress.pointCount)
-    }
-
-    @Test
-    fun `draw object grows its point buffer on demand`() {
+    fun `draw object grows coordinate buffers on demand and supports unclosed polygons`() {
         val ob = DrawObject2D()
-        ob.ensureCapacity(FemaleAvatar.EXTENDED_POINT_COUNT)
-        assertTrue(ob.coord.size >= FemaleAvatar.EXTENDED_POINT_COUNT)
-        // Growing is monotonic; asking for less never shrinks
-        ob.ensureCapacity(2)
-        assertTrue(ob.coord.size >= FemaleAvatar.EXTENDED_POINT_COUNT)
+        val pt1 = JlVector(0.0, 0.0, 0.0)
+        val pt2 = JlVector(10.0, 0.0, 0.0)
+        val pt3 = JlVector(10.0, 10.0, 0.0)
+
+        ob.set3DCoordinates(DrawObject2D.TYPE_POLY, 1, listOf(pt1, pt2, pt3), isClosed = false)
+
+        assertEquals(3, ob.numPoints)
+        assertFalse(ob.isClosed)
+        assertTrue(ob.coords3D.size >= 3)
+        assertTrue(ob.coords2D.size >= 3)
+
+        // Monotonic growth test
+        ob.set3DCoordinates(DrawObject2D.TYPE_LINE, 1, listOf(pt1, pt2))
+        assertEquals(2, ob.numPoints)
+        assertTrue(ob.coords3D.size >= 3)
     }
 
     @Test
