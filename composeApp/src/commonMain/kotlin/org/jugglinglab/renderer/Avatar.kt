@@ -1,7 +1,7 @@
 //
 // Avatar.kt
 //
-// A drawable representation of a juggler.
+// A visual representation of a juggler.
 //
 // Avatars compute the 3D geometry of a juggler (head, torso, skirt, arms, etc.)
 // for a given frame as a list of DrawObject2D elements (convex polygons and
@@ -32,13 +32,20 @@ import kotlin.math.sqrt
 import kotlin.math.tan
 
 abstract class Avatar {
+    // Avatar's API consists of this single method, which adds DrawObject2Ds
+    // to an object pool for rendering. An object pool avoids allocating memory
+    // on each frame of animation.
+    //
+    // `juggler` is the juggler number (indexed from 1) to add to the pool.
+    // `pat` and `time` are self-explanatory.
+
     @Throws(JuggleExceptionInternal::class)
-    abstract fun computeObjects(
-        pat: JmlPattern,
+    abstract fun addObjectsToPool(
         juggler: Int,
+        pat: JmlPattern,
         time: Double,
         pool: DrawObjectPool
-    ): List<DrawObject2D>
+    )
 
     companion object {
         // Registry of selectable avatars
@@ -84,9 +91,13 @@ abstract class Avatar {
         // Distance from rotational center of body to juggling plane (cm)
         const val JUGGLE_PLANE_OFFSET: Double = 30.0
 
-        // Viewpoint clearance geometry
+        // Viewport clearance geometry; this defines a 3D box that the layout
+        // engine keeps visible in the display. Make this Avatar-independent so
+        // that layout is independent of Avatar selection.
         const val HAND_CLEARANCE_OUTWARD: Double = 5.0
         const val HAND_CLEARANCE_INWARD: Double = 5.0
+        val handClearanceMin = Coordinate(-HAND_CLEARANCE_INWARD, 0.0, -1.0)
+        val handClearanceMax = Coordinate(HAND_CLEARANCE_OUTWARD, 0.0, 1.0)
 
         val bodyClearanceMin = Coordinate(
             -ClassicAvatar.SHOULDER_HW,
@@ -98,23 +109,23 @@ abstract class Avatar {
             ClassicAvatar.SHOULDER_HW,
             ClassicAvatar.SHOULDER_H + ClassicAvatar.NECK_H + ClassicAvatar.HEAD_H
         )
-        val handClearanceMin = Coordinate(-HAND_CLEARANCE_INWARD, 0.0, -1.0)
-        val handClearanceMax = Coordinate(HAND_CLEARANCE_OUTWARD, 0.0, 1.0)
 
         //----------------------------------------------------------------------
         // Convenience methods for Avatar implementations
         //----------------------------------------------------------------------
 
+        // local body point expressed in global coordinates
         internal fun bodyPoint(
-            pos: Coordinate,
-            side: Double,
-            h: Double,
+            bodyPos: Coordinate,
+            localX: Double,
+            localY: Double,
+            localZ: Double,
             s: Double,
             c: Double
         ) = JlVector(
-            pos.x + side * c - ClassicAvatar.SHOULDER_Y * s,
-            pos.z + h,
-            pos.y + side * s + ClassicAvatar.SHOULDER_Y * c
+            bodyPos.x + localX * c - localY * s,
+            bodyPos.z + localZ,
+            bodyPos.y + localX * s + localY * c
         )
 
         // Head polygon tables, precomputed once and shared
@@ -122,40 +133,40 @@ abstract class Avatar {
         internal val headCos = DoubleArray(POLYSIDES) { cos(it.toDouble() * 2.0 * PI / POLYSIDES) }
         internal val headSin = DoubleArray(POLYSIDES) { sin(it.toDouble() * 2.0 * PI / POLYSIDES) }
 
-        internal fun createHeadPolygon(
+        internal fun addHeadPolygon(
             juggler: Int,
             pos: Coordinate,
             s: Double,
             c: Double,
             headBottom: Double,
             headHeight: Double,
+            headWidth: Double,
+            headY: Double,
             pool: DrawObjectPool
-        ): DrawObject2D {
+        ) {
             val headCenterH = headBottom + headHeight / 2.0
             val headRadiusH = headHeight / 2.0
+            val headRadiusW = headWidth / 2.0
 
-            val headPoints = ArrayList<JlVector>(POLYSIDES)
-            for (j in 0..<POLYSIDES) {
-                val side = ClassicAvatar.HEAD_HW * headCos[j]
-                val h = headCenterH + headRadiusH * headSin[j]
-                headPoints.add(bodyPoint(pos, side, h, s, c))
+            val headPoints = List(POLYSIDES) {
+                val localX = headRadiusW * headCos[it]
+                val localZ = headCenterH + headRadiusH * headSin[it]
+                bodyPoint(pos, localX, headY, localZ, s, c)
             }
 
             val obj = pool.next()
             obj.set3DCoordinates(DrawObject2D.TYPE_POLY, juggler, headPoints, isClosed = true)
-            return obj
         }
 
-        internal fun createArmLines(
-            pat: JmlPattern,
+        internal fun addArmLines(
             juggler: Int,
+            pat: JmlPattern,
             time: Double,
             leftShoulder: JlVector,
             rightShoulder: JlVector,
             upperArmLength: Double,
             lowerArmLength: Double,
-            pool: DrawObjectPool,
-            out: MutableList<DrawObject2D>
+            pool: DrawObjectPool
         ) {
             val leftHandCoord = Coordinate()
             val rightHandCoord = Coordinate()
@@ -183,7 +194,6 @@ abstract class Avatar {
                     juggler,
                     listOf(leftShoulder, lefthand)
                 )
-                out.add(obj)
             } else {
                 val obj1 = pool.next()
                 obj1.set3DCoordinates(
@@ -191,11 +201,9 @@ abstract class Avatar {
                     juggler,
                     listOf(leftShoulder, leftElbow)
                 )
-                out.add(obj1)
 
                 val obj2 = pool.next()
                 obj2.set3DCoordinates(DrawObject2D.TYPE_LINE, juggler, listOf(leftElbow, lefthand))
-                out.add(obj2)
             }
 
             if (rightElbow == null) {
@@ -205,7 +213,6 @@ abstract class Avatar {
                     juggler,
                     listOf(rightShoulder, righthand)
                 )
-                out.add(obj)
             } else {
                 val obj1 = pool.next()
                 obj1.set3DCoordinates(
@@ -213,7 +220,6 @@ abstract class Avatar {
                     juggler,
                     listOf(rightShoulder, rightElbow)
                 )
-                out.add(obj1)
 
                 val obj2 = pool.next()
                 obj2.set3DCoordinates(
@@ -221,7 +227,6 @@ abstract class Avatar {
                     juggler,
                     listOf(rightElbow, righthand)
                 )
-                out.add(obj2)
             }
         }
 
@@ -232,7 +237,7 @@ abstract class Avatar {
 
         @Suppress("LocalVariableName", "UnnecessaryVariable")
         @Throws(JuggleExceptionInternal::class)
-        fun elbow(
+        internal fun elbow(
             shoulder: JlVector,
             hand: JlVector,
             upperArmLength: Double,

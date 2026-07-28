@@ -15,14 +15,12 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class ClassicAvatar : Avatar() {
-    override fun computeObjects(
-        pat: JmlPattern,
+    override fun addObjectsToPool(
         juggler: Int,
+        pat: JmlPattern,
         time: Double,
         pool: DrawObjectPool
-    ): List<DrawObject2D> {
-        val result = mutableListOf<DrawObject2D>()
-
+    ) {
         val pos = Coordinate()
         pat.layout.getJugglerPosition(juggler, time, pos)
         val angle = pat.layout.getJugglerAngle(juggler, time).toRadians()
@@ -30,15 +28,14 @@ class ClassicAvatar : Avatar() {
         val c = cos(angle)
 
         // 1. Head polygon
-        val headObj = createHeadPolygon(juggler, pos, s, c, SHOULDER_H + NECK_H,
-            HEAD_H, pool)
-        result.add(headObj)
+        addHeadPolygon(juggler, pos, s, c, SHOULDER_H + NECK_H,
+            HEAD_H, 2 * HEAD_HW, HEAD_Y, pool)
 
-        // 2. Torso polygon (left shoulder, right shoulder, right waist, left waist)
-        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, SHOULDER_H, s, c)
-        val rightShoulder = bodyPoint(pos, SHOULDER_HW, SHOULDER_H, s, c)
-        val rightWaist = bodyPoint(pos, WAIST_HW, WAIST_H, s, c)
-        val leftWaist = bodyPoint(pos, -WAIST_HW, WAIST_H, s, c)
+        // 2. Torso polygon
+        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
+        val rightShoulder = bodyPoint(pos, SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
+        val rightWaist = bodyPoint(pos, WAIST_HW, BODY_Y, WAIST_H, s, c)
+        val leftWaist = bodyPoint(pos, -WAIST_HW, BODY_Y, WAIST_H, s, c)
 
         val torsoObj = pool.next()
         torsoObj.set3DCoordinates(
@@ -47,15 +44,12 @@ class ClassicAvatar : Avatar() {
             listOf(leftShoulder, rightShoulder, rightWaist, leftWaist),
             isClosed = true
         )
-        result.add(torsoObj)
 
         // 3. Arm lines
-        val upperArmTotal = UPPER_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
-        val lowerArmTotal = LOWER_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
-        createArmLines(pat, juggler, time, leftShoulder, rightShoulder,
-            upperArmTotal, lowerArmTotal, pool, result)
-
-        return result
+        val upperArmTotal = UPPER_ARM_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
+        val lowerArmTotal = LOWER_ARM_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
+        addArmLines(juggler, pat, time, leftShoulder, rightShoulder,
+            upperArmTotal, lowerArmTotal, pool)
     }
 
     companion object {
@@ -64,14 +58,15 @@ class ClassicAvatar : Avatar() {
         const val SHOULDER_H: Double = 40.0
         const val WAIST_HW: Double = 17.0
         const val WAIST_H: Double = -5.0
+        const val BODY_Y: Double = 0.0
 
         const val HEAD_HW: Double = 10.0
         const val HEAD_H: Double = 26.0
         const val NECK_H: Double = 5.0
-        const val SHOULDER_Y: Double = 0.0
-        const val UPPER_LENGTH: Double = 41.0
-        const val LOWER_LENGTH: Double = 40.0
+        const val HEAD_Y: Double = 0.0
 
+        const val UPPER_ARM_LENGTH: Double = 41.0
+        const val LOWER_ARM_LENGTH: Double = 40.0
         const val UPPER_GAP_ELBOW: Double = 0.0
         const val UPPER_GAP_SHOULDER: Double = 0.0
         const val LOWER_GAP_WRIST: Double = 1.0

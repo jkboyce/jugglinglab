@@ -288,7 +288,7 @@ class Renderer {
         for (i in 1..pattern.numberOfJugglers) {
             if (i in hideJugglers) continue
             val avatar = avatarFor(i)
-            avatar.computeObjects(pattern, i, time, objectPool)
+            avatar.addObjectsToPool(i, pattern, time, objectPool)
         }
 
         val numObjects = objectPool.activeCount

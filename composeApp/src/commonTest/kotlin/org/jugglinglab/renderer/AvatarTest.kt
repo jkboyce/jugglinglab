@@ -1,7 +1,7 @@
 //
 // AvatarTest.kt
 //
-// Unit tests for the Avatar hierarchy: computeObjects, polygon structure,
+// Unit tests for the Avatar hierarchy: addObjectsToPool, polygon structure,
 // factory/registry, and DrawObject2D reusability.
 //
 // Copyright 2026 Jack Boyce and the Juggling Lab contributors
@@ -26,7 +26,8 @@ class AvatarTest {
         val avatar = ClassicAvatar()
         val pat = SiteswapPattern().fromString("3").asJmlPattern()
         val pool = DrawObjectPool()
-        val objs = avatar.computeObjects(pat, 1, 0.0, pool)
+        avatar.addObjectsToPool(1, pat, 0.0, pool)
+        val objs = pool.objects.take(pool.activeCount)
 
         val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
         val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
@@ -42,7 +43,8 @@ class AvatarTest {
         val female = FemaleAvatar()
         val pat = SiteswapPattern().fromString("3").asJmlPattern()
         val pool = DrawObjectPool()
-        val objs = female.computeObjects(pat, 1, 0.0, pool)
+        female.addObjectsToPool(1, pat, 0.0, pool)
+        val objs = pool.objects.take(pool.activeCount)
 
         val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
         val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
