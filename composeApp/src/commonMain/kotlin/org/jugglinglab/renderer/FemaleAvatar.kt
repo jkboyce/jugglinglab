@@ -40,7 +40,7 @@ class FemaleAvatar : Avatar() {
 
         val ponyObj = pool.next()
         ponyObj.set3DCoordinates(
-            DrawObject2D.TYPE_POLY,
+            DrawObject2D.Type.POLY,
             juggler,
             polyPoints,
             isClosed = true
@@ -54,7 +54,7 @@ class FemaleAvatar : Avatar() {
 
         val torsoObj = pool.next()
         torsoObj.set3DCoordinates(
-            DrawObject2D.TYPE_POLY,
+            DrawObject2D.Type.POLY,
             juggler,
             listOf(rightDressWaist, rightShoulder, leftShoulder, leftDressWaist),
             isClosed = false
@@ -66,18 +66,26 @@ class FemaleAvatar : Avatar() {
 
         val skirtObj = pool.next()
         skirtObj.set3DCoordinates(
-            DrawObject2D.TYPE_POLY,
+            DrawObject2D.Type.POLY,
             juggler,
             listOf(rightDressWaist, rightHem, leftHem, leftDressWaist),
             isClosed = false
         )
 
         // 5. Arm lines
-        val upperArmTotal = UPPER_ARM_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
-        val lowerArmTotal = LOWER_ARM_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
         addArmLines(
-            juggler, pat, time, leftShoulder, rightShoulder,
-            upperArmTotal, lowerArmTotal, pool
+            juggler = juggler,
+            pat = pat,
+            time = time,
+            leftShoulder = leftShoulder,
+            rightShoulder = rightShoulder,
+            upperArmLength = UPPER_ARM_LENGTH,
+            lowerArmLength = LOWER_ARM_LENGTH,
+            upperGapElbow = UPPER_GAP_ELBOW,
+            upperGapShoulder = UPPER_GAP_SHOULDER,
+            lowerGapWrist = LOWER_GAP_WRIST,
+            lowerGapElbow = LOWER_GAP_ELBOW,
+            pool = pool
         )
     }
 
@@ -97,10 +105,10 @@ class FemaleAvatar : Avatar() {
 
         const val UPPER_ARM_LENGTH: Double = 41.0
         const val LOWER_ARM_LENGTH: Double = 40.0
-        const val UPPER_GAP_ELBOW: Double = 0.0
         const val UPPER_GAP_SHOULDER: Double = 0.0
-        const val LOWER_GAP_WRIST: Double = 1.0
+        const val UPPER_GAP_ELBOW: Double = 0.0
         const val LOWER_GAP_ELBOW: Double = 0.0
+        const val LOWER_GAP_WRIST: Double = 1.0
 
         const val PONYTAIL_SIDE: Double = 9.0
         const val PONYTAIL_BACK: Double = 5.0

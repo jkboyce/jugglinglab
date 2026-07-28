@@ -28,8 +28,8 @@ class ClassicAvatar : Avatar() {
         val c = cos(angle)
 
         // 1. Head polygon
-        addHeadPolygon(juggler, pos, s, c, SHOULDER_H + NECK_H,
-            HEAD_H, 2 * HEAD_HW, HEAD_Y, pool)
+        addHeadPolygon(juggler, pos, s, c, SHOULDER_H + NECK_H, HEAD_H,
+            2 * HEAD_HW, HEAD_Y, pool)
 
         // 2. Torso polygon
         val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
@@ -39,17 +39,27 @@ class ClassicAvatar : Avatar() {
 
         val torsoObj = pool.next()
         torsoObj.set3DCoordinates(
-            DrawObject2D.TYPE_POLY,
+            DrawObject2D.Type.POLY,
             juggler,
             listOf(leftShoulder, rightShoulder, rightWaist, leftWaist),
             isClosed = true
         )
 
         // 3. Arm lines
-        val upperArmTotal = UPPER_ARM_LENGTH + UPPER_GAP_ELBOW + UPPER_GAP_SHOULDER
-        val lowerArmTotal = LOWER_ARM_LENGTH + LOWER_GAP_WRIST + LOWER_GAP_ELBOW
-        addArmLines(juggler, pat, time, leftShoulder, rightShoulder,
-            upperArmTotal, lowerArmTotal, pool)
+        addArmLines(
+            juggler = juggler,
+            pat = pat,
+            time = time,
+            leftShoulder = leftShoulder,
+            rightShoulder = rightShoulder,
+            upperArmLength = UPPER_ARM_LENGTH,
+            lowerArmLength = LOWER_ARM_LENGTH,
+            upperGapElbow = UPPER_GAP_ELBOW,
+            upperGapShoulder = UPPER_GAP_SHOULDER,
+            lowerGapWrist = LOWER_GAP_WRIST,
+            lowerGapElbow = LOWER_GAP_ELBOW,
+            pool = pool
+        )
     }
 
     companion object {
@@ -67,9 +77,9 @@ class ClassicAvatar : Avatar() {
 
         const val UPPER_ARM_LENGTH: Double = 41.0
         const val LOWER_ARM_LENGTH: Double = 40.0
-        const val UPPER_GAP_ELBOW: Double = 0.0
         const val UPPER_GAP_SHOULDER: Double = 0.0
-        const val LOWER_GAP_WRIST: Double = 1.0
+        const val UPPER_GAP_ELBOW: Double = 0.0
         const val LOWER_GAP_ELBOW: Double = 0.0
+        const val LOWER_GAP_WRIST: Double = 1.0
     }
 }

@@ -3,9 +3,8 @@
 //
 // A visual representation of a juggler.
 //
-// Avatars compute the 3D geometry of a juggler (head, torso, skirt, arms, etc.)
-// for a given frame as a list of DrawObject2D elements (convex polygons and
-// lines).
+// Avatars compute the 3D geometry of a juggler (head, torso, arms, etc.) for a
+// given frame as a list of DrawObject2D elements (convex polygons and lines).
 //
 // Avatars are stateless after construction, so one instance can be shared by
 // any number of jugglers and by both stereo renderers.
@@ -155,7 +154,7 @@ abstract class Avatar {
             }
 
             val obj = pool.next()
-            obj.set3DCoordinates(DrawObject2D.TYPE_POLY, juggler, headPoints, isClosed = true)
+            obj.set3DCoordinates(DrawObject2D.Type.POLY, juggler, headPoints, isClosed = true)
         }
 
         internal fun addArmLines(
@@ -166,6 +165,10 @@ abstract class Avatar {
             rightShoulder: JlVector,
             upperArmLength: Double,
             lowerArmLength: Double,
+            upperGapElbow: Double,
+            upperGapShoulder: Double,
+            lowerGapWrist: Double,
+            lowerGapElbow: Double,
             pool: DrawObjectPool
         ) {
             val leftHandCoord = Coordinate()
@@ -184,50 +187,114 @@ abstract class Avatar {
                 rightHandCoord.y
             )
 
-            val leftElbow = elbow(leftShoulder, lefthand, upperArmLength, lowerArmLength)
-            val rightElbow = elbow(rightShoulder, righthand, upperArmLength, lowerArmLength)
+            addSingleArmLines(
+                juggler = juggler,
+                shoulder = leftShoulder,
+                hand = lefthand,
+                upperArmLength = upperArmLength,
+                lowerArmLength = lowerArmLength,
+                upperGapElbow = upperGapElbow,
+                upperGapShoulder = upperGapShoulder,
+                lowerGapWrist = lowerGapWrist,
+                lowerGapElbow = lowerGapElbow,
+                pool = pool
+            )
 
-            if (leftElbow == null) {
-                val obj = pool.next()
-                obj.set3DCoordinates(
-                    DrawObject2D.TYPE_LINE,
-                    juggler,
-                    listOf(leftShoulder, lefthand)
-                )
-            } else {
+            addSingleArmLines(
+                juggler = juggler,
+                shoulder = rightShoulder,
+                hand = righthand,
+                upperArmLength = upperArmLength,
+                lowerArmLength = lowerArmLength,
+                upperGapElbow = upperGapElbow,
+                upperGapShoulder = upperGapShoulder,
+                lowerGapWrist = lowerGapWrist,
+                lowerGapElbow = lowerGapElbow,
+                pool = pool
+            )
+        }
+
+        @Suppress("UnnecessaryVariable")
+        internal fun addSingleArmLines(
+            juggler: Int,
+            shoulder: JlVector,
+            hand: JlVector,
+            upperArmLength: Double,
+            lowerArmLength: Double,
+            upperGapElbow: Double,
+            upperGapShoulder: Double,
+            lowerGapWrist: Double,
+            lowerGapElbow: Double,
+            pool: DrawObjectPool
+        ) {
+            val totalUpper = upperArmLength + upperGapShoulder + upperGapElbow
+            val totalLower = lowerArmLength + lowerGapElbow + lowerGapWrist
+
+            val elbowPos = elbow(shoulder, hand, totalUpper, totalLower)
+
+            if (elbowPos == null) {
+                val dist = JlVector.sub(hand, shoulder).length
+                val totalGaps = upperGapShoulder + upperGapElbow + lowerGapElbow + lowerGapWrist
+                val nominalBoneLength = upperArmLength + lowerArmLength
+                val availableBoneLength = maxOf(0.0, dist - totalGaps)
+                val k = if (nominalBoneLength > 0.0) availableBoneLength / nominalBoneLength else 0.0
+
+                val stretchedUpper = upperArmLength * k
+                val stretchedLower = lowerArmLength * k
+
+                val upperStartDist = upperGapShoulder
+                val upperEndDist = upperStartDist + stretchedUpper
+                val lowerStartDist = upperEndDist + upperGapElbow + lowerGapElbow
+                val lowerEndDist = lowerStartDist + stretchedLower
+
+                val upperStart = interpolate(shoulder, hand, upperStartDist, dist)
+                val upperEnd = interpolate(shoulder, hand, upperEndDist, dist)
+                val lowerStart = interpolate(shoulder, hand, lowerStartDist, dist)
+                val lowerEnd = interpolate(shoulder, hand, lowerEndDist, dist)
+
                 val obj1 = pool.next()
                 obj1.set3DCoordinates(
-                    DrawObject2D.TYPE_LINE,
+                    DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(leftShoulder, leftElbow)
-                )
-
-                val obj2 = pool.next()
-                obj2.set3DCoordinates(DrawObject2D.TYPE_LINE, juggler, listOf(leftElbow, lefthand))
-            }
-
-            if (rightElbow == null) {
-                val obj = pool.next()
-                obj.set3DCoordinates(
-                    DrawObject2D.TYPE_LINE,
-                    juggler,
-                    listOf(rightShoulder, righthand)
-                )
-            } else {
-                val obj1 = pool.next()
-                obj1.set3DCoordinates(
-                    DrawObject2D.TYPE_LINE,
-                    juggler,
-                    listOf(rightShoulder, rightElbow)
+                    listOf(upperStart, upperEnd)
                 )
 
                 val obj2 = pool.next()
                 obj2.set3DCoordinates(
-                    DrawObject2D.TYPE_LINE,
+                    DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(rightElbow, righthand)
+                    listOf(lowerStart, lowerEnd)
+                )
+            } else {
+                val upperStart = interpolate(shoulder, elbowPos, upperGapShoulder, totalUpper)
+                val upperEnd = interpolate(shoulder, elbowPos, upperGapShoulder + upperArmLength, totalUpper)
+                val lowerStart = interpolate(elbowPos, hand, lowerGapElbow, totalLower)
+                val lowerEnd = interpolate(elbowPos, hand, lowerGapElbow + lowerArmLength, totalLower)
+
+                val obj1 = pool.next()
+                obj1.set3DCoordinates(
+                    DrawObject2D.Type.LINE,
+                    juggler,
+                    listOf(upperStart, upperEnd)
+                )
+
+                val obj2 = pool.next()
+                obj2.set3DCoordinates(
+                    DrawObject2D.Type.LINE,
+                    juggler,
+                    listOf(lowerStart, lowerEnd)
                 )
             }
+        }
+
+        private fun interpolate(start: JlVector, end: JlVector, dist: Double, totalLen: Double): JlVector {
+            if (totalLen <= 0.0) return start
+            val frac = dist / totalLen
+            return JlVector(
+                start.x + (end.x - start.x) * frac,
+                start.y + (end.y - start.y) * frac,
+                start.z + (end.z - start.z) * frac
+            )
         }
 
         // Two-bone inverse kinematics: given a shoulder and hand position

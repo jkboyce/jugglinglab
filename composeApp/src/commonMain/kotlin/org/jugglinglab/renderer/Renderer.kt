@@ -1,7 +1,7 @@
 //
 // Renderer.kt
 //
-// Class that draws the juggling into the frame using Compose DrawScope.
+// Draws the juggling into the frame using Compose DrawScope.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -70,8 +70,7 @@ class Renderer {
     private val paint = Paint()
 
     // Which avatar draws each juggler (by juggler number, 1-based); jugglers
-    // absent from the map use the default. Avatars are stateless (see Avatar),
-    // so instances may be shared freely across jugglers and renderers.
+    // absent from the map use the default.
     private val defaultAvatar = ClassicAvatar()
     private var avatars: Map<Int, Avatar> = emptyMap()
 
@@ -256,7 +255,7 @@ class Renderer {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
             val vec = JlVector.fromCoordinate(tempc, tempv1)
-            propObj.set3DCoordinates(DrawObject2D.TYPE_PROP, i, listOf(vec))
+            propObj.set3DCoordinates(DrawObject2D.Type.PROP, i, listOf(vec))
 
             val pr = pattern.getProp(pnum[i - 1])
             propMinZ = min(propMinZ, pr.getMinZ())
@@ -280,15 +279,14 @@ class Renderer {
                 tempv1.y = propMinZ
 
                 val lineObj = objectPool.next()
-                lineObj.set3DCoordinates(DrawObject2D.TYPE_LINE, 0, listOf(tempv1, tempv2))
+                lineObj.set3DCoordinates(DrawObject2D.Type.LINE, 0, listOf(tempv1, tempv2))
             }
         }
 
         // Jugglers
         for (i in 1..pattern.numberOfJugglers) {
             if (i in hideJugglers) continue
-            val avatar = avatarFor(i)
-            avatar.addObjectsToPool(i, pattern, time, objectPool)
+            avatarFor(i).addObjectsToPool(i, pattern, time, objectPool)
         }
 
         val numObjects = objectPool.activeCount
@@ -300,7 +298,7 @@ class Renderer {
                 getXYZ(ob.coords3D[p], ob.coords2D[p])
             }
 
-            if (ob.type == DrawObject2D.TYPE_PROP) {
+            if (ob.type == DrawObject2D.Type.PROP) {
                 val x = ob.coords2D[0].x.roundToInt()
                 val y = ob.coords2D[0].y.roundToInt()
                 val pr = pattern.getProp(pnum[ob.number - 1])
@@ -364,7 +362,7 @@ class Renderer {
             for (i in 0..<numObjects) {
                 val ob = objectPool.objects[i]
                 if (ob.drawn) continue
-                if (pass == 1 && ob.type != DrawObject2D.TYPE_LINE) continue
+                if (pass == 1 && ob.type != DrawObject2D.Type.LINE) continue
                 sortedObjects[index] = ob
                 ob.drawn = true
                 index++
@@ -376,7 +374,7 @@ class Renderer {
             val ob = sortedObjects[i]
 
             when (ob.type) {
-                DrawObject2D.TYPE_PROP -> {
+                DrawObject2D.Type.PROP -> {
                     val pr = pattern.getProp(pnum[ob.number - 1])
                     val x = ob.coords2D[0].x.roundToInt()
                     val y = ob.coords2D[0].y.roundToInt()
@@ -391,11 +389,11 @@ class Renderer {
                     }
                 }
 
-                DrawObject2D.TYPE_POLY -> {
+                DrawObject2D.Type.POLY -> {
                     ob.draw(drawObjectContext)
                 }
 
-                DrawObject2D.TYPE_LINE -> {
+                DrawObject2D.Type.LINE -> {
                     if (ob.number > 0) {
                         ob.draw(drawObjectContext)
                     } else {

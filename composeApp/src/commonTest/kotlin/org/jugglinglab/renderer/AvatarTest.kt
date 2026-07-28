@@ -29,13 +29,13 @@ class AvatarTest {
         avatar.addObjectsToPool(1, pat, 0.0, pool)
         val objs = pool.objects.take(pool.activeCount)
 
-        val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
-        val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
+        val polys = objs.filter { it.type == DrawObject2D.Type.POLY }
+        val lines = objs.filter { it.type == DrawObject2D.Type.LINE }
 
         // Head (40 points) and Torso (4 points)
         assertEquals(2, polys.size)
         assertTrue(polys.all { it.isClosed })
-        assertTrue(lines.isNotEmpty())
+        assertEquals(4, lines.size) // 2 upper arm lines + 2 lower arm lines
     }
 
     @Test
@@ -46,8 +46,8 @@ class AvatarTest {
         female.addObjectsToPool(1, pat, 0.0, pool)
         val objs = pool.objects.take(pool.activeCount)
 
-        val polys = objs.filter { it.type == DrawObject2D.TYPE_POLY }
-        val lines = objs.filter { it.type == DrawObject2D.TYPE_LINE }
+        val polys = objs.filter { it.type == DrawObject2D.Type.POLY }
+        val lines = objs.filter { it.type == DrawObject2D.Type.LINE }
 
         // Head, Ponytail (closed) and Torso, Skirt (unclosed at waist)
         assertEquals(4, polys.size)
@@ -93,7 +93,7 @@ class AvatarTest {
         val pt2 = JlVector(10.0, 0.0, 0.0)
         val pt3 = JlVector(10.0, 10.0, 0.0)
 
-        ob.set3DCoordinates(DrawObject2D.TYPE_POLY, 1, listOf(pt1, pt2, pt3), isClosed = false)
+        ob.set3DCoordinates(DrawObject2D.Type.POLY, 1, listOf(pt1, pt2, pt3), isClosed = false)
 
         assertEquals(3, ob.numPoints)
         assertFalse(ob.isClosed)
@@ -101,7 +101,7 @@ class AvatarTest {
         assertTrue(ob.coords2D.size >= 3)
 
         // Monotonic growth test
-        ob.set3DCoordinates(DrawObject2D.TYPE_LINE, 1, listOf(pt1, pt2))
+        ob.set3DCoordinates(DrawObject2D.Type.LINE, 1, listOf(pt1, pt2))
         assertEquals(2, ob.numPoints)
         assertTrue(ob.coords3D.size >= 3)
     }
@@ -129,5 +129,29 @@ class AvatarTest {
             lowerArmLength = lowerArmLength
         )
         assertNull(outOfReach)
+    }
+
+    @Test
+    fun `addSingleArmLines uniformly stretches arm bones and preserves gaps when hand is out of reach`() {
+        val pool = DrawObjectPool()
+        val shoulder = JlVector(0.0, 40.0, 0.0)
+        val hand = JlVector(0.0, 40.0, 200.0) // 200 cm away -> out of reach
+        Avatar.addSingleArmLines(
+            juggler = 1,
+            shoulder = shoulder,
+            hand = hand,
+            upperArmLength = 40.0,
+            lowerArmLength = 40.0,
+            upperGapElbow = 0.0,
+            upperGapShoulder = 0.0,
+            lowerGapWrist = 10.0,
+            lowerGapElbow = 0.0,
+            pool = pool
+        )
+        val lines = pool.objects.take(pool.activeCount).filter { it.type == DrawObject2D.Type.LINE }
+        assertEquals(2, lines.size) // 1 upper arm line + 1 lower arm line
+        // Check wrist gap of 10cm on lower arm line end: line goes to z = 190.0 (200 - 10)
+        val lowerLine = lines[1]
+        assertEquals(190.0, lowerLine.coords3D[1].z, 0.001)
     }
 }
