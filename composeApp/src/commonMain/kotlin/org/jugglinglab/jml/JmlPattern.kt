@@ -154,17 +154,18 @@ data class JmlPattern(
         (basePatternNotation != null && basePatternConfig != null)
 
     val isBasePatternEdited: Boolean by lazy {
-        var edited = false
         if (!isBasePattern && hasBasePattern) {
             try {
-                edited = (fromBasePattern(
+                fromBasePattern(
                     basePatternNotation!!,
                     basePatternConfig!!
-                ).jlHashCode != jlHashCode)
+                ).jlHashCode != jlHashCode
             } catch (_: JuggleException) {
+                true
             }
+        } else {
+            false
         }
-        edited
     }
 
     val isColorable: Boolean by lazy {
