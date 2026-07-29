@@ -1,7 +1,7 @@
 //
 // Renderer.kt
 //
-// Class that draws the juggling into the frame using Compose DrawScope.
+// Draws the juggling into the frame using Compose DrawScope.
 //
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
@@ -58,15 +58,9 @@ class Renderer {
     private var zoomOrig: Double = 0.0 // pixels/cm at zoomfactor=1
     private var originX: Int = 0
     private var originZ: Int = 0
-    private var polysides: Int = 40 // # sides in polygon for head
-    private var headCos: DoubleArray = DoubleArray(polysides)
-    private var headSin: DoubleArray = DoubleArray(polysides)
-    private var headX: IntArray = IntArray(polysides)
-    private var headY: IntArray = IntArray(polysides)
 
-    private lateinit var obj: MutableList<DrawObject2D>
-    private lateinit var obj2: MutableList<DrawObject2D>
-    private lateinit var jugglerVec: Array<Array<JlVector?>>
+    private var objectPool: DrawObjectPool = DrawObjectPool()
+    private var sortedObjects: MutableList<DrawObject2D> = mutableListOf()
     private var tempc: Coordinate = Coordinate()
     private var tempv1: JlVector = JlVector()
     private var tempv2: JlVector = JlVector()
@@ -75,19 +69,20 @@ class Renderer {
     var isAntiAlias: Boolean = true
     private val paint = Paint()
 
-    init {
-        for (i in 0..<polysides) {
-            headCos[i] = cos(i.toDouble() * 2.0 * PI / polysides)
-            headSin[i] = sin(i.toDouble() * 2.0 * PI / polysides)
-        }
+    // Which avatar draws each juggler (by juggler number, 1-based); jugglers
+    // absent from the map use the default.
+    private val defaultAvatar = ClassicAvatar()
+    private var avatars: Map<Int, Avatar> = emptyMap()
+
+    fun avatarFor(juggler: Int): Avatar = avatars[juggler] ?: defaultAvatar
+
+    fun setAvatars(newAvatars: Map<Int, Avatar>) {
+        avatars = newAvatars
     }
 
     fun setPattern(pat: JmlPattern) {
         pattern = pat
-        val maxobjects = 5 * pat.numberOfJugglers + pat.numberOfPaths + 18
-        obj = MutableList(maxobjects) { DrawObject2D() }
-        obj2 = MutableList(maxobjects) { DrawObject2D() }
-        jugglerVec = Array(pat.numberOfJugglers) { arrayOfNulls(12) }
+        objectPool = DrawObjectPool()
     }
 
     fun setGround(show: Boolean) {
@@ -241,45 +236,34 @@ class Renderer {
         val strokeWidth1 = 1.dp.toPx()
         val stroke1 = Stroke(strokeWidth1)
 
-        var numObjects = 5 * pattern.numberOfJugglers + pattern.numberOfPaths + 18
+        // Drawing primitives a DrawObject2D uses to paint itself, bound to this
+        // frame's DrawScope and theme colors.
+        val drawObjectContext = DrawObjectContext(
+            fill = { path -> drawAaPath(path, backgroundColor) },
+            stroke = { path -> drawAaPath(path, lineColor, style = stroke1) },
+            segment = { a, b -> drawAaLine(lineColor, a, b, strokeWidth = strokeWidth1) }
+        )
 
-        for (i in 0..<numObjects) {
-            obj[i].covering.clear()
-        }
-
-        var index = 0
+        objectPool.reset()
 
         // Props
         var propMinZ = 0.0
         for (i in 1..pattern.numberOfPaths) {
-            obj[index].type = DrawObject2D.TYPE_PROP
-            obj[index].number = i
+            val propObj = objectPool.next()
             pattern.layout.getPathCoordinate(i, time, tempc)
             if (!tempc.isValid) {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
-            getXYZ(JlVector.fromCoordinate(tempc, tempv1), obj[index].coord[0])
-            val x = obj[index].coord[0].x.roundToInt()
-            val y = obj[index].coord[0].y.roundToInt()
+            val vec = JlVector.fromCoordinate(tempc, tempv1)
+            propObj.set3DCoordinates(DrawObject2D.Type.PROP, i, listOf(vec))
+
             val pr = pattern.getProp(pnum[i - 1])
-            val center = pr.getProp2DCenter(zoom, cameraAngle)
-            val size = pr.getProp2DSize(zoom, cameraAngle)
-            
-            obj[index].bbLeft = (x - center.width).toFloat()
-            obj[index].bbTop = (y - center.height).toFloat()
-            obj[index].bbRight = (x - center.width + size.width).toFloat()
-            obj[index].bbBottom = (y - center.height + size.height).toFloat()
-            
             propMinZ = min(propMinZ, pr.getMinZ())
-            index++
         }
 
         // Ground
         if (showGround) {
             for (i in 0..17) {
-                obj[index].type = DrawObject2D.TYPE_LINE
-                obj[index].number = 0
-
                 if (i < 9) {
                     tempv1.x = -50.0 + 100.0 * i / 8.0
                     tempv1.z = -50.0
@@ -294,156 +278,106 @@ class Renderer {
                 tempv2.y = propMinZ
                 tempv1.y = propMinZ
 
-                getXYZ(tempv1, obj[index].coord[0])
-                getXYZ(tempv2, obj[index].coord[1])
-                val x1 = obj[index].coord[0].x.roundToInt().toFloat()
-                val y1 = obj[index].coord[0].y.roundToInt().toFloat()
-                val x2 = obj[index].coord[1].x.roundToInt().toFloat()
-                val y2 = obj[index].coord[1].y.roundToInt().toFloat()
-
-                // Bounding box for line
-                val left = min(x1, x2)
-                val top = min(y1, y2)
-                val right = max(x1, x2)
-                val bottom = max(y1, y2)
-
-                obj[index].bbLeft = left
-                obj[index].bbTop = top
-                obj[index].bbRight = max(left + 1f, right)
-                obj[index].bbBottom = max(top + 1f, bottom)
-                index++
+                val lineObj = objectPool.next()
+                lineObj.set3DCoordinates(DrawObject2D.Type.LINE, 0, listOf(tempv1, tempv2))
             }
         }
 
         // Jugglers
-        Juggler.findJugglerCoordinates(pattern, time, jugglerVec)
-
         for (i in 1..pattern.numberOfJugglers) {
             if (i in hideJugglers) continue
-
-            obj[index].type = DrawObject2D.TYPE_BODY
-            obj[index].number = i
-            getXYZ(jugglerVec[i - 1][2]!!, obj[index].coord[0]) // left shoulder
-            getXYZ(jugglerVec[i - 1][3]!!, obj[index].coord[1]) // right shoulder
-            getXYZ(jugglerVec[i - 1][7]!!, obj[index].coord[2]) // right waist
-            getXYZ(jugglerVec[i - 1][6]!!, obj[index].coord[3]) // left waist
-            getXYZ(jugglerVec[i - 1][8]!!, obj[index].coord[4]) // left head bottom
-            getXYZ(jugglerVec[i - 1][9]!!, obj[index].coord[5]) // left head top
-            getXYZ(jugglerVec[i - 1][10]!!, obj[index].coord[6]) // right head bottom
-            getXYZ(jugglerVec[i - 1][11]!!, obj[index].coord[7]) // right head top
-
-            var xmin = obj[index].coord[0].x.roundToInt()
-            var xmax = xmin
-            var ymin = obj[index].coord[0].y.roundToInt()
-            var ymax = ymin
-
-            for (j in 1..7) {
-                val x = obj[index].coord[j].x.roundToInt()
-                val y = obj[index].coord[j].y.roundToInt()
-                if (x < xmin) xmin = x
-                if (x > xmax) xmax = x
-                if (y < ymin) ymin = y
-                if (y > ymax) ymax = y
-            }
-            obj[index].bbLeft = (xmin + 1).toFloat()
-            obj[index].bbTop = (ymin + 1).toFloat()
-            obj[index].bbRight = xmax.toFloat()
-            obj[index].bbBottom = ymax.toFloat()
-            index++
-
-            // Arms
-            for (j in 0..1) {
-                if (jugglerVec[i - 1][4 + j] == null) {
-                    obj[index].type = DrawObject2D.TYPE_LINE
-                    obj[index].number = i
-                    getXYZ(jugglerVec[i - 1][2 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglerVec[i - 1][j]!!, obj[index].coord[1])
-                    updateLineBoundingBox(obj[index])
-                    index++
-                } else {
-                    obj[index].type = DrawObject2D.TYPE_LINE
-                    obj[index].number = i
-                    getXYZ(jugglerVec[i - 1][2 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglerVec[i - 1][4 + j]!!, obj[index].coord[1])
-                    updateLineBoundingBox(obj[index])
-                    index++
-
-                    obj[index].type = DrawObject2D.TYPE_LINE
-                    obj[index].number = i
-                    getXYZ(jugglerVec[i - 1][4 + j]!!, obj[index].coord[0])
-                    getXYZ(jugglerVec[i - 1][j]!!, obj[index].coord[1])
-                    updateLineBoundingBox(obj[index])
-                    index++
-                }
-            }
+            avatarFor(i).addObjectsToPool(i, pattern, time, objectPool)
         }
-        numObjects = index
 
-        // figure out which display elements are covering which other elements
+        val numObjects = objectPool.activeCount
+
+        // Project 3D to 2D screen coordinates and compute bounds
         for (i in 0..<numObjects) {
+            val ob = objectPool.objects[i]
+            for (p in 0..<ob.numPoints) {
+                getXYZ(ob.coords3D[p], ob.coords2D[p])
+            }
+
+            if (ob.type == DrawObject2D.Type.PROP) {
+                val x = ob.coords2D[0].x.roundToInt()
+                val y = ob.coords2D[0].y.roundToInt()
+                val pr = pattern.getProp(pnum[ob.number - 1])
+                val center = pr.getProp2DCenter(zoom, cameraAngle)
+                val size = pr.getProp2DSize(zoom, cameraAngle)
+
+                ob.bbLeft = (x - center.width).toFloat()
+                ob.bbTop = (y - center.height).toFloat()
+                ob.bbRight = (x - center.width + size.width).toFloat()
+                ob.bbBottom = (y - center.height + size.height).toFloat()
+            } else {
+                ob.computeBounds()
+            }
+
+            ob.covering.clear()
+            ob.drawn = false
+        }
+
+        // Figure out which display elements are covering which other elements
+        for (i in 0..<numObjects) {
+            val obI = objectPool.objects[i]
             for (j in 0..<numObjects) {
                 if (j == i) continue
-                if (obj[i].isCovering(obj[j])) {
-                    obj[i].covering.add(obj[j])
+                val obJ = objectPool.objects[j]
+                if (obI.isCovering(obJ)) {
+                    obI.covering.add(obJ)
                 }
             }
-            obj[i].drawn = false
         }
 
-        // figure out a drawing order
-        index = 0
+        // Figure out a drawing order
+        while (sortedObjects.size < numObjects) {
+            sortedObjects.add(objectPool.objects[0])
+        }
+
+        var index = 0
         for (pass in 1..2) {
-            // first assign a drawing order based on "covering" constraints
             var changed = true
             while (changed) {
                 changed = false
                 for (i in 0..<numObjects) {
-                    if (obj[i].drawn) {
-                        continue
-                    }
-                    
+                    val ob = objectPool.objects[i]
+                    if (ob.drawn) continue
+
                     var allCoveringDrawn = true
-                    for (k in 0 until obj[i].covering.size) {
-                        if (!obj[i].covering[k].drawn) {
+                    for (k in ob.covering.indices) {
+                        if (!ob.covering[k].drawn) {
                             allCoveringDrawn = false
                             break
                         }
                     }
                     if (allCoveringDrawn) {
-                        obj2[index] = obj[i]
-                        obj[i].drawn = true
+                        sortedObjects[index] = ob
+                        ob.drawn = true
                         index++
                         changed = true
                     }
                 }
             }
 
-            // We sometimes get situations where A > B > C > A from a covering
-            // standpoint, and the objects aren't yet drawn. On pass 1 we draw
-            // the lines next, then resume the above algorithm in pass 2. At the
-            // end of pass 2 we draw everything remaining in arbitrary order.
             for (i in 0..<numObjects) {
-                if (obj[i].drawn) {
-                    continue
-                }
-                if (pass == 1 && obj[i].type != DrawObject2D.TYPE_LINE) {
-                    continue
-                }
-                obj2[index] = obj[i]
-                obj[i].drawn = true
-                ++index
+                val ob = objectPool.objects[i]
+                if (ob.drawn) continue
+                if (pass == 1 && ob.type != DrawObject2D.Type.LINE) continue
+                sortedObjects[index] = ob
+                ob.drawn = true
+                index++
             }
         }
 
-        // draw the objects in the sorted order
+        // Draw the objects in the sorted order
         for (i in 0..<numObjects) {
-            val ob = obj2[i]
+            val ob = sortedObjects[i]
 
             when (ob.type) {
-                DrawObject2D.TYPE_PROP -> {
+                DrawObject2D.Type.PROP -> {
                     val pr = pattern.getProp(pnum[ob.number - 1])
-                    val x = ob.coord[0].x.roundToInt()
-                    val y = ob.coord[0].y.roundToInt()
+                    val x = ob.coords2D[0].x.roundToInt()
+                    val y = ob.coords2D[0].y.roundToInt()
 
                     val image = pr.getProp2DImage(zoom, cameraAngle)
                     if (image != null) {
@@ -455,55 +389,20 @@ class Renderer {
                     }
                 }
 
-                DrawObject2D.TYPE_BODY -> {
-                    val path = ob.path
-                    path.rewind()
-                    path.moveTo(ob.coord[0].x.toFloat(), ob.coord[0].y.toFloat())
-                    for (j in 1..3) {
-                        path.lineTo(ob.coord[j].x.toFloat(), ob.coord[j].y.toFloat())
-                    }
-                    path.close()
-                    drawAaPath(path, backgroundColor)
-                    drawAaPath(path, lineColor, style = stroke1)
-
-                    val lHeadBx = ob.coord[4].x
-                    val lHeadBy = ob.coord[4].y
-                    val lHeadTy = ob.coord[5].y
-                    val rHeadBx = ob.coord[6].x
-                    val rHeadBy = ob.coord[6].y
-
-                    if (abs(rHeadBx - lHeadBx) > 2.0) {
-                        val headPath = ob.headPath
-                        headPath.rewind()
-                        for (j in 0..<polysides) {
-                            headX[j] = (0.5 * (lHeadBx + rHeadBx + headCos[j] * (rHeadBx - lHeadBx))).roundToInt()
-                            headY[j] = (0.5 * (lHeadBy + lHeadTy + headSin[j] * (lHeadBy - lHeadTy))
-                                    + (headX[j] - lHeadBx) * (rHeadBy - lHeadBy) / (rHeadBx - lHeadBx)).roundToInt()
-
-                            if (j == 0) headPath.moveTo(headX[j].toFloat(), headY[j].toFloat())
-                            else headPath.lineTo(headX[j].toFloat(), headY[j].toFloat())
-                        }
-                        headPath.close()
-                        drawAaPath(headPath, backgroundColor)
-                        drawAaPath(headPath, lineColor, style = stroke1)
-                    } else {
-                        val h =
-                            sqrt((lHeadBy - lHeadTy) * (lHeadBy - lHeadTy) + (rHeadBy - lHeadBy) * (rHeadBy - lHeadBy))
-                        val hx = (0.5 * (lHeadBx + rHeadBx)).toFloat()
-                        val hy1 = (0.5 * (lHeadTy + rHeadBy + h)).toFloat()
-                        val hy2 = (0.5 * (lHeadTy + rHeadBy - h)).toFloat()
-                        drawAaLine(lineColor, Offset(hx, hy1), Offset(hx, hy2), strokeWidth = strokeWidth1)
-                    }
+                DrawObject2D.Type.POLY -> {
+                    ob.draw(drawObjectContext)
                 }
 
-                DrawObject2D.TYPE_LINE -> {
-                    val x1 = ob.coord[0].x.toFloat()
-                    val y1 = ob.coord[0].y.toFloat()
-                    val x2 = ob.coord[1].x.toFloat()
-                    val y2 = ob.coord[1].y.toFloat()
-                    // Juggler parts have number > 0, ground uses 0
-                    val strokeWidth = if (ob.number > 0) strokeWidth1 else strokeWidth0_5
-                    drawAaLine(lineColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth)
+                DrawObject2D.Type.LINE -> {
+                    if (ob.number > 0) {
+                        ob.draw(drawObjectContext)
+                    } else {
+                        val x1 = ob.coords2D[0].x.toFloat()
+                        val y1 = ob.coords2D[0].y.toFloat()
+                        val x2 = ob.coords2D[1].x.toFloat()
+                        val y2 = ob.coords2D[1].y.toFloat()
+                        drawAaLine(lineColor, Offset(x1, y1), Offset(x2, y2), strokeWidth = strokeWidth0_5)
+                    }
                 }
             }
         }
@@ -580,170 +479,6 @@ class Renderer {
                 y = zy - textLayoutResultZ.size.height - padding
             )
         )
-    }
-
-    private fun updateLineBoundingBox(ob: DrawObject2D) {
-        val x1 = ob.coord[0].x.roundToInt().toFloat()
-        val y1 = ob.coord[0].y.roundToInt().toFloat()
-        val x2 = ob.coord[1].x.roundToInt().toFloat()
-        val y2 = ob.coord[1].y.roundToInt().toFloat()
-        val left = min(x1, x2)
-        val top = min(y1, y2)
-        val right = max(x1, x2)
-        val bottom = max(y1, y2)
-        ob.bbLeft = left
-        ob.bbTop = top
-        ob.bbRight = max(left + 1f, right)
-        ob.bbBottom = max(top + 1f, bottom)
-    }
-
-    class DrawObject2D {
-        var type: Int = 0
-        var number: Int = 0
-        var coord: MutableList<JlVector> = MutableList(8) { JlVector() }
-        var bbLeft: Float = 0f
-        var bbTop: Float = 0f
-        var bbRight: Float = 0f
-        var bbBottom: Float = 0f
-        var covering: MutableList<DrawObject2D> = mutableListOf()
-        var drawn: Boolean = false
-        var tempv: JlVector = JlVector()
-        val path: Path = Path()
-        val headPath: Path = Path()
-
-        fun isCovering(obj: DrawObject2D): Boolean {
-            // Check for bounding box overlap
-            if (bbRight <= obj.bbLeft || bbLeft >= obj.bbRight || 
-                bbBottom <= obj.bbTop || bbTop >= obj.bbBottom) {
-                return false
-            }
-
-            when (type) {
-                TYPE_PROP -> when (obj.type) {
-                    TYPE_PROP -> return (coord[0].z < obj.coord[0].z)
-                    TYPE_BODY -> {
-                        vectorProduct(obj.coord[0], obj.coord[1], obj.coord[2], tempv)
-                        if (tempv.z == 0.0) return false
-                        val z = obj.coord[0].z -
-                                (tempv.x * (coord[0].x - obj.coord[0].x) + tempv.y * (coord[0].y - obj.coord[0].y)) / tempv.z
-                        return (coord[0].z < z)
-                    }
-
-                    TYPE_LINE -> return (isBoxCoveringLine(this, obj) == 1)
-                }
-
-                TYPE_BODY -> when (obj.type) {
-                    TYPE_PROP -> {
-                        vectorProduct(coord[0], coord[1], coord[2], tempv)
-                        if (tempv.z == 0.0) return false
-                        val z = coord[0].z -
-                                (tempv.x * (obj.coord[0].x - coord[0].x) + tempv.y * (obj.coord[0].y - coord[0].y)) / tempv.z
-                        return (z < obj.coord[0].z)
-                    }
-
-                    TYPE_BODY -> {
-                        var d = 0.0
-                        for (i in 0..3) d += (coord[i].z - obj.coord[i].z)
-                        return (d < 0.0)
-                    }
-
-                    TYPE_LINE -> return (isBoxCoveringLine(this, obj) == 1)
-                }
-
-                TYPE_LINE -> when (obj.type) {
-                    TYPE_PROP, TYPE_BODY -> return (isBoxCoveringLine(obj, this) == -1)
-                    TYPE_LINE -> return false
-                }
-            }
-            return false
-        }
-
-        private fun isBoxCoveringLine(box: DrawObject2D, line: DrawObject2D): Int {
-            if (box.type == TYPE_BODY) {
-                vectorProduct(box.coord[0], box.coord[1], box.coord[2], tempv)
-            } else {
-                tempv.x = 0.0
-                tempv.y = 0.0
-                tempv.z = 1.0
-            }
-
-            if (tempv.z == 0.0) return 0
-
-            var endinbb = false
-            for (i in 0..1) {
-                val x = line.coord[i].x
-                val y = line.coord[i].y
-                if (contains(box, (x + 0.5).toFloat(), (y + 0.5).toFloat())) {
-                    val zb =
-                        (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
-                    if (line.coord[i].z < (zb - SLOP)) return -1
-                    endinbb = true
-                }
-            }
-            if (endinbb) return 1
-
-            var intersection = false
-            // Check top/bottom edges of bbox
-            for (i in 0..1) {
-                val x = (if (i == 0) box.bbLeft else box.bbRight).toDouble()
-                if (x < min(line.coord[0].x, line.coord[1].x) || x > max(line.coord[0].x, line.coord[1].x)) continue
-                if (line.coord[1].x == line.coord[0].x) continue
-
-                val y =
-                    line.coord[0].y + (line.coord[1].y - line.coord[0].y) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x)
-                if (y < box.bbTop || y > box.bbBottom) continue
-
-                intersection = true
-                val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
-                val zl =
-                    (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
-                if (zl < (zb - SLOP)) return -1
-            }
-
-            // Check left/right edges of bbox
-            for (i in 0..1) {
-                val y = (if (i == 0) box.bbTop else box.bbBottom).toDouble()
-                if (y < min(line.coord[0].y, line.coord[1].y) || y > max(line.coord[0].y, line.coord[1].y)) continue
-                if (line.coord[1].y == line.coord[0].y) continue
-
-                val x =
-                    line.coord[0].x + (line.coord[1].x - line.coord[0].x) * (y - line.coord[0].y) / (line.coord[1].y - line.coord[0].y)
-                if (x < box.bbLeft || x > box.bbRight) continue
-
-                intersection = true
-                val zb = (box.coord[0].z - (tempv.x * (x - box.coord[0].x) + tempv.y * (y - box.coord[0].y)) / tempv.z)
-                val zl =
-                    (line.coord[0].z + (line.coord[1].z - line.coord[0].z) * (x - line.coord[0].x) / (line.coord[1].x - line.coord[0].x))
-                if (zl < (zb - SLOP)) return -1
-            }
-
-            return if (intersection) 1 else 0
-        }
-
-        private fun contains(box: DrawObject2D, x: Float, y: Float): Boolean {
-            return x >= box.bbLeft && x < box.bbRight && y >= box.bbTop && y < box.bbBottom
-        }
-
-        fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {
-            val ax = v2.x - v1.x
-            val ay = v2.y - v1.y
-            val az = v2.z - v1.z
-            val bx = v3.x - v1.x
-            val by = v3.y - v1.y
-            val bz = v3.z - v1.z
-            result.x = ay * bz - by * az
-            result.y = az * bx - bz * ax
-            result.z = ax * by - bx * ay
-            return result
-        }
-
-        companion object {
-            const val TYPE_PROP: Int = 1
-            const val TYPE_BODY: Int = 2
-            const val TYPE_LINE: Int = 3
-
-            private const val SLOP: Double = 3.0
-        }
     }
 
     //--------------------------------------------------------------------------

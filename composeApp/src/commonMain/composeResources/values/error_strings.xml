@@ -185,6 +185,7 @@
     <string name="error_unused_param">Unused input parameter: %1$s</string>
     <string name="error_unused_params">Unused input parameters: %1$s</string>
     <string name="error_unrecognized_view">Unrecognized view type: &quot;%1$s&quot;</string>
+    <string name="error_unrecognized_avatar">Unrecognized avatar type: &quot;%1$s&quot;</string>
     <string name="error_optimizer_unavailable">Optimizer library not available</string>
     <string name="error_optimizer_failed">Optimizer failed to find solution</string>
     <string name="error_optimizer_no_passing">Optimizer does not support passing patterns</string>

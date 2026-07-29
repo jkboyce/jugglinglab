@@ -22,6 +22,18 @@ class JlVector {
         z = zPos
     }
 
+    fun set(xPos: Double, yPos: Double, zPos: Double) {
+        x = xPos
+        y = yPos
+        z = zPos
+    }
+
+    fun set(other: JlVector) {
+        x = other.x
+        y = other.y
+        z = other.z
+    }
+
     val length: Double
         get() = sqrt(x * x + y * y + z * z)
 

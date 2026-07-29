@@ -32,12 +32,14 @@ Over that long span of time the project has seen contributions from many people,
 - Roman Karavia – CheerpJ conversion to run Juggling Lab in the browser
 - Ken Matsuoka – JuggleMaster pattern library, used here with his permission
 - Rupert Millard – Implementation of '*' shortcut for sync notation
+- Linda Mohamed – Switchable juggler avatars, female avatar design
 - Herve Nicol – Bug fixes
 - Daniel Ortuño Juárez – Android testing and many improvement ideas
 - Denis Paumier – Suggestions for passing and multiplexing improvements to siteswap generator
 - Andrew Peterson – Performance profiling of animation routines
 - Greg Phillips – Compose Multiplatform refactoring help and ideas, ANTLR siteswap parser, Android testing and ideas
 - Romain Richard and Frédéric Rayar – Android version ([Google Play](https://play.google.com/store/apps/details?id=com.jonglen7.jugglinglab))
+- Roeland – Roeland pattern files, pattern file fixes
 - Frédéric Roudaut – Design ideas for siteswap notation component, French language translation
 - Daniel Simu – Bug reports, many design suggestions
 - P. R. Vaidyanathan – Hand Siteswap feature input

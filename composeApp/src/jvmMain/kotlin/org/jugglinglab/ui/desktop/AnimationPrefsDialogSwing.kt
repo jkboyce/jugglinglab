@@ -10,6 +10,7 @@ package org.jugglinglab.ui.desktop
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.JuggleExceptionInternal
@@ -32,6 +33,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
     private lateinit var tfSlowdown: JTextField
     private lateinit var tfBorder: JTextField
     private lateinit var comboShowground: JComboBox<String>
+    private lateinit var comboAvatar: JComboBox<String>
     private lateinit var cbPaused: JCheckBox
     private lateinit var cbMousepause: JCheckBox
     private lateinit var cbStereo: JCheckBox
@@ -66,6 +68,42 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         tfSlowdown.text = jlToStringRounded(oldPrefs.slowdown, 2)
         tfBorder.text = oldPrefs.borderPixels.toString()
         comboShowground.setSelectedIndex(oldPrefs.showGround)
+        val isSingleAvatar = oldPrefs.avatar.lowercase() in Avatar.builtinAvatars
+        val avatarIndex = if (isSingleAvatar) {
+            Avatar.builtinAvatars.indexOf(oldPrefs.avatar.lowercase()).coerceAtLeast(0)
+        } else {
+            Avatar.builtinAvatars.size
+        }
+        comboAvatar.selectedIndex = avatarIndex
+
+        comboAvatar.addActionListener {
+            val selectedIndex = comboAvatar.selectedIndex
+            if (selectedIndex in Avatar.builtinAvatars.indices) {
+                val otherText = tfOther.text.trim()
+                if (otherText.isNotEmpty()) {
+                    try {
+                        val pl = ParameterList(otherText)
+                        if (pl.removeParameter("avatar") != null) {
+                            tfOther.text = pl.toString()
+                        }
+                    } catch (_: Exception) {}
+                }
+            } else if (selectedIndex == Avatar.builtinAvatars.size) {
+                val otherText = tfOther.text.trim()
+                try {
+                    val pl = ParameterList(otherText)
+                    if (pl.getParameter("avatar") == null) {
+                        pl.addParameter("avatar", oldPrefs.avatar.ifEmpty { AnimationPrefs.AVATAR_DEF })
+                        tfOther.text = pl.toString()
+                    }
+                } catch (_: Exception) {
+                    if (otherText.isEmpty()) {
+                        tfOther.text = "avatar=${oldPrefs.avatar.ifEmpty { AnimationPrefs.AVATAR_DEF }}"
+                    }
+                }
+            }
+        }
+
         cbPaused.setSelected(oldPrefs.startPaused)
         cbMousepause.setSelected(oldPrefs.mousePause)
         cbStereo.setSelected(oldPrefs.stereo)
@@ -76,7 +114,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             // filter out all the explicit settings above to populate the
             // manual settings box
             val pl = ParameterList(oldPrefs.toString())
-            val paramsRemove = arrayOf(
+            val paramsRemove = mutableListOf(
                 "width",
                 "height",
                 "fps",
@@ -89,6 +127,9 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
                 "catchsound",
                 "bouncesound",
             )
+            if (isSingleAvatar) {
+                paramsRemove.add("avatar")
+            }
             for (param in paramsRemove) {
                 pl.removeParameter(param)
             }
@@ -137,6 +178,13 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_yes))
             addItem(jlGetStringResource(Res.string.gui_prefs_show_ground_no))
         }
+        val lab7 = JLabel(jlGetStringResource(Res.string.gui_juggler_avatar))
+        comboAvatar = JComboBox<String>().apply {
+            for (res in Avatar.builtinAvatarsStringResources) {
+                addItem(jlGetStringResource(res))
+            }
+            addItem(jlGetStringResource(Res.string.gui_avatar_manual))
+        }
         // checkboxes farther down
         cbPaused = JCheckBox(jlGetStringResource(Res.string.gui_start_paused))
         cbMousepause = JCheckBox(jlGetStringResource(Res.string.gui_pause_on_mouse_away))
@@ -166,6 +214,8 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             add(tfBorder)
             add(lab6)
             add(comboShowground)
+            add(lab7)
+            add(comboAvatar)
         }
         gb.setConstraints(
             lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
@@ -203,6 +253,13 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         gb.setConstraints(
             comboShowground,
             constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
+        )
+        gb.setConstraints(
+            lab7, constraints(GridBagConstraints.LINE_START, 1, 6, Insets(0, 3, 0, 0))
+        )
+        gb.setConstraints(
+            comboAvatar,
+            constraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 0, 0, 0))
         )
 
         val p2 = JPanel().apply {
@@ -326,6 +383,12 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
         } catch (_: NumberFormatException) {
             val message = jlGetStringResource(Res.string.error_number_format, "border")
             jlHandleUserException(this@AnimationPrefsDialogSwing, message)
+        }
+
+        val selectedAvatarIndex = comboAvatar.selectedIndex
+        if (selectedAvatarIndex in Avatar.builtinAvatars.indices) {
+            val selectedAvatar = Avatar.builtinAvatars[selectedAvatarIndex]
+            newjc = newjc.copy(avatar = selectedAvatar)
         }
 
         newjc = newjc.copy(

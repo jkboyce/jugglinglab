@@ -10,6 +10,7 @@ package org.jugglinglab.ui.common
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.renderer.Avatar
 import org.jugglinglab.ui.components.*
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.ParameterList
@@ -29,6 +30,11 @@ import androidx.compose.ui.input.key.*
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
+// The invariant we want to maintain:
+// Every element of AnimationPrefs should be exposed via this UI, on every
+// platform. That is, if two AnimationPrefs objects look the same in this UI
+// then they must be identical. (No "hidden preferences")
+
 @Composable
 fun AnimationPrefsControl(
     initialPrefs: AnimationPrefs,
@@ -37,12 +43,12 @@ fun AnimationPrefsControl(
     val paramsWithUi = if (jlIsDesktop) {
         listOf(
             "width", "height", "fps", "slowdown", "border",
-            "showground", "startpaused", "mousepause", "stereo",
+            "showground", "avatar", "startpaused", "mousepause", "stereo",
             "catchsound", "bouncesound"
         )
     } else {
         listOf(
-            "slowdown", "showground", "startpaused", "stereo",
+            "slowdown", "showground", "avatar", "startpaused", "stereo",
             "catchsound", "bouncesound"
         )
     }
@@ -50,7 +56,11 @@ fun AnimationPrefsControl(
     // Extra parameters not covered by UI fields
     val initialManualSettings = try {
         val pl = ParameterList(initialPrefs.toString())
-        for (param in paramsWithUi) {
+        val paramsRemove = paramsWithUi.toMutableList()
+        if (initialPrefs.avatar !in Avatar.builtinAvatars) {
+            paramsRemove.remove("avatar")
+        }
+        for (param in paramsRemove) {
             pl.removeParameter(param)
         }
         pl.toString()
@@ -65,6 +75,7 @@ fun AnimationPrefsControl(
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
     var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
     var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
+    var avatar by remember { mutableStateOf(initialPrefs.avatar) }
     var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
     var mousePause by remember { mutableStateOf(initialPrefs.mousePause) }
     var stereo by remember { mutableStateOf(initialPrefs.stereo) }
@@ -80,6 +91,7 @@ fun AnimationPrefsControl(
         slowdown = jlToStringRounded(prefs.slowdown, 2)
         border = prefs.borderPixels.toString()
         showGround = prefs.showGround
+        avatar = prefs.avatar
         startPaused = prefs.startPaused
         mousePause = prefs.mousePause
         stereo = prefs.stereo
@@ -113,7 +125,8 @@ fun AnimationPrefsControl(
                 mousePause = mousePause,
                 stereo = stereo,
                 catchSound = catchSound,
-                bounceSound = bounceSound
+                bounceSound = bounceSound,
+                avatar = avatar
             )
         } catch (e: Exception) {
             errorMessage = jlGetStringResource(Res.string.error_number_format, e.message)
@@ -216,6 +229,85 @@ fun AnimationPrefsControl(
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     stringResource(Res.string.gui_prefs_show_ground),
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+        }
+
+        // Juggler avatar dropdown
+        if ("avatar" in paramsWithUi) {
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(vertical = 4.dp)
+            ) {
+                var expanded by remember { mutableStateOf(false) }
+                val manualOptionLabel = stringResource(Res.string.gui_avatar_manual)
+                val options = Avatar.builtinAvatars.zip(Avatar.builtinAvatarsStringResources) { id, res ->
+                    id to stringResource(res)
+                } + listOf("" to manualOptionLabel)
+                val selectedText = options.find { it.first == avatar }?.second ?: manualOptionLabel
+
+                Box {
+                    OutlinedButton(
+                        onClick = { expanded = true },
+                        contentPadding = PaddingValues(horizontal = 8.dp, vertical = 0.dp),
+                        modifier = Modifier.width(110.dp).height(56.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                selectedText,
+                                style = MaterialTheme.typography.bodyMedium,
+                                maxLines = 1
+                            )
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                        options.forEach { (value, label) ->
+                            DropdownMenuItem(
+                                text = { Text(text = label) },
+                                onClick = {
+                                    if (value.isNotEmpty()) {
+                                        avatar = value
+                                        try {
+                                            val pl = ParameterList(manualSettings)
+                                            if (pl.removeParameter("avatar") != null) {
+                                                manualSettings = pl.toString()
+                                            }
+                                        } catch (_: Exception) {}
+                                    } else {
+                                        val currentAvatar = avatar
+                                        avatar = ""
+                                        try {
+                                            val pl = ParameterList(manualSettings)
+                                            if (pl.getParameter("avatar") == null) {
+                                                val valToAdd = currentAvatar.ifEmpty { AnimationPrefs.AVATAR_DEF }
+                                                pl.addParameter("avatar", valToAdd)
+                                                manualSettings = pl.toString()
+                                            }
+                                        } catch (_: Exception) {
+                                            if (manualSettings.isBlank()) {
+                                                manualSettings = "avatar=${currentAvatar.ifEmpty { AnimationPrefs.AVATAR_DEF }}"
+                                            }
+                                        }
+                                    }
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    stringResource(Res.string.gui_juggler_avatar),
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
