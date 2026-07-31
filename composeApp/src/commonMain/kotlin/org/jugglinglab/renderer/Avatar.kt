@@ -16,6 +16,7 @@ package org.jugglinglab.renderer
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.AnimationPrefs
+import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
@@ -120,12 +121,14 @@ abstract class Avatar {
             localY: Double,
             localZ: Double,
             s: Double,
-            c: Double
-        ) = JlVector(
-            bodyPos.x + localX * c - localY * s,
-            bodyPos.z + localZ,
-            bodyPos.y + localX * s + localY * c
-        )
+            c: Double,
+            result: JlVector
+        ): JlVector {
+            result.x = bodyPos.x + localX * c - localY * s
+            result.y = bodyPos.z + localZ
+            result.z = bodyPos.y + localX * s + localY * c
+            return result
+        }
 
         // Head polygon tables, precomputed once and shared
         internal const val POLYSIDES = 40
@@ -147,14 +150,21 @@ abstract class Avatar {
             val headRadiusH = headHeight / 2.0
             val headRadiusW = headWidth / 2.0
 
-            val headPoints = List(POLYSIDES) {
-                val localX = headRadiusW * headCos[it]
-                val localZ = headCenterH + headRadiusH * headSin[it]
-                bodyPoint(pos, localX, headY, localZ, s, c)
-            }
-
             val obj = pool.next()
-            obj.set3DCoordinates(DrawObject2D.Type.POLY, juggler, headPoints, isClosed = true)
+            obj.prepare3DCoordinates(
+                type = DrawObject2D.Type.POLY,
+                number = juggler,
+                pointsCount = POLYSIDES,
+                isClosed = true
+            )
+            for (i in 0..<POLYSIDES) {
+                val localX = headRadiusW * headCos[i]
+                val localZ = headCenterH + headRadiusH * headSin[i]
+                bodyPoint(pos, localX, headY, localZ, s, c, obj.coords3D[i])
+            }
+            if (Constants.DEBUG_DRAWING) {
+                obj.label = "Juggler $juggler head"
+            }
         }
 
         internal fun addArmLines(
@@ -189,6 +199,7 @@ abstract class Avatar {
 
             addSingleArmLines(
                 juggler = juggler,
+                label = if (Constants.DEBUG_DRAWING) "left" else null,
                 shoulder = leftShoulder,
                 hand = lefthand,
                 upperArmLength = upperArmLength,
@@ -202,6 +213,7 @@ abstract class Avatar {
 
             addSingleArmLines(
                 juggler = juggler,
+                label = if (Constants.DEBUG_DRAWING) "right" else null,
                 shoulder = rightShoulder,
                 hand = righthand,
                 upperArmLength = upperArmLength,
@@ -217,6 +229,7 @@ abstract class Avatar {
         @Suppress("UnnecessaryVariable")
         internal fun addSingleArmLines(
             juggler: Int,
+            label: String? = null,
             shoulder: JlVector,
             hand: JlVector,
             upperArmLength: Double,
@@ -256,15 +269,20 @@ abstract class Avatar {
                 obj1.set3DCoordinates(
                     DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(upperStart, upperEnd)
+                    upperStart, upperEnd
                 )
 
                 val obj2 = pool.next()
                 obj2.set3DCoordinates(
                     DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(lowerStart, lowerEnd)
+                    lowerStart, lowerEnd
                 )
+
+                if (Constants.DEBUG_DRAWING) {
+                    obj1.label = "Juggler $juggler $label upper arm"
+                    obj2.label = "Juggler $juggler $label forearm"
+                }
             } else {
                 val upperStart = interpolate(shoulder, elbowPos, upperGapShoulder, totalUpper)
                 val upperEnd = interpolate(shoulder, elbowPos, upperGapShoulder + upperArmLength, totalUpper)
@@ -275,15 +293,20 @@ abstract class Avatar {
                 obj1.set3DCoordinates(
                     DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(upperStart, upperEnd)
+                    upperStart, upperEnd
                 )
 
                 val obj2 = pool.next()
                 obj2.set3DCoordinates(
                     DrawObject2D.Type.LINE,
                     juggler,
-                    listOf(lowerStart, lowerEnd)
+                    lowerStart, lowerEnd
                 )
+
+                if (Constants.DEBUG_DRAWING) {
+                    obj1.label = "Juggler $juggler $label upper arm"
+                    obj2.label = "Juggler $juggler $label forearm"
+                }
             }
         }
 

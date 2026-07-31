@@ -15,8 +15,8 @@
 
 package org.jugglinglab.renderer
 
-import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Path
+import org.jugglinglab.util.Coordinate
+import org.jugglinglab.util.jlToStringRounded
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -31,12 +31,17 @@ class DrawObject2D {
     var number: Int = 0 // path or juggler number (ground lines use 0)
     var isClosed: Boolean = true
     var numPoints: Int = 0
+    var sequenceNumber: Int = 0
+    var label: String? = null
 
     // Global 3D coordinates (set before projection)
     val coords3D: MutableList<JlVector> = mutableListOf()
 
     // Projected screen coordinates (x, y = pixels; z = depth for sorting)
     val coords2D: MutableList<JlVector> = mutableListOf()
+
+    // Cached plane normal, used for polygons
+    val planeNormal: JlVector = JlVector()
 
     var bbLeft: Float = 0f
     var bbTop: Float = 0f
@@ -45,9 +50,26 @@ class DrawObject2D {
     var covering: MutableList<DrawObject2D> = mutableListOf()
     var drawn: Boolean = false
 
-    private val tempv: JlVector = JlVector()
-    private val fillPath: Path = Path()
-    private val strokePath: Path = Path()
+    private fun fmt(d: Double): String = jlToStringRounded(d, 1)
+    private fun fmtF(f: Float): String = jlToStringRounded(f.toDouble(), 1)
+
+    fun coords3DToString(): String {
+        return (0..<numPoints).joinToString(", ") { i ->
+            "(${fmt(coords3D[i].x)}, ${fmt(coords3D[i].y)}, ${fmt(coords3D[i].z)})"
+        }
+    }
+
+    fun coords2DToString(): String {
+        return (0..<numPoints).joinToString(", ") { i ->
+            "(${fmt(coords2D[i].x)}, ${fmt(coords2D[i].y)}, z=${fmt(coords2D[i].z)})"
+        }
+    }
+
+    fun bounds2DToString(): String {
+        return "[left=${fmtF(bbLeft)}, right=${fmtF(bbRight)}, top=${fmtF(bbTop)}, bottom=${
+            fmtF(bbBottom)
+        }]"
+    }
 
     fun ensureCapacity(points: Int) {
         while (coords3D.size < points) {
@@ -56,19 +78,53 @@ class DrawObject2D {
         }
     }
 
-    // Set 3D global coordinates without allocating memory if capacity exists
+    // Prepare 3D coordinate buffers without allocating memory if capacity exists
+    fun prepare3DCoordinates(
+        type: Type,
+        number: Int,
+        pointsCount: Int,
+        isClosed: Boolean = true
+    ) {
+        this.type = type
+        this.number = number
+        this.isClosed = isClosed
+        this.numPoints = pointsCount
+        ensureCapacity(numPoints)
+    }
+
+    // Set 3D global coordinate for 1 point from a Coordinate (e.g. prop)
+    fun set3DCoordinates(
+        type: Type,
+        number: Int,
+        coord: Coordinate,
+        isClosed: Boolean = true
+    ) {
+        prepare3DCoordinates(type, number, 1, isClosed)
+        JlVector.fromCoordinate(coord, coords3D[0])
+    }
+
+    // Set 3D global coordinates for 2 points (e.g. line segments)
+    fun set3DCoordinates(
+        type: Type,
+        number: Int,
+        p1: JlVector,
+        p2: JlVector,
+        isClosed: Boolean = true
+    ) {
+        prepare3DCoordinates(type, number, 2, isClosed)
+        coords3D[0].set(p1)
+        coords3D[1].set(p2)
+    }
+
+    // Set 3D global coordinates for arbitrary list of points; used only for
+    // testing
     fun set3DCoordinates(
         type: Type,
         number: Int,
         points: List<JlVector>,
         isClosed: Boolean = true
     ) {
-        this.type = type
-        this.number = number
-        this.isClosed = isClosed
-        this.numPoints = points.size
-
-        ensureCapacity(numPoints)
+        prepare3DCoordinates(type, number, points.size, isClosed)
         for (i in 0..<numPoints) {
             coords3D[i].set(points[i])
         }
@@ -105,104 +161,122 @@ class DrawObject2D {
             bbRight = xmax.toFloat()
             bbBottom = ymax.toFloat()
         }
-    }
 
-    fun draw(ctx: DrawObjectContext) {
-        when (type) {
-            Type.PROP -> {
-                // Props are drawn separately by Renderer
-            }
-
-            Type.POLY -> {
-                if (numPoints < 3) return
-
-                fillPath.rewind()
-                fillPath.moveTo(coords2D[0].x.toFloat(), coords2D[0].y.toFloat())
-                for (i in 1..<numPoints) {
-                    fillPath.lineTo(coords2D[i].x.toFloat(), coords2D[i].y.toFloat())
-                }
-                fillPath.close()
-                ctx.fill(fillPath)
-
-                if (isClosed) {
-                    ctx.stroke(fillPath)
-                } else {
-                    strokePath.rewind()
-                    strokePath.moveTo(coords2D[0].x.toFloat(), coords2D[0].y.toFloat())
-                    for (i in 1..<numPoints) {
-                        strokePath.lineTo(coords2D[i].x.toFloat(), coords2D[i].y.toFloat())
-                    }
-                    ctx.stroke(strokePath)
-                }
-            }
-
-            Type.LINE -> {
-                if (numPoints >= 2) {
-                    val p1 = Offset(coords2D[0].x.toFloat(), coords2D[0].y.toFloat())
-                    val p2 = Offset(coords2D[1].x.toFloat(), coords2D[1].y.toFloat())
-                    ctx.segment(p1, p2)
-                }
-            }
+        if (type == Type.POLY) {
+            polyPlaneNormal(planeNormal)
         }
     }
 
-    fun isCovering(obj: DrawObject2D): Boolean {
+    // Determine covering relationship between `this` and `obj`. Return values:
+    //  1: `this` is in front of `obj`
+    // -1: `obj` is in front of `this`
+    //  0: Neither covers the other
+    //
+    // This function is skew-symmetric, i.e.:
+    // a.compareCovering(b) == -b.compareCovering(a)
+
+    fun compareCovering(obj: DrawObject2D): Int {
         // Bounding box overlap check; (x,y) = (0,0) is top left edge
         if (bbRight <= obj.bbLeft || bbLeft >= obj.bbRight ||
             bbBottom <= obj.bbTop || bbTop >= obj.bbBottom
         ) {
-            return false
+            return 0
         }
 
         return when (type) {
             Type.PROP -> when (obj.type) {
-                Type.PROP -> (coords2D[0].z < obj.coords2D[0].z)
+                Type.PROP -> when {
+                    coords2D[0].z < obj.coords2D[0].z -> 1
+                    coords2D[0].z > obj.coords2D[0].z -> -1
+                    else -> 0
+                }
+
                 Type.POLY -> {
-                    obj.polyPlaneNormal(tempv)
-                    if (tempv.z == 0.0) {
-                        false
+                    val normal = obj.planeNormal
+                    if (normal.z == 0.0) {
+                        0
                     } else {
                         val base = obj.coords2D[0]
-                        val z = base.z - (tempv.x * (coords2D[0].x - base.x) +
-                                tempv.y * (coords2D[0].y - base.y)) / tempv.z
-                        (coords2D[0].z < z)
+                        val z = base.z - (normal.x * (coords2D[0].x - base.x) +
+                                normal.y * (coords2D[0].y - base.y)) / normal.z
+                        when {
+                            coords2D[0].z < z -> 1
+                            coords2D[0].z > z -> -1
+                            else -> 0
+                        }
                     }
                 }
-                Type.LINE -> (isPropCoveringLine(this, obj) == 1)
+
+                Type.LINE -> isPropCoveringLine(this, obj)
             }
 
             Type.POLY -> when (obj.type) {
                 Type.PROP -> {
-                    polyPlaneNormal(tempv)
-                    if (tempv.z == 0.0) {
-                        false
+                    val normal = planeNormal
+                    if (normal.z == 0.0) {
+                        0
                     } else {
                         val base = coords2D[0]
-                        val z = base.z - (tempv.x * (obj.coords2D[0].x - base.x) +
-                                tempv.y * (obj.coords2D[0].y - base.y)) / tempv.z
-                        (z < obj.coords2D[0].z)
+                        val z = base.z - (normal.x * (obj.coords2D[0].x - base.x) +
+                                normal.y * (obj.coords2D[0].y - base.y)) / normal.z
+                        when {
+                            z < obj.coords2D[0].z -> 1
+                            z > obj.coords2D[0].z -> -1
+                            else -> 0
+                        }
                     }
                 }
+
                 Type.POLY -> {
-                    var sumA = 0.0
-                    for (i in 0..<numPoints) sumA += coords2D[i].z
-                    val meanA = sumA / numPoints
+                    for (i in 0..<numPoints) {
+                        val pt = coords2D[i]
+                        if (polyContainsPoint(obj, pt.x, pt.y)) {
+                            val depthObj = obj.computePolyDepthAt(pt.x, pt.y)
+                            val cmp = when {
+                                pt.z < depthObj - EPSILON -> 1
+                                pt.z > depthObj + EPSILON -> -1
+                                else -> 0
+                            }
+                            if (cmp != 0) return cmp
+                        }
+                    }
 
-                    var sumB = 0.0
-                    for (i in 0..<obj.numPoints) sumB += obj.coords2D[i].z
-                    val meanB = sumB / obj.numPoints
+                    for (i in 0..<obj.numPoints) {
+                        val pt = obj.coords2D[i]
+                        if (polyContainsPoint(this, pt.x, pt.y)) {
+                            val depthThis = computePolyDepthAt(pt.x, pt.y)
+                            val cmp = when {
+                                depthThis < pt.z - EPSILON -> 1
+                                depthThis > pt.z + EPSILON -> -1
+                                else -> 0
+                            }
+                            if (cmp != 0) return cmp
+                        }
+                    }
 
-                    (meanA < meanB)
+                    0
                 }
-                Type.LINE -> (isPolyCoveringLine(this, obj) == 1)
+
+                Type.LINE -> isPolyCoveringLine(this, obj)
             }
 
             Type.LINE -> when (obj.type) {
-                Type.PROP -> (isPropCoveringLine(obj, this) == -1)
-                Type.POLY -> (isPolyCoveringLine(obj, this) == -1)
-                Type.LINE -> false
+                Type.PROP -> -isPropCoveringLine(obj, this)
+                Type.POLY -> -isPolyCoveringLine(obj, this)
+                Type.LINE -> 0
             }
         }
+    }
+
+    fun isCovering(obj: DrawObject2D): Boolean = compareCovering(obj) > 0
+
+    private fun computePolyDepthAt(x: Double, y: Double): Double {
+        val normal = planeNormal
+        if (kotlin.math.abs(normal.z) < 1e-4) {
+            return coords2D[0].z
+        }
+        val base = coords2D[0]
+        return base.z - (normal.x * (x - base.x) + normal.y * (y - base.y)) / normal.z
     }
 
     private fun polyPlaneNormal(result: JlVector) {
@@ -233,7 +307,11 @@ class DrawObject2D {
         val lenSq = dx * dx + dy * dy
 
         // Find parameter t of closest point on 2D line segment
-        val t = if (lenSq == 0.0) 0.0 else (((px - x1) * dx + (py - y1) * dy) / lenSq).coerceIn(0.0, 1.0)
+        val t = if (lenSq == 0.0) {
+            0.0
+        } else {
+            (((px - x1) * dx + (py - y1) * dy) / lenSq).coerceIn(0.0, 1.0)
+        }
 
         val closestX = x1 + t * dx
         val closestY = y1 + t * dy
@@ -256,8 +334,9 @@ class DrawObject2D {
     }
 
     private fun isPolyCoveringLine(poly: DrawObject2D, line: DrawObject2D): Int {
-        poly.polyPlaneNormal(tempv)
-        if (tempv.z == 0.0) return 0
+        if (line.numPoints < 2) return 0
+        val normal = poly.planeNormal
+        if (normal.z == 0.0) return 0
         val base = poly.coords2D[0]
         val x0 = line.coords2D[0].x
         val y0 = line.coords2D[0].y
@@ -272,16 +351,16 @@ class DrawObject2D {
             val t = i.toDouble() / SILHOUETTE_SAMPLES
             val x = x0 + dx * t
             val y = y0 + dy * t
-            if (!insidePoly(poly, x, y)) continue
-            val zb = base.z - (tempv.x * (x - base.x) + tempv.y * (y - base.y)) / tempv.z
+            if (!polyContainsPoint(poly, x, y)) continue
+            val zb = base.z - (normal.x * (x - base.x) + normal.y * (y - base.y)) / normal.z
             margin += (z0 + dz * t) - zb
             insideCount++
         }
         if (insideCount == 0) return 0
-        return if (margin < 0.0) -1 else 1
+        return if (margin > EPSILON) 1 else -1
     }
 
-    private fun insidePoly(poly: DrawObject2D, x: Double, y: Double): Boolean {
+    private fun polyContainsPoint(poly: DrawObject2D, x: Double, y: Double): Boolean {
         var odd = false
         var j = poly.numPoints - 1
         for (i in 0..<poly.numPoints) {
@@ -299,6 +378,7 @@ class DrawObject2D {
 
     companion object {
         private const val SILHOUETTE_SAMPLES = 16
+        private const val EPSILON = 0.01
 
         fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {
             val ax = v2.x - v1.x
@@ -317,7 +397,8 @@ class DrawObject2D {
 
 // Object pool to reuse DrawObject2D objects.
 
-class DrawObjectPool(val objects: MutableList<DrawObject2D> = mutableListOf()) {
+class DrawObjectPool(val objects: MutableList<DrawObject2D> = mutableListOf()) :
+    Iterable<DrawObject2D> {
     private var index = 0
 
     fun reset() {
@@ -333,12 +414,13 @@ class DrawObjectPool(val objects: MutableList<DrawObject2D> = mutableListOf()) {
 
     val activeCount: Int
         get() = index
+
+    override fun iterator(): Iterator<DrawObject2D> = object : Iterator<DrawObject2D> {
+        private var cur = 0
+        override fun hasNext(): Boolean = cur < activeCount
+        override fun next(): DrawObject2D {
+            if (!hasNext()) throw NoSuchElementException("Index $cur out of active bounds ($activeCount)")
+            return objects[cur++]
+        }
+    }
 }
-
-// Helper class for painting.
-
-class DrawObjectContext(
-    val fill: (Path) -> Unit,
-    val stroke: (Path) -> Unit,
-    val segment: (Offset, Offset) -> Unit
-)

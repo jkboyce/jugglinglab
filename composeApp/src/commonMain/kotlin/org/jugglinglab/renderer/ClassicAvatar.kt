@@ -8,6 +8,7 @@
 
 package org.jugglinglab.renderer
 
+import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.toRadians
@@ -32,18 +33,21 @@ class ClassicAvatar : Avatar() {
             2 * HEAD_HW, HEAD_Y, pool)
 
         // 2. Torso polygon
-        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
-        val rightShoulder = bodyPoint(pos, SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
-        val rightWaist = bodyPoint(pos, WAIST_HW, BODY_Y, WAIST_H, s, c)
-        val leftWaist = bodyPoint(pos, -WAIST_HW, BODY_Y, WAIST_H, s, c)
-
         val torsoObj = pool.next()
-        torsoObj.set3DCoordinates(
-            DrawObject2D.Type.POLY,
-            juggler,
-            listOf(leftShoulder, rightShoulder, rightWaist, leftWaist),
+        torsoObj.prepare3DCoordinates(
+            type = DrawObject2D.Type.POLY,
+            number = juggler,
+            pointsCount = 4,
             isClosed = true
         )
+        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c, torsoObj.coords3D[0])
+        val rightShoulder = bodyPoint(pos, SHOULDER_HW, BODY_Y, SHOULDER_H, s, c, torsoObj.coords3D[1])
+        bodyPoint(pos, WAIST_HW, BODY_Y, WAIST_H, s, c, torsoObj.coords3D[2])
+        bodyPoint(pos, -WAIST_HW, BODY_Y, WAIST_H, s, c, torsoObj.coords3D[3])
+
+        if (Constants.DEBUG_DRAWING) {
+            torsoObj.label = "Juggler $juggler torso"
+        }
 
         // 3. Arm lines
         addArmLines(

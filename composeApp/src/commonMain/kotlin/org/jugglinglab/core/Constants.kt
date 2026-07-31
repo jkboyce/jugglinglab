@@ -36,6 +36,7 @@ object Constants {
     const val DEBUG_JML_PARSING: Boolean = false
     const val DEBUG_PATTERN_CREATION: Boolean = false
     const val DEBUG_LAYOUT: Boolean = false
+    const val DEBUG_DRAWING: Boolean = false
     const val DEBUG_TRANSITIONS: Boolean = false
     const val DEBUG_GENERATOR_SUMMARY: Boolean = false
     const val DEBUG_GENERATOR_DETAILED: Boolean = false

@@ -9,6 +9,7 @@
 
 package org.jugglinglab.renderer
 
+import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.util.Coordinate
 import org.jugglinglab.util.toRadians
@@ -34,43 +35,54 @@ class FemaleAvatar : Avatar() {
         addHeadPolygon(juggler, pos, s, c, neckTop, HEAD_H, 2 * HEAD_HW, HEAD_Y, pool)
 
         // 2. Ponytail polygon
-        val polyPoints = PONYTAIL_LOCAL_POINTS.map { pt ->
-            bodyPoint(pos, pt.x, pt.y, pt.z, s, c)
-        }
-
         val ponyObj = pool.next()
-        ponyObj.set3DCoordinates(
-            DrawObject2D.Type.POLY,
-            juggler,
-            polyPoints,
+        ponyObj.prepare3DCoordinates(
+            type = DrawObject2D.Type.POLY,
+            number = juggler,
+            pointsCount = PONYTAIL_LOCAL_POINTS.size,
             isClosed = true
         )
+        for (i in PONYTAIL_LOCAL_POINTS.indices) {
+            val pt = PONYTAIL_LOCAL_POINTS[i]
+            bodyPoint(pos, pt.x, pt.y, pt.z, s, c, ponyObj.coords3D[i])
+        }
+        if (Constants.DEBUG_DRAWING) {
+            ponyObj.label = "Juggler $juggler ponytail"
+        }
 
         // 3. Torso polygon (unclosed at waist edge)
-        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
-        val rightShoulder = bodyPoint(pos, SHOULDER_HW, BODY_Y, SHOULDER_H, s, c)
-        val rightDressWaist = bodyPoint(pos, DRESS_WAIST_HW, BODY_Y, DRESS_WAIST_H, s, c)
-        val leftDressWaist = bodyPoint(pos, -DRESS_WAIST_HW, BODY_Y, DRESS_WAIST_H, s, c)
-
         val torsoObj = pool.next()
-        torsoObj.set3DCoordinates(
-            DrawObject2D.Type.POLY,
-            juggler,
-            listOf(rightDressWaist, rightShoulder, leftShoulder, leftDressWaist),
+        torsoObj.prepare3DCoordinates(
+            type = DrawObject2D.Type.POLY,
+            number = juggler,
+            pointsCount = 4,
             isClosed = false
         )
+        val rightDressWaist = bodyPoint(pos, DRESS_WAIST_HW, BODY_Y, DRESS_WAIST_H, s, c, torsoObj.coords3D[0])
+        val rightShoulder = bodyPoint(pos, SHOULDER_HW, BODY_Y, SHOULDER_H, s, c, torsoObj.coords3D[1])
+        val leftShoulder = bodyPoint(pos, -SHOULDER_HW, BODY_Y, SHOULDER_H, s, c, torsoObj.coords3D[2])
+        val leftDressWaist = bodyPoint(pos, -DRESS_WAIST_HW, BODY_Y, DRESS_WAIST_H, s, c, torsoObj.coords3D[3])
+
+        if (Constants.DEBUG_DRAWING) {
+            torsoObj.label = "Juggler $juggler torso"
+        }
 
         // 4. Skirt polygon (unclosed at waist edge)
-        val leftHem = bodyPoint(pos, -HEM_HW, BODY_Y, HEM_H, s, c)
-        val rightHem = bodyPoint(pos, HEM_HW, BODY_Y, HEM_H, s, c)
-
         val skirtObj = pool.next()
-        skirtObj.set3DCoordinates(
-            DrawObject2D.Type.POLY,
-            juggler,
-            listOf(rightDressWaist, rightHem, leftHem, leftDressWaist),
+        skirtObj.prepare3DCoordinates(
+            type = DrawObject2D.Type.POLY,
+            number = juggler,
+            pointsCount = 4,
             isClosed = false
         )
+        skirtObj.coords3D[0].set(rightDressWaist)
+        bodyPoint(pos, HEM_HW, BODY_Y, HEM_H, s, c, skirtObj.coords3D[1])
+        bodyPoint(pos, -HEM_HW, BODY_Y, HEM_H, s, c, skirtObj.coords3D[2])
+        skirtObj.coords3D[3].set(leftDressWaist)
+
+        if (Constants.DEBUG_DRAWING) {
+            skirtObj.label = "Juggler $juggler skirt"
+        }
 
         // 5. Arm lines
         addArmLines(

@@ -325,7 +325,8 @@ fun AnimationView(
                                 state.time,
                                 state.propForPath,
                                 state.prefs.hideJugglers,
-                                this
+                                this,
+                                isPaused = state.isPaused
                             )
                             drawEventOverlays(layout, 0, this)
                             drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)
@@ -344,7 +345,8 @@ fun AnimationView(
                                 state.time,
                                 state.propForPath,
                                 state.prefs.hideJugglers,
-                                this
+                                this,
+                                isPaused = state.isPaused
                             )
                             drawEventOverlays(layout, 1, this)
                             drawPositionOverlays(state, layout, 1, renderer2, this, textMeasurer)
@@ -362,7 +364,8 @@ fun AnimationView(
                         state.time,
                         state.propForPath,
                         state.prefs.hideJugglers,
-                        this
+                        this,
+                        isPaused = state.isPaused
                     )
                     drawEventOverlays(layout, 0, this)
                     drawPositionOverlays(state, layout, 0, renderer1, this, textMeasurer)

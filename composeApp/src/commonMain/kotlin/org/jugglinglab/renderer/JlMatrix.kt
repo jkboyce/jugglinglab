@@ -49,19 +49,30 @@ class JlMatrix {
     }
 
     fun transform(n: JlMatrix) {
-        val m = this.clone
-        m00 = n.m00 * m.m00 + n.m01 * m.m10 + n.m02 * m.m20
-        m01 = n.m00 * m.m01 + n.m01 * m.m11 + n.m02 * m.m21
-        m02 = n.m00 * m.m02 + n.m01 * m.m12 + n.m02 * m.m22
-        m03 = n.m00 * m.m03 + n.m01 * m.m13 + n.m02 * m.m23 + n.m03
-        m10 = n.m10 * m.m00 + n.m11 * m.m10 + n.m12 * m.m20
-        m11 = n.m10 * m.m01 + n.m11 * m.m11 + n.m12 * m.m21
-        m12 = n.m10 * m.m02 + n.m11 * m.m12 + n.m12 * m.m22
-        m13 = n.m10 * m.m03 + n.m11 * m.m13 + n.m12 * m.m23 + n.m13
-        m20 = n.m20 * m.m00 + n.m21 * m.m10 + n.m22 * m.m20
-        m21 = n.m20 * m.m01 + n.m21 * m.m11 + n.m22 * m.m21
-        m22 = n.m20 * m.m02 + n.m21 * m.m12 + n.m22 * m.m22
-        m23 = n.m20 * m.m03 + n.m21 * m.m13 + n.m22 * m.m23 + n.m23
+        val v00 = m00
+        val v01 = m01
+        val v02 = m02
+        val v03 = m03
+        val v10 = m10
+        val v11 = m11
+        val v12 = m12
+        val v13 = m13
+        val v20 = m20
+        val v21 = m21
+        val v22 = m22
+        val v23 = m23
+        m00 = n.m00 * v00 + n.m01 * v10 + n.m02 * v20
+        m01 = n.m00 * v01 + n.m01 * v11 + n.m02 * v21
+        m02 = n.m00 * v02 + n.m01 * v12 + n.m02 * v22
+        m03 = n.m00 * v03 + n.m01 * v13 + n.m02 * v23 + n.m03
+        m10 = n.m10 * v00 + n.m11 * v10 + n.m12 * v20
+        m11 = n.m10 * v01 + n.m11 * v11 + n.m12 * v21
+        m12 = n.m10 * v02 + n.m11 * v12 + n.m12 * v22
+        m13 = n.m10 * v03 + n.m11 * v13 + n.m12 * v23 + n.m13
+        m20 = n.m20 * v00 + n.m21 * v10 + n.m22 * v20
+        m21 = n.m20 * v01 + n.m21 * v11 + n.m22 * v21
+        m22 = n.m20 * v02 + n.m21 * v12 + n.m22 * v22
+        m23 = n.m20 * v03 + n.m21 * v13 + n.m22 * v23 + n.m23
     }
 
     val clone: JlMatrix
