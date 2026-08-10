@@ -13,7 +13,7 @@ import kotlin.test.assertEquals
 
 class JlFuncTest {
     @Test
-    fun testJlSanitizeFilenameIllegalChars() {
+    fun `sanitize forbidden characters in filenames`() {
         // <0|0> title should sanitize forbidden characters <, >, |
         assertEquals("_0_0_.jml", jlSanitizeFilename("<0|0>.jml"))
         assertEquals("_0_0_.gif", jlSanitizeFilename("<0|0>.gif"))

@@ -16,7 +16,6 @@
 package org.jugglinglab.renderer
 
 import org.jugglinglab.util.Coordinate
-import org.jugglinglab.util.jlToStringRounded
 import kotlin.math.max
 import kotlin.math.roundToInt
 
@@ -43,40 +42,15 @@ class DrawObject2D {
     // Cached plane normal, used for polygons
     val planeNormal: JlVector = JlVector()
 
+    // Bounding box in screen coordinates
     var bbLeft: Float = 0f
     var bbTop: Float = 0f
     var bbRight: Float = 0f
     var bbBottom: Float = 0f
+
+    // For coverage calculations
     var covering: MutableList<DrawObject2D> = mutableListOf()
     var drawn: Boolean = false
-
-    private fun fmt(d: Double): String = jlToStringRounded(d, 1)
-    private fun fmtF(f: Float): String = jlToStringRounded(f.toDouble(), 1)
-
-    fun coords3DToString(): String {
-        return (0..<numPoints).joinToString(", ") { i ->
-            "(${fmt(coords3D[i].x)}, ${fmt(coords3D[i].y)}, ${fmt(coords3D[i].z)})"
-        }
-    }
-
-    fun coords2DToString(): String {
-        return (0..<numPoints).joinToString(", ") { i ->
-            "(${fmt(coords2D[i].x)}, ${fmt(coords2D[i].y)}, z=${fmt(coords2D[i].z)})"
-        }
-    }
-
-    fun bounds2DToString(): String {
-        return "[left=${fmtF(bbLeft)}, right=${fmtF(bbRight)}, top=${fmtF(bbTop)}, bottom=${
-            fmtF(bbBottom)
-        }]"
-    }
-
-    fun ensureCapacity(points: Int) {
-        while (coords3D.size < points) {
-            coords3D.add(JlVector())
-            coords2D.add(JlVector())
-        }
-    }
 
     // Prepare 3D coordinate buffers without allocating memory if capacity exists
     fun prepare3DCoordinates(
@@ -92,7 +66,14 @@ class DrawObject2D {
         ensureCapacity(numPoints)
     }
 
-    // Set 3D global coordinate for 1 point from a Coordinate (e.g. prop)
+    fun ensureCapacity(points: Int) {
+        while (coords3D.size < points) {
+            coords3D.add(JlVector())
+            coords2D.add(JlVector())
+        }
+    }
+
+    // Set 3D global coordinate for 1 point from a Coordinate (e.g. a prop)
     fun set3DCoordinates(
         type: Type,
         number: Int,
@@ -103,7 +84,7 @@ class DrawObject2D {
         JlVector.fromCoordinate(coord, coords3D[0])
     }
 
-    // Set 3D global coordinates for 2 points (e.g. line segments)
+    // Set 3D global coordinates for 2 points (e.g. a line segment)
     fun set3DCoordinates(
         type: Type,
         number: Int,
@@ -130,7 +111,7 @@ class DrawObject2D {
         }
     }
 
-    // Screen bounding box over coords2D
+    // Find bounding box in screen coordinates
     fun computeBounds() {
         if (numPoints == 0) return
 
@@ -163,6 +144,8 @@ class DrawObject2D {
         }
 
         if (type == Type.POLY) {
+            // unrelated to bounding box but this is a convenient place
+            // to recalculate when coords change
             polyPlaneNormal(planeNormal)
         }
     }
@@ -185,78 +168,14 @@ class DrawObject2D {
 
         return when (type) {
             Type.PROP -> when (obj.type) {
-                Type.PROP -> when {
-                    coords2D[0].z < obj.coords2D[0].z -> 1
-                    coords2D[0].z > obj.coords2D[0].z -> -1
-                    else -> 0
-                }
-
-                Type.POLY -> {
-                    val normal = obj.planeNormal
-                    if (normal.z == 0.0) {
-                        0
-                    } else {
-                        val base = obj.coords2D[0]
-                        val z = base.z - (normal.x * (coords2D[0].x - base.x) +
-                                normal.y * (coords2D[0].y - base.y)) / normal.z
-                        when {
-                            coords2D[0].z < z -> 1
-                            coords2D[0].z > z -> -1
-                            else -> 0
-                        }
-                    }
-                }
-
+                Type.PROP -> isPropCoveringProp(this, obj)
+                Type.POLY -> isPropCoveringPoly(this, obj)
                 Type.LINE -> isPropCoveringLine(this, obj)
             }
 
             Type.POLY -> when (obj.type) {
-                Type.PROP -> {
-                    val normal = planeNormal
-                    if (normal.z == 0.0) {
-                        0
-                    } else {
-                        val base = coords2D[0]
-                        val z = base.z - (normal.x * (obj.coords2D[0].x - base.x) +
-                                normal.y * (obj.coords2D[0].y - base.y)) / normal.z
-                        when {
-                            z < obj.coords2D[0].z -> 1
-                            z > obj.coords2D[0].z -> -1
-                            else -> 0
-                        }
-                    }
-                }
-
-                Type.POLY -> {
-                    for (i in 0..<numPoints) {
-                        val pt = coords2D[i]
-                        if (polyContainsPoint(obj, pt.x, pt.y)) {
-                            val depthObj = obj.computePolyDepthAt(pt.x, pt.y)
-                            val cmp = when {
-                                pt.z < depthObj - EPSILON -> 1
-                                pt.z > depthObj + EPSILON -> -1
-                                else -> 0
-                            }
-                            if (cmp != 0) return cmp
-                        }
-                    }
-
-                    for (i in 0..<obj.numPoints) {
-                        val pt = obj.coords2D[i]
-                        if (polyContainsPoint(this, pt.x, pt.y)) {
-                            val depthThis = computePolyDepthAt(pt.x, pt.y)
-                            val cmp = when {
-                                depthThis < pt.z - EPSILON -> 1
-                                depthThis > pt.z + EPSILON -> -1
-                                else -> 0
-                            }
-                            if (cmp != 0) return cmp
-                        }
-                    }
-
-                    0
-                }
-
+                Type.PROP -> -isPropCoveringPoly(obj, this)
+                Type.POLY -> isPolyCoveringPoly(this, obj)
                 Type.LINE -> isPolyCoveringLine(this, obj)
             }
 
@@ -270,7 +189,7 @@ class DrawObject2D {
 
     fun isCovering(obj: DrawObject2D): Boolean = compareCovering(obj) > 0
 
-    private fun computePolyDepthAt(x: Double, y: Double): Double {
+    private fun polyDepthAtPoint(x: Double, y: Double): Double {
         val normal = planeNormal
         if (kotlin.math.abs(normal.z) < 1e-4) {
             return coords2D[0].z
@@ -287,100 +206,158 @@ class DrawObject2D {
         vectorProduct(coords2D[0], coords2D[1], coords2D[2], result)
     }
 
-    private fun isPropCoveringLine(prop: DrawObject2D, line: DrawObject2D): Int {
-        if (line.numPoints < 2 || prop.numPoints < 1) return 0
-
-        val px = prop.coords2D[0].x
-        val py = prop.coords2D[0].y
-        val pz = prop.coords2D[0].z
-
-        val x1 = line.coords2D[0].x
-        val y1 = line.coords2D[0].y
-        val z1 = line.coords2D[0].z
-
-        val x2 = line.coords2D[1].x
-        val y2 = line.coords2D[1].y
-        val z2 = line.coords2D[1].z
-
-        val dx = x2 - x1
-        val dy = y2 - y1
-        val lenSq = dx * dx + dy * dy
-
-        // Find parameter t of closest point on 2D line segment
-        val t = if (lenSq == 0.0) {
-            0.0
-        } else {
-            (((px - x1) * dx + (py - y1) * dy) / lenSq).coerceIn(0.0, 1.0)
-        }
-
-        val closestX = x1 + t * dx
-        val closestY = y1 + t * dy
-
-        // Check if closest point falls inside prop bounding box
-        if (closestX < prop.bbLeft || closestX > prop.bbRight ||
-            closestY < prop.bbTop || closestY > prop.bbBottom
-        ) {
-            return 0
-        }
-
-        // Interpolated line depth at t
-        val lineZ = z1 + t * (z2 - z1)
-
-        return when {
-            pz < lineZ -> 1   // prop closer (smaller z) -> prop covers line
-            pz > lineZ -> -1   // line closer (smaller z) -> line covers prop
-            else -> 0
-        }
-    }
-
-    private fun isPolyCoveringLine(poly: DrawObject2D, line: DrawObject2D): Int {
-        if (line.numPoints < 2) return 0
-        val normal = poly.planeNormal
-        if (normal.z == 0.0) return 0
-        val base = poly.coords2D[0]
-        val x0 = line.coords2D[0].x
-        val y0 = line.coords2D[0].y
-        val z0 = line.coords2D[0].z
-        val dx = line.coords2D[1].x - x0
-        val dy = line.coords2D[1].y - y0
-        val dz = line.coords2D[1].z - z0
-
-        var insideCount = 0
-        var margin = 0.0
-        for (i in 0..SILHOUETTE_SAMPLES) {
-            val t = i.toDouble() / SILHOUETTE_SAMPLES
-            val x = x0 + dx * t
-            val y = y0 + dy * t
-            if (!polyContainsPoint(poly, x, y)) continue
-            val zb = base.z - (normal.x * (x - base.x) + normal.y * (y - base.y)) / normal.z
-            margin += (z0 + dz * t) - zb
-            insideCount++
-        }
-        if (insideCount == 0) return 0
-        return if (margin > EPSILON) 1 else -1
-    }
-
-    private fun polyContainsPoint(poly: DrawObject2D, x: Double, y: Double): Boolean {
-        var odd = false
-        var j = poly.numPoints - 1
-        for (i in 0..<poly.numPoints) {
-            val a = poly.coords2D[i]
-            val b = poly.coords2D[j]
-            if ((a.y > y) != (b.y > y) &&
-                x < a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y)
-            ) {
-                odd = !odd
-            }
-            j = i
-        }
-        return odd
-    }
-
     companion object {
         private const val SILHOUETTE_SAMPLES = 16
         private const val EPSILON = 0.01
 
-        fun vectorProduct(v1: JlVector, v2: JlVector, v3: JlVector, result: JlVector): JlVector {
+        // Helpers for coverage calculations
+
+        private fun isPropCoveringProp(prop1: DrawObject2D, prop2: DrawObject2D): Int {
+            return when {
+                prop1.coords2D[0].z < prop2.coords2D[0].z -> 1
+                prop1.coords2D[0].z > prop2.coords2D[0].z -> -1
+                else -> 0
+            }
+        }
+
+        private fun isPropCoveringPoly(prop: DrawObject2D, poly: DrawObject2D): Int {
+            val normal = poly.planeNormal
+            if (normal.z == 0.0) return 0
+            val base = poly.coords2D[0]
+            val z = base.z - (normal.x * (prop.coords2D[0].x - base.x) +
+                    normal.y * (prop.coords2D[0].y - base.y)) / normal.z
+            return when {
+                prop.coords2D[0].z < z -> 1
+                prop.coords2D[0].z > z -> -1
+                else -> 0
+            }
+        }
+
+        private fun isPropCoveringLine(prop: DrawObject2D, line: DrawObject2D): Int {
+            if (line.numPoints < 2 || prop.numPoints < 1) return 0
+
+            val px = prop.coords2D[0].x
+            val py = prop.coords2D[0].y
+            val pz = prop.coords2D[0].z
+
+            val x1 = line.coords2D[0].x
+            val y1 = line.coords2D[0].y
+
+            val dx = line.coords2D[1].x - x1
+            val dy = line.coords2D[1].y - y1
+            val lenSq = dx * dx + dy * dy
+
+            // Find parameter t of closest point on 2D line segment
+            val t = if (lenSq == 0.0) {
+                0.0
+            } else {
+                (((px - x1) * dx + (py - y1) * dy) / lenSq).coerceIn(0.0, 1.0)
+            }
+
+            val closestX = x1 + t * dx
+            val closestY = y1 + t * dy
+
+            // Check if closest point falls inside prop bounding box
+            if (closestX < prop.bbLeft || closestX > prop.bbRight ||
+                closestY < prop.bbTop || closestY > prop.bbBottom
+            ) {
+                return 0
+            }
+
+            // Interpolated line depth at t
+            val z1 = line.coords2D[0].z
+            val dz = line.coords2D[1].z - z1
+            val lineZ = z1 + t * dz
+
+            return when {
+                pz < lineZ -> 1  // prop closer (smaller z) -> prop covers line
+                pz > lineZ -> -1  // line closer (smaller z) -> line covers prop
+                else -> 0
+            }
+        }
+
+        private fun isPolyCoveringPoly(poly1: DrawObject2D, poly2: DrawObject2D): Int {
+            for (i in 0..<poly1.numPoints) {
+                val pt = poly1.coords2D[i]
+                if (isPolyContainingPoint(poly2, pt.x, pt.y)) {
+                    val depthObj = poly2.polyDepthAtPoint(pt.x, pt.y)
+                    val cmp = when {
+                        pt.z < depthObj - EPSILON -> 1
+                        pt.z > depthObj + EPSILON -> -1
+                        else -> 0
+                    }
+                    if (cmp != 0) return cmp
+                }
+            }
+
+            for (i in 0..<poly2.numPoints) {
+                val pt = poly2.coords2D[i]
+                if (isPolyContainingPoint(poly1, pt.x, pt.y)) {
+                    val depthThis = poly1.polyDepthAtPoint(pt.x, pt.y)
+                    val cmp = when {
+                        depthThis < pt.z - EPSILON -> 1
+                        depthThis > pt.z + EPSILON -> -1
+                        else -> 0
+                    }
+                    if (cmp != 0) return cmp
+                }
+            }
+
+            return 0
+        }
+
+        private fun isPolyCoveringLine(poly: DrawObject2D, line: DrawObject2D): Int {
+            if (line.numPoints < 2) return 0
+            val normal = poly.planeNormal
+            if (normal.z == 0.0) return 0
+            val base = poly.coords2D[0]
+            val x0 = line.coords2D[0].x
+            val y0 = line.coords2D[0].y
+            val z0 = line.coords2D[0].z
+            val dx = line.coords2D[1].x - x0
+            val dy = line.coords2D[1].y - y0
+            val dz = line.coords2D[1].z - z0
+
+            var insideCount = 0
+            var margin = 0.0
+            for (i in 0..SILHOUETTE_SAMPLES) {
+                val t = i.toDouble() / SILHOUETTE_SAMPLES
+                val x = x0 + dx * t
+                val y = y0 + dy * t
+                if (!isPolyContainingPoint(poly, x, y)) continue
+                val zb = base.z - (normal.x * (x - base.x) + normal.y * (y - base.y)) / normal.z
+                margin += (z0 + dz * t) - zb
+                insideCount++
+            }
+            if (insideCount == 0) return 0
+            // when depths are equal, bias in favor of poly covers line;
+            // otherwise we can get flickering artifacts due to numerical
+            // inaccuracy in the depth calculations
+            return if (margin > -EPSILON) 1 else -1
+        }
+
+        private fun isPolyContainingPoint(poly: DrawObject2D, x: Double, y: Double): Boolean {
+            var odd = false
+            var j = poly.numPoints - 1
+            for (i in 0..<poly.numPoints) {
+                val a = poly.coords2D[i]
+                val b = poly.coords2D[j]
+                if ((a.y > y) != (b.y > y) &&
+                    x < a.x + (b.x - a.x) * (y - a.y) / (b.y - a.y)
+                ) {
+                    odd = !odd
+                }
+                j = i
+            }
+            return odd
+        }
+
+        private fun vectorProduct(
+            v1: JlVector,
+            v2: JlVector,
+            v3: JlVector,
+            result: JlVector
+        ): JlVector {
             val ax = v2.x - v1.x
             val ay = v2.y - v1.y
             val az = v2.z - v1.z
@@ -395,10 +372,13 @@ class DrawObject2D {
     }
 }
 
-// Object pool to reuse DrawObject2D objects.
+//------------------------------------------------------------------------------
+// Object pool to reuse DrawObject2D objects
+//------------------------------------------------------------------------------
 
-class DrawObjectPool(val objects: MutableList<DrawObject2D> = mutableListOf()) :
-    Iterable<DrawObject2D> {
+class DrawObjectPool(
+    val objects: MutableList<DrawObject2D> = mutableListOf()
+) : Iterable<DrawObject2D> {
     private var index = 0
 
     fun reset() {

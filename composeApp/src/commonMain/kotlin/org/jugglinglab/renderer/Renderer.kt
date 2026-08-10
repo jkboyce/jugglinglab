@@ -3,6 +3,15 @@
 //
 // Draws the juggling into the frame using Compose DrawScope.
 //
+// The renderer's first job is translating from the global coordinate system the
+// pattern is defined in, to an appropriately scaled screen-space coordinate
+// system.
+//
+// Its second job is rendering frames of juggling. The scene is decomposed into
+// DrawObject2D objects, which are painted one at a time, in their entirety,
+// from back to front within the scene. This entails working out a drawing order
+// and handling coverage cycles when they occur.
+//
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
@@ -74,8 +83,11 @@ class Renderer {
     // absent from the map use the default.
     private val defaultAvatar = ClassicAvatar()
     private var avatars: Map<Int, Avatar> = emptyMap()
-
     fun avatarFor(juggler: Int): Avatar = avatars[juggler] ?: defaultAvatar
+
+    //--------------------------------------------------------------------------
+    // Methods to configure renderer
+    //--------------------------------------------------------------------------
 
     fun setAvatars(newAvatars: Map<Int, Avatar>) {
         avatars = newAvatars
@@ -209,6 +221,10 @@ class Renderer {
         m.transform(JlMatrix.shiftMatrix(originX.toDouble(), originZ.toDouble(), 0.0))
     }
 
+    //--------------------------------------------------------------------------
+    // Translating from global to screen coordinates
+    //--------------------------------------------------------------------------
+
     fun getXY(coord: Coordinate): IntOffset {
         val vecX = coord.x
         val vecY = coord.z
@@ -231,6 +247,30 @@ class Renderer {
         val news = JlVector.add(s, JlVector(dx.toDouble(), dy.toDouble(), 0.0))
         val newv = news.transform(m.inverse())
         return Coordinate(newv.x, newv.z, newv.y)
+    }
+
+    //--------------------------------------------------------------------------
+    // Public drawing methods
+    //--------------------------------------------------------------------------
+
+    fun drawFrame(
+        time: Double,
+        propNumForPath: List<Int>,
+        hideJugglers: List<Int>,
+        scope: DrawScope,
+        isPaused: Boolean = false
+    ) {
+        // 1. Add all visible objects to pool
+        populateObjectPool(time, propNumForPath, hideJugglers, isPaused)
+
+        // 2. Determine which objects are covering which other objects
+        determineCoverage(isPaused)
+
+        // 3. Determine drawing order using Kahn-FAS topological sort
+        determineDrawingOrder(isPaused)
+
+        // 4. Render objects in sorted order
+        scope.drawObjects(propNumForPath)
     }
 
     @Suppress("UnnecessaryVariable")
@@ -306,38 +346,15 @@ class Renderer {
         )
     }
 
-    fun drawFrame(
-        time: Double,
-        pnum: List<Int>,
-        hideJugglers: List<Int>,
-        scope: DrawScope,
-        isPaused: Boolean = false
-    ) {
-        @Suppress("SimplifyBooleanWithConstants")
-        val debugLogging = Constants.DEBUG_DRAWING && isPaused
-
-        // 1. Add all visible objects to pool
-        populateObjectPool(time, pnum, hideJugglers, debugLogging)
-
-        // 2. Determine which objects are covering which other objects
-        determineCoverage(debugLogging)
-
-        // 3. Determine drawing order using Kahn-FAS topological sort
-        determineDrawingOrder(debugLogging)
-
-        // 4. Render objects in sorted order
-        scope.drawObjects(pnum)
-
-        if (debugLogging) {
-            println("======================================================================\n")
-        }
-    }
+    //--------------------------------------------------------------------------
+    // Adding objects to the scene for rendering
+    //--------------------------------------------------------------------------
 
     private fun populateObjectPool(
         time: Double,
-        pnum: List<Int>,
+        propNumForPath: List<Int>,
         hideJugglers: List<Int>,
-        debugLogging: Boolean
+        isPaused: Boolean
     ) {
         objectPool.reset()
 
@@ -350,11 +367,11 @@ class Renderer {
                 tempc.setCoordinate(0.0, 0.0, 0.0)
             }
             propObj.set3DCoordinates(Type.PROP, i, tempc)
-            if (debugLogging) {
+            debugDrawing(isPaused) {
                 propObj.label = "Prop $i"
             }
 
-            val pr = pattern.getProp(pnum[i - 1])
+            val pr = pattern.getProp(propNumForPath[i - 1])
             propMinZ = min(propMinZ, pr.getMinZ())
         }
 
@@ -377,7 +394,7 @@ class Renderer {
 
                 val lineObj = objectPool.next()
                 lineObj.set3DCoordinates(Type.LINE, 0, tempv1, tempv2)
-                if (debugLogging) {
+                debugDrawing(isPaused) {
                     lineObj.label = "Ground line ${i + 1}"
                 }
             }
@@ -400,7 +417,7 @@ class Renderer {
             if (ob.type == Type.PROP) {
                 val x = ob.coords2D[0].x.roundToInt()
                 val y = ob.coords2D[0].y.roundToInt()
-                val pr = pattern.getProp(pnum[ob.number - 1])
+                val pr = pattern.getProp(propNumForPath[ob.number - 1])
                 val center = pr.getProp2DCenter(zoom, cameraAngle)
                 val size = pr.getProp2DSize(zoom, cameraAngle)
 
@@ -416,7 +433,30 @@ class Renderer {
             ob.drawn = false
         }
 
-        if (debugLogging) {
+        debugDrawing(isPaused) {
+            fun fmt(d: Double): String = org.jugglinglab.util.jlToStringRounded(d, 1)
+            fun fmtF(f: Float): String = org.jugglinglab.util.jlToStringRounded(f.toDouble(), 1)
+
+            fun DrawObject2D.coords3DToString(): String {
+                return (0..<numPoints).joinToString(", ") { i ->
+                    "(${fmt(coords3D[i].x)}, ${fmt(coords3D[i].y)}, ${fmt(coords3D[i].z)})"
+                }
+            }
+
+            fun DrawObject2D.coords2DToString(): String {
+                return (0..<numPoints).joinToString(", ") { i ->
+                    "(${fmt(coords2D[i].x)}, ${fmt(coords2D[i].y)}, z=${fmt(coords2D[i].z)})"
+                }
+            }
+
+            fun DrawObject2D.bounds2DToString(): String {
+                return "[left=${fmtF(bbLeft)}, right=${fmtF(bbRight)}, top=${fmtF(bbTop)}, bottom=${
+                    fmtF(
+                        bbBottom
+                    )
+                }]"
+            }
+
             val roundedTime = (kotlin.math.round(time * 100.0) / 100.0)
             println("==================== DRAWING DEBUG (time = ${roundedTime}s) ====================")
             println("--- Active DrawObjects (total: ${objectPool.activeCount}) ---")
@@ -430,10 +470,10 @@ class Renderer {
     }
 
     //--------------------------------------------------------------------------
-    // Helpers for topological sort before drawing
+    // Helpers for determining drawing order
     //--------------------------------------------------------------------------
 
-    private fun determineCoverage(debugLogging: Boolean) {
+    private fun determineCoverage(isPaused: Boolean) {
         for (i in 0..<objectPool.activeCount) {
             val objI = objectPool.objects[i]
             for (j in (i + 1)..<objectPool.activeCount) {
@@ -447,7 +487,7 @@ class Renderer {
             }
         }
 
-        if (debugLogging) {
+        debugDrawing(isPaused) {
             println("\n--- Covering Summary ---")
             for (ob in objectPool) {
                 if (ob.covering.isEmpty()) {
@@ -458,11 +498,62 @@ class Renderer {
                     println("[#${ob.sequenceNumber} \"${ob.label}\"] covers: $cov")
                 }
             }
-            findAndPrintCoverageCycles(objectPool)
+
+            // find and print coverage cycles
+            val cycles = mutableListOf<List<DrawObject2D>>()
+            val maxCycles = 50
+            val maxDepth = 10
+            var stepCount = 0
+            val maxSteps = 10000
+
+            for (startIdx in 0..<objectPool.activeCount) {
+                if (cycles.size >= maxCycles || stepCount >= maxSteps) break
+                val startNode = objectPool.objects[startIdx]
+                val path = mutableListOf(startNode)
+                val visitedInPath = mutableSetOf(startNode)
+
+                fun dfs(current: DrawObject2D) {
+                    stepCount++
+                    if (stepCount >= maxSteps || cycles.size >= maxCycles) return
+
+                    for (neighbor in current.covering) {
+                        if (neighbor === startNode) {
+                            if (path.size >= 2) {
+                                val minSeq = path.minOf { it.sequenceNumber }
+                                if (startNode.sequenceNumber == minSeq) {
+                                    cycles.add(path.toList() + startNode)
+                                }
+                            }
+                        } else if (neighbor !in visitedInPath && path.size < maxDepth) {
+                            path.add(neighbor)
+                            visitedInPath.add(neighbor)
+                            dfs(neighbor)
+                            visitedInPath.remove(neighbor)
+                            path.removeAt(path.size - 1)
+                        }
+                    }
+                }
+
+                dfs(startNode)
+            }
+
+            println("\n--- Coverage Cycles ---")
+            if (cycles.isEmpty()) {
+                println("No coverage cycles detected.")
+            } else {
+                val limitStr =
+                    if (cycles.size >= maxCycles || stepCount >= maxSteps) " (search limit reached)" else ""
+                println("WARNING: Detected ${cycles.size} coverage cycle(s)$limitStr:")
+                for (i in cycles.indices) {
+                    val cycleStr =
+                        cycles[i].joinToString(" -> ") { "[#${it.sequenceNumber} \"${it.label}\"]" }
+                    println("  Cycle #${i + 1}: $cycleStr")
+                }
+            }
         }
     }
 
-    private fun determineDrawingOrder(debugLogging: Boolean) {
+    private fun determineDrawingOrder(isPaused: Boolean) {
         while (sortedObjects.size < objectPool.activeCount) {
             sortedObjects.add(objectPool.objects[0])
         }
@@ -471,7 +562,7 @@ class Renderer {
             ob.drawn = false
         }
 
-        if (debugLogging) {
+        debugDrawing(isPaused) {
             println("\n--- Kahn-FAS Topological Sort ---")
         }
 
@@ -479,7 +570,8 @@ class Renderer {
         while (index < objectPool.activeCount) {
             var progress = false
 
-            // 1. Standard topological sort: draw any object whose dependencies are all drawn
+            // 1. Topological sort: draw any object whose coverage dependencies
+            // are all drawn
             for (ob in objectPool) {
                 if (ob.drawn) continue
 
@@ -495,13 +587,14 @@ class Renderer {
                     ob.drawn = true
                     index++
                     progress = true
-                    if (debugLogging) {
+                    debugDrawing(isPaused) {
                         println("Order $index: [#${ob.sequenceNumber} \"${ob.label}\"]")
                     }
                 }
             }
 
-            // 2. If stalled by a cycle, delete the highest-preference active coverage link
+            // 2. If stalled then there must be a cycle in the coverage graph;
+            // delete the highest-preference active coverage link and continue
             if (!progress && index < objectPool.activeCount) {
                 var bestCoverer: DrawObject2D? = null
                 var bestCovered: DrawObject2D? = null
@@ -527,7 +620,7 @@ class Renderer {
 
                 if (bestCoverer != null && bestCovered != null) {
                     bestCoverer.covering.remove(bestCovered)
-                    if (debugLogging) {
+                    debugDrawing(isPaused) {
                         val prioName = when (bestPriority) {
                             1 -> "LINE-PROP"
                             2 -> "LINE-POLY"
@@ -539,13 +632,13 @@ class Renderer {
                         println("Cycle detected. Deleted $prioName coverage link: [#${bestCoverer.sequenceNumber} \"${bestCoverer.label}\"] COVERS [#${bestCovered.sequenceNumber} \"${bestCovered.label}\"]")
                     }
                 } else {
-                    // Fallback safety if no candidate edge found
+                    // fallback if no candidate edge found
                     for (ob in objectPool) {
                         if (!ob.drawn) {
                             sortedObjects[index] = ob
                             ob.drawn = true
                             index++
-                            if (debugLogging) {
+                            debugDrawing(isPaused) {
                                 println("Fallback force-draw order $index: [#${ob.sequenceNumber} \"${ob.label}\"]")
                             }
                             break
@@ -553,6 +646,10 @@ class Renderer {
                     }
                 }
             }
+        }
+
+        debugDrawing(isPaused) {
+            println("======================================================================\n")
         }
     }
 
@@ -578,59 +675,6 @@ class Renderer {
         }
     }
 
-    private fun findAndPrintCoverageCycles(objectPool: DrawObjectPool) {
-        val cycles = mutableListOf<List<DrawObject2D>>()
-        val maxCycles = 50
-        val maxDepth = 10
-        var stepCount = 0
-        val maxSteps = 10000
-
-        for (startIdx in 0..<objectPool.activeCount) {
-            if (cycles.size >= maxCycles || stepCount >= maxSteps) break
-            val startNode = objectPool.objects[startIdx]
-            val path = mutableListOf(startNode)
-            val visitedInPath = mutableSetOf(startNode)
-
-            fun dfs(current: DrawObject2D) {
-                stepCount++
-                if (stepCount >= maxSteps || cycles.size >= maxCycles) return
-
-                for (neighbor in current.covering) {
-                    if (neighbor === startNode) {
-                        if (path.size >= 2) {
-                            val minSeq = path.minOf { it.sequenceNumber }
-                            if (startNode.sequenceNumber == minSeq) {
-                                cycles.add(path.toList() + startNode)
-                            }
-                        }
-                    } else if (neighbor !in visitedInPath && path.size < maxDepth) {
-                        path.add(neighbor)
-                        visitedInPath.add(neighbor)
-                        dfs(neighbor)
-                        visitedInPath.remove(neighbor)
-                        path.removeAt(path.size - 1)
-                    }
-                }
-            }
-
-            dfs(startNode)
-        }
-
-        println("\n--- Coverage Cycles ---")
-        if (cycles.isEmpty()) {
-            println("No coverage cycles detected.")
-        } else {
-            val limitStr =
-                if (cycles.size >= maxCycles || stepCount >= maxSteps) " (search limit reached)" else ""
-            println("WARNING: Detected ${cycles.size} coverage cycle(s)$limitStr:")
-            for (i in cycles.indices) {
-                val cycleStr =
-                    cycles[i].joinToString(" -> ") { "[#${it.sequenceNumber} \"${it.label}\"]" }
-                println("  Cycle #${i + 1}: $cycleStr")
-            }
-        }
-    }
-
     //--------------------------------------------------------------------------
     // Helpers for drawing
     //--------------------------------------------------------------------------
@@ -639,7 +683,7 @@ class Renderer {
     private val strokePath: Path = Path()
 
     private fun DrawScope.drawObjects(
-        pnum: List<Int>
+        propNumForPath: List<Int>
     ) {
         val activeStrokeWidth05 = 0.5.dp.toPx()
         val activeStrokeWidth1 = 1.dp.toPx()
@@ -649,7 +693,9 @@ class Renderer {
             val ob = sortedObjects[i]
             when (ob.type) {
                 Type.PROP -> {
-                    val pr = pattern.getProp(pnum[ob.number - 1])
+                    val pr = pattern.getProp(propNumForPath[ob.number - 1])
+                    // rounding prop location to int values makes animated GIFs
+                    // considerably smaller, with no visible impact
                     val x = ob.coords2D[0].x.roundToInt()
                     val y = ob.coords2D[0].y.roundToInt()
 
@@ -683,7 +729,10 @@ class Renderer {
                         strokePath.rewind()
                         strokePath.moveTo(ob.coords2D[0].x.toFloat(), ob.coords2D[0].y.toFloat())
                         for (i in 1..<ob.numPoints) {
-                            strokePath.lineTo(ob.coords2D[i].x.toFloat(), ob.coords2D[i].y.toFloat())
+                            strokePath.lineTo(
+                                ob.coords2D[i].x.toFloat(),
+                                ob.coords2D[i].y.toFloat()
+                            )
                         }
                         drawAaPath(strokePath, lineColor, style = activeStroke1)
                     }
@@ -705,6 +754,9 @@ class Renderer {
             }
         }
     }
+
+    // Our own versions of drawPath and drawLine let us switch antialiased
+    // rendering off when making animated GIFs.
 
     private fun DrawScope.drawAaPath(
         path: Path,
@@ -751,6 +803,19 @@ class Renderer {
             paint.strokeWidth = strokeWidth
             paint.strokeCap = StrokeCap.Butt
             drawContext.canvas.drawLine(start, end, paint)
+        }
+    }
+
+    //--------------------------------------------------------------------------
+    // Helper for debug logging
+    //--------------------------------------------------------------------------
+
+    // inline fun makes compiler prune logging code when DEBUG_DRAWING is false
+
+    private inline fun debugDrawing(condition: Boolean = true, block: () -> Unit) {
+        @Suppress("SimplifyBooleanWithConstants")
+        if (Constants.DEBUG_DRAWING && condition) {
+            block()
         }
     }
 
