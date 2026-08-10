@@ -357,11 +357,6 @@ val jlJfc: JFileChooser by lazy {
     }
 }
 
-fun jlSanitizeFilepath(fpath: Path): Path {
-    val fileNameStr = fpath.fileName?.toString() ?: return fpath
-    return fpath.resolveSibling(jlSanitizeFilename(fileNameStr))
-}
-
 //------------------------------------------------------------------------------
 // Helpers for loading resources (UI strings, error messages, images, ...)
 //------------------------------------------------------------------------------

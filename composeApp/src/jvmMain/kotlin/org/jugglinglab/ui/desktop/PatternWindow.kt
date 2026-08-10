@@ -34,7 +34,7 @@ import org.jugglinglab.util.jlIsSwing
 import org.jugglinglab.util.jlJfc
 import org.jugglinglab.util.jlParseFiniteDouble
 import org.jugglinglab.util.jlBaseFileDirectory
-import org.jugglinglab.util.jlSanitizeFilepath
+import org.jugglinglab.util.jlSanitizeFilename
 import org.jugglinglab.view.EditView
 import org.jugglinglab.view.PatternView
 import org.jugglinglab.view.SelectionView
@@ -546,8 +546,8 @@ class PatternWindow(
 
              MenuCommand.FILE_SAVEAS -> try {
                 val truncatedTitle = title?.take(40) ?: "pattern"
-                var fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve("${truncatedTitle}.jml")
-                fpath = jlSanitizeFilepath(fpath)
+                val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.jml")
+                val fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve(sanitizedFileName)
                 jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("JML file", "jml"))
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
@@ -575,10 +575,11 @@ class PatternWindow(
 
             MenuCommand.FILE_SAVEGIF -> {
                 val truncatedTitle = title?.take(40) ?: "pattern"
-                var fpath = lastJmlFilepath?.let {
-                    it.resolveSibling("${it.fileName.toString().substringBeforeLast(".")}.gif")
-                } ?: jlBaseFileDirectory.resolve("${truncatedTitle}.gif")
-                fpath = jlSanitizeFilepath(fpath)
+                val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.gif")
+                val fpath = lastJmlFilepath?.let {
+                    val gifName = jlSanitizeFilename("${it.fileName.toString().substringBeforeLast(".")}.gif")
+                    it.resolveSibling(gifName)
+                } ?: jlBaseFileDirectory.resolve(sanitizedFileName)
                 jlJfc.setSelectedFile(fpath.toFile())
                 jlJfc.setFileFilter(FileNameExtensionFilter("GIF file", "gif"))
                 if (jlJfc.showSaveDialog(this) != JFileChooser.APPROVE_OPTION) {
