@@ -391,7 +391,7 @@ class JmlPatternList(
                     null
                 )
 
-                val infotags: ArrayList<String> = ArrayList()
+                val infotags: MutableList<String> = mutableListOf()
                 tagstr.split(',')
                     .map { it.trim() }
                     .filter { it.isNotEmpty() }

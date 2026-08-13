@@ -11,8 +11,8 @@ import org.jugglinglab.composeapp.generated.resources.*
 class ParameterList() {
     var numberOfParameters: Int = 0
         private set
-    private lateinit var names: ArrayList<String>
-    private lateinit var values: ArrayList<String>
+    private lateinit var names: MutableList<String>
+    private lateinit var values: MutableList<String>
 
     @Throws(JuggleExceptionUser::class)
     constructor(source: String?) : this() {
@@ -22,8 +22,8 @@ class ParameterList() {
     // Return true if parameter already existed, false if it was new.
     fun addParameter(name: String, value: String): Boolean {
         if (numberOfParameters == 0) {
-            names = ArrayList()
-            values = ArrayList()
+            names = mutableListOf()
+            values = mutableListOf()
         }
 
         for (i in numberOfParameters - 1 downTo 0) {

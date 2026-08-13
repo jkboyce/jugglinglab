@@ -26,8 +26,8 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
     var ht: Int = 0
     var lMin: Int = 0
     var lMax: Int = 0
-    var exclude: ArrayList<Regex> = ArrayList()
-    var include: ArrayList<Regex> = ArrayList()
+    var exclude: MutableList<Regex> = mutableListOf()
+    var include: MutableList<Regex> = mutableListOf()
     var numflag: Int = 0
     var groundflag: Int = 0
     var rotflag: Int = 0

@@ -132,7 +132,7 @@ class FemaleAvatar : Avatar() {
         // Precompute the ponytail polygon once, at load time.
         // It's modelled as a smooth 3D Bezier curve with rounded tip.
 
-        private val PONYTAIL_LOCAL_POINTS: List<JlVector> = run {
+        private val PONYTAIL_LOCAL_POINTS: List<JlVector> = buildList {
             val neckTop = SHOULDER_H + NECK_H
             val anchorH = neckTop + PONYTAIL_ANCHOR_H * HEAD_H
             val tipH = neckTop + PONYTAIL_TIP_H * HEAD_H
@@ -176,17 +176,15 @@ class FemaleAvatar : Avatar() {
                 anchorH + 0.15 * dH
             )
 
-            val points = ArrayList<JlVector>(32)
             val samples = 16
             for (i in 0..samples) {
                 val u = i.toDouble() / samples
-                points.add(cubicBezier3D(anchor, c11, c12, tip, u))
+                add(cubicBezier3D(anchor, c11, c12, tip, u))
             }
             for (i in 1..<samples) {
                 val u = i.toDouble() / samples
-                points.add(cubicBezier3D(tip, c21, c22, anchor, u))
+                add(cubicBezier3D(tip, c21, c22, anchor, u))
             }
-            points
         }
 
         private fun cubicBezier3D(

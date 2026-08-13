@@ -28,7 +28,6 @@ import javax.swing.*
 import javax.swing.border.BevelBorder
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
-import kotlin.collections.ArrayList
 
 class PatternListPanel(
     val patternList: JmlPatternList,
@@ -39,7 +38,7 @@ class PatternListPanel(
 
     // for mouse/popup menu handling
     private var didPopup: Boolean = false
-    private var popupPatterns: ArrayList<PatternWindow>? = null
+    private var popupPatterns: List<PatternWindow>? = null
     private var dialog: JDialog? = null
     private var tf: JTextField? = null
     private var okButton: JButton? = null
@@ -148,13 +147,14 @@ class PatternListPanel(
         val popup = JPopupMenu()
         val row = list.selectedIndex
 
-        val pupatterns = ArrayList<PatternWindow>()
-        popupPatterns = pupatterns
-        for (fr in Frame.getFrames()) {
-            if (fr.isVisible && fr is PatternWindow) {
-                pupatterns.add(fr)
+        val pupatterns: List<PatternWindow> = buildList {
+            for (fr in Frame.getFrames()) {
+                if (fr.isVisible && fr is PatternWindow) {
+                    add(fr)
+                }
             }
         }
+        popupPatterns = pupatterns
 
         val al =
             ActionListener { ae: ActionEvent? ->

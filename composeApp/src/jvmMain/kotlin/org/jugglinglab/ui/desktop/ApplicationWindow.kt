@@ -316,10 +316,10 @@ class ApplicationWindow(title: String?) : JFrame(title), ActionListener {
         // Call this whenever a window is added, removed, or retitled.
 
         fun updateWindowMenus() {
-            val apps = ArrayList<ApplicationWindow>()
-            val pls = ArrayList<PatternListWindow>()
-            val anims = ArrayList<PatternWindow>()
-            val menus = ArrayList<JMenu>()
+            val apps = mutableListOf<ApplicationWindow>()
+            val pls = mutableListOf<PatternListWindow>()
+            val anims = mutableListOf<PatternWindow>()
+            val menus = mutableListOf<JMenu>()
 
             for (fr in getFrames()) {
                 if (!fr.isVisible) continue

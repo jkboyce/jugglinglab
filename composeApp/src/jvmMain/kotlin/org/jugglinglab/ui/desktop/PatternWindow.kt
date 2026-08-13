@@ -544,7 +544,7 @@ class PatternWindow(
 
             }
 
-             MenuCommand.FILE_SAVEAS -> try {
+            MenuCommand.FILE_SAVEAS -> try {
                 val truncatedTitle = title?.take(40) ?: "pattern"
                 val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.jml")
                 val fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve(sanitizedFileName)
@@ -577,7 +577,8 @@ class PatternWindow(
                 val truncatedTitle = title?.take(40) ?: "pattern"
                 val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.gif")
                 val fpath = lastJmlFilepath?.let {
-                    val gifName = jlSanitizeFilename("${it.fileName.toString().substringBeforeLast(".")}.gif")
+                    val gifName =
+                        jlSanitizeFilename("${it.fileName.toString().substringBeforeLast(".")}.gif")
                     it.resolveSibling(gifName)
                 } ?: jlBaseFileDirectory.resolve(sanitizedFileName)
                 jlJfc.setSelectedFile(fpath.toFile())
@@ -840,16 +841,25 @@ class PatternWindow(
         private const val NUM_TILES: Int = 8
         private val TILE_START: Point = Point(420, 50)
         private val TILE_OFFSET: Point = Point(25, 25)
-        private var tileLocations: ArrayList<Point> = ArrayList()
+        private val tileLocations: List<Point> = buildList {
+            val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()
+            val locx = max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2)
+            for (i in 0..<NUM_TILES) {
+                val locX: Int = locx + TILE_START.x + i * TILE_OFFSET.x
+                val locY: Int = TILE_START.y + i * TILE_OFFSET.y
+                add(Point(locX, locY))
+            }
+        }
         private var nextTileNum: Int = 0
 
-        /** Defines the contract for the optional optimizer module. */
+        // Defines the contract for the optional optimizer module.
         private interface OptimizerWrapper {
             fun optimize(pat: JmlPattern): JmlPattern
         }
 
-        // Lazily load the Optimizer class via reflection. If successful, it creates
-        // a wrapper that implements the [OptimizerWrapper] interface. If not, it's null.
+        // Lazily load the Optimizer class via reflection. If successful, it
+        // creates a wrapper that implements the OptimizerWrapper interface.
+        // If not, it's null.
 
         private val optimizerWrapper: OptimizerWrapper? by lazy {
             runCatching {
@@ -875,17 +885,7 @@ class PatternWindow(
 
         private val nextScreenLocation: Point
             get() {
-                if (tileLocations.isEmpty()) {
-                    val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()
-                    val locx = max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2)
-                    for (i in 0..<NUM_TILES) {
-                        val locX: Int = locx + TILE_START.x + i * TILE_OFFSET.x
-                        val locY: Int = TILE_START.y + i * TILE_OFFSET.y
-                        tileLocations.add(Point(locX, locY))
-                    }
-                    nextTileNum = 0
-                }
-                val loc: Point = tileLocations[nextTileNum]
+                val loc = tileLocations[nextTileNum]
                 if (++nextTileNum == NUM_TILES) {
                     nextTileNum = 0
                 }

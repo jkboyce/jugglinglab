@@ -169,7 +169,7 @@ class PatternListWindow(
         // in JugglingLab.java
         val includeAbout =
             !Desktop.isDesktopSupported()
-                || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
+                    || !Desktop.getDesktop().isSupported(Desktop.Action.APP_ABOUT)
 
         var menuname: String = jlGetStringResource(Res.string.gui_help)
         // Menus titled "Help" are handled differently by macOS; only want to
@@ -254,7 +254,7 @@ class PatternListWindow(
                 }
             }
 
-             MenuCommand.FILE_SAVEAS -> try {
+            MenuCommand.FILE_SAVEAS -> try {
                 val truncatedTitle = title?.take(40) ?: "pattern"
                 val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.jml")
                 val fpath = lastJmlFilepath ?: jlBaseFileDirectory.resolve(sanitizedFileName)
@@ -292,7 +292,8 @@ class PatternListWindow(
                 val truncatedTitle = title?.take(40) ?: "pattern"
                 val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.txt")
                 val fpath = lastJmlFilepath?.let {
-                    val txtName = jlSanitizeFilename("${it.fileName.toString().substringBeforeLast(".")}.txt")
+                    val txtName =
+                        jlSanitizeFilename("${it.fileName.toString().substringBeforeLast(".")}.txt")
                     it.resolveSibling(txtName)
                 } ?: jlBaseFileDirectory.resolve(sanitizedFileName)
                 jlJfc.setSelectedFile(fpath.toFile())
@@ -433,22 +434,19 @@ class PatternListWindow(
         private const val NUM_TILES: Int = 8
         private val TILE_START: Point = Point(0, 580)
         private val TILE_OFFSET: Point = Point(25, 25)
-        private var tileLocations: ArrayList<Point> = ArrayList()
+        private val tileLocations: List<Point> = buildList {
+            val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()
+            val locx = max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2)
+            for (i in 0..NUM_TILES) {
+                val locX: Int = locx + TILE_START.x + i * TILE_OFFSET.x
+                val locY: Int = TILE_START.y + i * TILE_OFFSET.y
+                add(Point(locX, locY))
+            }
+        }
         private var nextTileNum: Int = 0
 
         private val nextScreenLocation: Point
             get() {
-                if (tileLocations.isEmpty()) {
-                    val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()
-                    val locx = max(0, center.x - Constants.RESERVED_WIDTH_PIXELS / 2)
-                    for (i in 0..NUM_TILES) {
-                        val locX: Int = locx + TILE_START.x + i * TILE_OFFSET.x
-                        val locY: Int = TILE_START.y + i * TILE_OFFSET.y
-                        tileLocations.add(Point(locX, locY))
-                    }
-                    nextTileNum = 0
-                }
-
                 val loc = tileLocations[nextTileNum]
                 if (++nextTileNum == NUM_TILES) {
                     nextTileNum = 0

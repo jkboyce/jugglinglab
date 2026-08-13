@@ -15,7 +15,7 @@ import kotlinx.coroutines.test.runTest
 
 class SiteswapGeneratorTest {
     private suspend fun runGeneratorTestCase(input: String): List<String> {
-        val patterns = ArrayList<String>()
+        val patterns = mutableListOf<String>()
         SiteswapGenerator(input).apply {
             runGenerator(GeneratorTargetBasic(listTarget = patterns))
         }
@@ -99,7 +99,7 @@ class SiteswapGeneratorTest {
 
     @Test
     fun `generator pattern limit`() = runTest {
-        val patterns = ArrayList<String>()
+        val patterns = mutableListOf<String>()
         try {
             SiteswapGenerator("3 5 6 -se -f").apply {
                 // The full testcase has 55 patterns. Let's limit it to 10.
