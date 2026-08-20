@@ -15,9 +15,11 @@ import org.jugglinglab.core.AnimationPrefs
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
+import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.jlIsWeb
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.input.pointer.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -190,6 +193,26 @@ fun PatternListView(
                             }
                         )
                     }
+                    if (isEditable) {
+                        HorizontalDivider()
+                        if (!isFavoritesList) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(Res.string.gui_mobile_insert_current_pattern)) },
+                                onClick = {
+                                    showMainMenu = false
+                                    patternList.insertPattern(state.pattern, state.prefs)
+                                    onPatternListModified()
+                                }
+                            )
+                        }
+                        DropdownMenuItem(
+                            text = { Text(stringResource(Res.string.gui_mobile_plpopup_insert_text___)) },
+                            onClick = {
+                                showMainMenu = false
+                                activeDialog = PatternListDialog.InsertText(-1)
+                            }
+                        )
+                    }
 
                     if (Constants.TEST_MOBILE_APP && isFavoritesList) {
                         HorizontalDivider()
@@ -301,13 +324,54 @@ private fun PatternListItem(
     val isBlankLine = JmlPatternList.BLANK_AT_END && index == patternList.model.size - 1
     val canAnimate = record.canAnimate
 
+    val itemModifier = modifier
+        .fillMaxWidth()
+        .let { base ->
+            if (jlIsTouchInterface) {
+                base.combinedClickable(
+                    onClick = onClick,
+                    onLongClick = { showMenu = true }
+                )
+            } else {
+                // handle the various mouse interactions that initiate the
+                // popup menu
+                base.pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        var isPopupGesture = false
+
+                        while (true) {
+                            val event = awaitPointerEvent(PointerEventPass.Initial)
+                            val change = event.changes.firstOrNull() ?: continue
+                            val isPopup = event.buttons.isSecondaryPressed ||
+                                    ((event.keyboardModifiers.isCtrlPressed || event.keyboardModifiers.isMetaPressed) && event.buttons.isPrimaryPressed)
+
+                            if (change.changedToDown()) {
+                                if (isPopup) {
+                                    isPopupGesture = true
+                                    showMenu = true
+                                    change.consume()
+                                } else {
+                                    isPopupGesture = false
+                                }
+                            } else if (change.pressed && change.positionChanged()) {
+                                if (isPopupGesture) {
+                                    change.consume()
+                                }
+                            } else if (change.changedToUp()) {
+                                if (isPopupGesture) {
+                                    change.consume()
+                                    isPopupGesture = false
+                                }
+                            }
+                        }
+                    }
+                }
+                .clickable(onClick = onClick)
+            }
+        }
+
     Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .combinedClickable(
-                onClick = onClick,
-                onLongClick = { showMenu = true }
-            )
+        modifier = itemModifier
             .padding(horizontal = 16.dp, vertical = 4.dp)
     ) {
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
