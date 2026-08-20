@@ -51,6 +51,8 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
     var symmetricPatternsFlag: Boolean = false
     var jugglerPermutationsFlag: Boolean = false
     var groupByJuggler: Boolean = false
+    var hsymFlag: Boolean = false
+    var nostarFlag: Boolean = false
     var mode: Int = ASYNC
     var slotSize: Int = 0
 
@@ -94,6 +96,8 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
                 "-lame" -> lameFlag = true
                 "-se" -> sequenceFlag = false
                 "-s" -> mode = SYNC
+                "-hsym" -> hsymFlag = true
+                "-nostar" -> nostarFlag = true
                 "-cp" -> connectedPatternsFlag = true
                 "-sym" -> symmetricPatternsFlag = true
                 "-group" -> groupByJuggler = true
@@ -209,6 +213,15 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
                 }
             }
             ++i
+        }
+
+        if ((hsymFlag || nostarFlag) && mode != SYNC) {
+            for (arg in args) {
+                if (arg == "-hsym" || arg == "-nostar") {
+                    val message = jlGetStringResource(Res.string.error_option_requires_sync_mode, arg)
+                    throw JuggleExceptionUser(message)
+                }
+            }
         }
 
         return trueMultiplex

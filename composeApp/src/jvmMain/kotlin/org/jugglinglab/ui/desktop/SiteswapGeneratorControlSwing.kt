@@ -31,6 +31,10 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
     private var cb9: JCheckBox
     private var cb10: JCheckBox
 
+    // Sync Filters
+    private var cbSyncUseAsterisk: JCheckBox
+    private var cbSyncSymmetricOnly: JCheckBox
+
     // Passing Filters
     private var cb15: JCheckBox
     private var cb17: JCheckBox
@@ -178,35 +182,44 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         pRight.add(cb10)
         gb.setConstraints(cb10, jlConstraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 10, 0, 0)))
 
+        // Sync specific filters
+        cbSyncUseAsterisk = JCheckBox(jlGetStringResource(Res.string.gui_sync_use_asterisk), null)
+        pRight.add(cbSyncUseAsterisk)
+        gb.setConstraints(cbSyncUseAsterisk, jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0)))
+
+        cbSyncSymmetricOnly = JCheckBox(jlGetStringResource(Res.string.gui_sync_symmetric_only), null)
+        pRight.add(cbSyncSymmetricOnly)
+        gb.setConstraints(cbSyncSymmetricOnly, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 10, 0, 0)))
+
         // Passing specific filters
         cb17 = JCheckBox(jlGetStringResource(Res.string.gui_juggler_permutations), null)
         pRight.add(cb17)
-        gb.setConstraints(cb17, jlConstraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb17, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0)))
 
         cb15 = JCheckBox(jlGetStringResource(Res.string.gui_connected_patterns), null)
         pRight.add(cb15)
-        gb.setConstraints(cb15, jlConstraints(GridBagConstraints.LINE_START, 0, 6, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb15, jlConstraints(GridBagConstraints.LINE_START, 0, 8, Insets(0, 10, 0, 0)))
 
         cb18 = JCheckBox(jlGetStringResource(Res.string.gui_symmetric_patterns), null)
         pRight.add(cb18)
-        gb.setConstraints(cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 7, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb18, jlConstraints(GridBagConstraints.LINE_START, 0, 9, Insets(0, 10, 0, 0)))
 
         cbGroup = JCheckBox(jlGetStringResource(Res.string.gui_group_throws_by_juggler), null)
         pRight.add(cbGroup)
-        gb.setConstraints(cbGroup, jlConstraints(GridBagConstraints.LINE_START, 0, 8, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cbGroup, jlConstraints(GridBagConstraints.LINE_START, 0, 10, Insets(0, 10, 0, 0)))
 
         // Multiplexing specific filters
         cb13 = JCheckBox(jlGetStringResource(Res.string.gui_no_simultaneous_catches), null)
         pRight.add(cb13)
-        gb.setConstraints(cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 9, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb13, jlConstraints(GridBagConstraints.LINE_START, 0, 11, Insets(0, 10, 0, 0)))
 
         cb14 = JCheckBox(jlGetStringResource(Res.string.gui_no_clustered_throws), null)
         pRight.add(cb14)
-        gb.setConstraints(cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 10, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb14, jlConstraints(GridBagConstraints.LINE_START, 0, 12, Insets(0, 10, 0, 0)))
 
         cb16 = JCheckBox(jlGetStringResource(Res.string.gui_true_multiplexing), null)
         pRight.add(cb16)
-        gb.setConstraints(cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 11, Insets(0, 10, 0, 0)))
+        gb.setConstraints(cb16, jlConstraints(GridBagConstraints.LINE_START, 0, 13, Insets(0, 10, 0, 0)))
 
         pMain.add(pRight)
         gb.setConstraints(pRight, jlConstraints(GridBagConstraints.FIRST_LINE_START, 1, 0))
@@ -246,6 +259,13 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         gb.setConstraints(pBottom, jlConstraints(GridBagConstraints.CENTER, 0, 2, Insets(5, BORDER, 5, BORDER)))
 
         // --- Event Listeners ---
+
+        // Rhythm listener
+        comboRhythm.addItemListener { _: ItemEvent? ->
+            val isSync = comboRhythm.selectedIndex == 1
+            cbSyncUseAsterisk.isEnabled = isSync
+            cbSyncSymmetricOnly.isEnabled = isSync
+        }
 
         // Jugglers listener
         comboJugglers.addItemListener { _: ItemEvent? ->
@@ -316,6 +336,9 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
         cb9.isSelected = false  // starting/ending sequences
         cb10.isSelected = false  // pattern rotations
 
+        cbSyncUseAsterisk.isSelected = true   // use '*' for symmetric patterns
+        cbSyncSymmetricOnly.isSelected = false // symmetric patterns only
+
         comboJugglers.selectedIndex = 0 // one juggler
         cb17.isSelected = false  // juggler permutations
         cb15.isSelected = true  // connected patterns
@@ -332,6 +355,10 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
         // Enablement logic
         cb9.isEnabled = true
+
+        // Sync disabled when async
+        cbSyncUseAsterisk.isEnabled = false
+        cbSyncSymmetricOnly.isEnabled = false
 
         // Passing disabled
         cb17.isEnabled = false
@@ -364,6 +391,12 @@ internal class SiteswapGeneratorControlSwing : JPanel() {
 
             if (comboRhythm.selectedIndex == 1) {
                 sb.append(" -s")
+                if (cbSyncSymmetricOnly.isEnabled && cbSyncSymmetricOnly.isSelected) {
+                    sb.append(" -hsym")
+                }
+                if (cbSyncUseAsterisk.isEnabled && !cbSyncUseAsterisk.isSelected) {
+                    sb.append(" -nostar")
+                }
             }
             val jugglers = comboJugglers.selectedIndex + 1
             if (jugglers > 1) {

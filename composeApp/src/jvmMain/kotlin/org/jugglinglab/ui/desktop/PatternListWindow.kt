@@ -432,7 +432,7 @@ class PatternListWindow(
     companion object {
         // used for tiling the windows on the screen as they're created
         private const val NUM_TILES: Int = 8
-        private val TILE_START: Point = Point(0, 580)
+        private val TILE_START: Point = Point(0, 630)
         private val TILE_OFFSET: Point = Point(25, 25)
         private val tileLocations: List<Point> = buildList {
             val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()

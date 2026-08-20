@@ -42,6 +42,8 @@ fun SiteswapGeneratorControl(
     var excitedState by state.excitedState
     var transitionThrows by state.transitionThrows
     var patternRotations by state.patternRotations
+    var syncUseAsterisk by state.syncUseAsterisk
+    var syncSymmetricOnly by state.syncSymmetricOnly
     var jugglerPermutations by state.jugglerPermutations
     var connectedPatterns by state.connectedPatterns
     var symmetricPatterns by state.symmetricPatterns
@@ -55,8 +57,9 @@ fun SiteswapGeneratorControl(
     var passingDelay by state.passingDelay
 
     // logic helpers
-    val isPassing = jugglersIndex > 0 // 0 index = 1 juggler
-    val isMultiplexing = multiplexingIndex > 0 // 0 is "none"
+    val isSync = !rhythmAsync
+    val isPassing = jugglersIndex > 0  // 0 index = 1 juggler
+    val isMultiplexing = multiplexingIndex > 0  // 0 is "none"
 
     // enablement logic
     val passingDelayEnabled = isPassing && groundState && !excitedState
@@ -84,6 +87,8 @@ fun SiteswapGeneratorControl(
         sb.append(balls).append(" ").append(maxThrowVal).append(" ").append(periodVal)
         if (!rhythmAsync) {
             sb.append(" -s")
+            if (syncSymmetricOnly) sb.append(" -hsym")
+            if (!syncUseAsterisk) sb.append(" -nostar")
         }
         val jugglerCount = jugglersIndex + 1
         if (jugglerCount > 1) {
@@ -286,6 +291,18 @@ fun SiteswapGeneratorControl(
                     patternRotations
                 ) { patternRotations = it }
 
+                // Sync options
+                if (isSync) {
+                    JlCheckbox(
+                        stringResource(Res.string.gui_sync_use_asterisk),
+                        syncUseAsterisk
+                    ) { syncUseAsterisk = it }
+                    JlCheckbox(
+                        stringResource(Res.string.gui_sync_symmetric_only),
+                        syncSymmetricOnly
+                    ) { syncSymmetricOnly = it }
+                }
+
                 // Passing options
                 if (isPassing) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -386,6 +403,8 @@ class SiteswapGeneratorState {
     val excitedState = mutableStateOf(true)
     val transitionThrows = mutableStateOf(false)
     val patternRotations = mutableStateOf(false)
+    val syncUseAsterisk = mutableStateOf(true)
+    val syncSymmetricOnly = mutableStateOf(false)
     val jugglerPermutations = mutableStateOf(false)
     val connectedPatterns = mutableStateOf(true)
     val symmetricPatterns = mutableStateOf(false)
@@ -409,6 +428,8 @@ class SiteswapGeneratorState {
         excitedState.value = true
         transitionThrows.value = false
         patternRotations.value = false
+        syncUseAsterisk.value = true
+        syncSymmetricOnly.value = false
         jugglerPermutations.value = false
         connectedPatterns.value = true
         symmetricPatterns.value = false

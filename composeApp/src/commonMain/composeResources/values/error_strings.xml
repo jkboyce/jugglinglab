@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">Included and excluded throws clash</string>
     <string name="error_period_multiple">Pattern period must be a multiple of %1$d</string>
     <string name="error_juggler_permutations">Must include juggler permutations when generating only ground or excited state patterns</string>
+    <string name="error_option_requires_sync_mode">Option "%1$s" is only available in sync mode</string>
     <string name="error">Error</string>
     <string name="error_hand_name">Unrecognized hand name</string>
     <string name="error_event_coordinate">Number format error in &lt;event&gt; coordinate value</string>

@@ -34,6 +34,8 @@
     <string name="gui_excited_state_patterns">padrões exitados</string>
     <string name="gui_transition_throws">tiros de transição</string>
     <string name="gui_pattern_rotations">permutações do padrão</string>
+    <string name="gui_sync_use_asterisk">usar atalho '*'</string>
+    <string name="gui_sync_symmetric_only">apenas padrões simétricos</string>
     <string name="gui_juggler_permutations">permutacões de malabarista</string>
     <string name="gui_connected_patterns">padrões conectados somente</string>
     <string name="gui_symmetric_patterns">Padrões simétricos</string>
@@ -187,6 +189,8 @@ onde as opções incluem:
   -mt            exigir pelo menos um lançamento multiplexado sem retenções
 
   -s             encontrar siteswaps síncronos
+  -hsym          mostrar apenas padrões síncronos simétricos de mãos
+  -nostar        desativar atalho '*' para padrões síncronos simétricos
 
   -j <número>    definir número de malabaristas
   -cp            mostrar apenas padrões de passes conectados

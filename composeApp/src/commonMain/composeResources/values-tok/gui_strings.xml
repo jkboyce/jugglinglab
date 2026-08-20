@@ -34,6 +34,8 @@
     <string name="gui_excited_state_patterns">musi sewi</string>
     <string name="gui_transition_throws">pana tawa ante</string>
     <string name="gui_pattern_rotations">ante sike musi</string>
+    <string name="gui_sync_use_asterisk">kepeken sitelen '*'</string>
+    <string name="gui_sync_symmetric_only">musi samajala taso</string>
     <string name="gui_juggler_permutations">ante jan musi</string>
     <string name="gui_connected_patterns">musi wan</string>
     <string name="gui_symmetric_patterns">musi samajala</string>
@@ -182,6 +184,8 @@ nasin ante li ni:
   -mt            o wile e pana mute wan kepeken awen ala
 
   -s             o alasa e musi tawa wan
+  -hsym          o lukin e musi tawa wan pi luka samajala taso
+  -nostar        o weka e sitelen '*' pi musi tawa wan samajala
 
   -j <nanpa>     o pana e nanpa jan musi
   -cp            o lukin e musi wan taso pi jan mute

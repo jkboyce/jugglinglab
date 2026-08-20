@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">Conflit entre lancers inclus et exclus</string>
     <string name="error_period_multiple">La période du motif doit être un multiple de %1$d</string>
     <string name="error_juggler_permutations">Les permutations de jongleurs nécessitent uniquement des motifs à état fondamental ou excité</string>
+    <string name="error_option_requires_sync_mode">L'option &quot;%1$s&quot; est disponible uniquement en mode synchrone</string>
     <string name="error">Erreur</string>
     <string name="error_hand_name">Nom de main non reconnu</string>
     <string name="error_event_coordinate">Erreur de format numérique dans la coordonnée &lt;event&gt;</string>

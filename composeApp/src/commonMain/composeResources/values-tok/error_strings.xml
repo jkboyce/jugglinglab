@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">pana kama en pana weka li utala</string>
     <string name="error_period_multiple">tenpo musi li wile nanpa %1$d</string>
     <string name="error_juggler_permutations">ante jan musi li wile musi anpa anu sewi taso</string>
+    <string name="error_option_requires_sync_mode">nasin &quot;%1$s&quot; li lon tenpo musi tawa wan taso</string>
     <string name="error">pakala</string>
     <string name="error_hand_name">nimi luka li pakala</string>
     <string name="error_event_coordinate">pakala nanpa lon sitelen &lt;event&gt;</string>

@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">Conflito entre lançamentos incluídos e excluídos</string>
     <string name="error_period_multiple">O período do padrão deve ser múltiplo de %1$d</string>
     <string name="error_juggler_permutations">Permutações de malabaristas exigem apenas padrões de estado fundamental ou excitado</string>
+    <string name="error_option_requires_sync_mode">A opção &quot;%1$s&quot; só está disponível no modo síncrono</string>
     <string name="error">Erro</string>
     <string name="error_hand_name">Nome de mão não reconhecido</string>
     <string name="error_event_coordinate">Erro de formato numérico na coordenada &lt;event&gt;</string>

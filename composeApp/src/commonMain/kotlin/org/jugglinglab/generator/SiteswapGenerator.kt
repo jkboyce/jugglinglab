@@ -850,6 +850,59 @@ class SiteswapGenerator(arg: String) : Generator() {
             }
         }
 
+        // check #3: if -hsym, ensure symmetry is possible / maintained
+        if (config.hsymFlag) {
+            if (lTarget % 4 != 0) {
+                return false
+            }
+            val halfPeriod = lTarget / 2
+            if (beat >= halfPeriod) {
+                val bFirst = beat - halfPeriod
+                for (h in 0..<config.hands) {
+                    val oppHand = h xor 1
+
+                    var count1 = 0
+                    while (count1 < config.maxOccupancy && throwValue[beat][h][count1] > 0) {
+                        count1++
+                    }
+
+                    var count2 = 0
+                    while (count2 < config.maxOccupancy && throwValue[bFirst][oppHand][count2] > 0) {
+                        count2++
+                    }
+
+                    if (count1 != count2) {
+                        return false
+                    }
+                    if (count1 == 0) {
+                        continue
+                    }
+
+                    if (count1 == 1) {
+                        val v1 = throwValue[beat][h][0]
+                        val t1 = throwTo[beat][h][0]
+                        val v2 = throwValue[bFirst][oppHand][0]
+                        val t2 = throwTo[bFirst][oppHand][0]
+
+                        if (v1 != v2 || (t1 xor 1) != t2) {
+                            return false
+                        }
+                    } else {
+                        val list1 = (0..<count1)
+                            .map { k -> throwValue[beat][h][k] to (throwTo[beat][h][k] xor 1) }
+                            .sortedWith(compareBy({ it.first }, { it.second }))
+                        val list2 = (0..<count2)
+                            .map { k -> throwValue[bFirst][oppHand][k] to throwTo[bFirst][oppHand][k] }
+                            .sortedWith(compareBy({ it.first }, { it.second }))
+
+                        if (list1 != list2) {
+                            return false
+                        }
+                    }
+                }
+            }
+        }
+
         return true
     }
 
@@ -1243,6 +1296,65 @@ class SiteswapGenerator(arg: String) : Generator() {
         return 0
     }
 
+    // Determine if a (completed) pattern in sync mode is hand-symmetric, i.e.,
+    // can be printed with the "*" shorthand.
+
+    private fun isSyncPatternSymmetric(): Boolean {
+        if (config.mode != SiteswapGeneratorConfig.SYNC || lTarget % 4 != 0) {
+            return false
+        }
+
+        val halfPeriod = lTarget / 2
+
+        for (b in 0..<halfPeriod) {
+            for (h in 0..<config.hands) {
+                val oppHand = h xor 1
+                val bOpp = b + halfPeriod
+
+                var count1 = 0
+                while (count1 < config.maxOccupancy && throwValue[b][h][count1] > 0) {
+                    count1++
+                }
+
+                var count2 = 0
+                while (count2 < config.maxOccupancy && throwValue[bOpp][oppHand][count2] > 0) {
+                    count2++
+                }
+
+                if (count1 != count2) {
+                    return false
+                }
+                if (count1 == 0) {
+                    continue
+                }
+
+                if (count1 == 1) {
+                    val v1 = throwValue[b][h][0]
+                    val t1 = throwTo[b][h][0]
+                    val v2 = throwValue[bOpp][oppHand][0]
+                    val t2 = throwTo[bOpp][oppHand][0]
+
+                    if (v1 != v2 || (t1 xor 1) != t2) {
+                        return false
+                    }
+                } else {
+                    val list1 = (0..<count1)
+                        .map { k -> throwValue[b][h][k] to (throwTo[b][h][k] xor 1) }
+                        .sortedWith(compareBy({ it.first }, { it.second }))
+                    val list2 = (0..<count2)
+                        .map { k -> throwValue[bOpp][oppHand][k] to throwTo[bOpp][oppHand][k] }
+                        .sortedWith(compareBy({ it.first }, { it.second }))
+
+                    if (list1 != list2) {
+                        return false
+                    }
+                }
+            }
+        }
+
+        return true
+    }
+
     // Output a single throw value to a StringBuilder.
 
     private fun outputThrowValue(value: Int, sb: StringBuilder) {
@@ -1387,6 +1499,12 @@ class SiteswapGenerator(arg: String) : Generator() {
     // current pattern.
 
     private fun createPatternString(beats: Int): String {
+        if (config.mode == SiteswapGeneratorConfig.SYNC && beats == lTarget &&
+            !config.nostarFlag && (config.hsymFlag || isSyncPatternSymmetric())
+        ) {
+            return createPatternString(lTarget / 2) + "*"
+        }
+
         val sb = StringBuilder()
         if (config.groupByJuggler && config.jugglers > 1) {
             sb.append('<')

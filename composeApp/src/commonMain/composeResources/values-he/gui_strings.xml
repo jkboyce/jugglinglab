@@ -34,6 +34,8 @@
     <string name="gui_excited_state_patterns">תבניות ממצב &quot;נרגש&quot;</string>
     <string name="gui_transition_throws">זריקות מעבר</string>
     <string name="gui_pattern_rotations">סבב תבניות</string>
+    <string name="gui_sync_use_asterisk">השתמש בקיצור '*'</string>
+    <string name="gui_sync_symmetric_only">תבניות סימטריות בלבד</string>
     <string name="gui_juggler_permutations">תמורות ג'אגלרים</string>
     <string name="gui_connected_patterns">תבניות מחוברות בלבד</string>
     <string name="gui_symmetric_patterns">תבניות סימטריות</string>
@@ -184,6 +186,8 @@
   -mt            דרוש לפחות זריקת מולטיפלקס אחת ללא החזקות
 
   -s             מצא תבניות siteswap סינכרוניות
+  -hsym          הצג תבניות סינכרוניות עם סימטריית ידיים בלבד
+  -nostar        בטל קיצור '*' לתבניות סינכרוניות סימטריות
 
   -j <מספר>      הגדר מספר ג'אגלרים
   -cp            הצג תבניות מסירה מחוברות בלבד

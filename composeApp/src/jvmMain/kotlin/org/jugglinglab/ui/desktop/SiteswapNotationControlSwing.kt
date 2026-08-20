@@ -66,7 +66,7 @@ class SiteswapNotationControlSwing : JPanel() {
                 GridBagConstraints.FIRST_LINE_END, 0, 0, Insets(15, BORDER, 0, HSPACING)
             )
         )
-        tf1 = JTextArea(2, 19).apply {
+        tf1 = JTextArea(3, 19).apply {
             lineWrap = true
             wrapStyleWord = false
 

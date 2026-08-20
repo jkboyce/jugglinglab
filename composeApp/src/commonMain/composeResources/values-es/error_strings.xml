@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">Conflicto entre tiros incluidos y excluidos</string>
     <string name="error_period_multiple">El período del patrón debe ser múltiplo de %1$d</string>
     <string name="error_juggler_permutations">Las permutaciones de malabaristas requieren solo patrones de estado fundamental o excitado</string>
+    <string name="error_option_requires_sync_mode">La opción &quot;%1$s&quot; solo está disponible en modo sincrónico</string>
     <string name="error">Error</string>
     <string name="error_hand_name">Nombre de mano no reconocido</string>
     <string name="error_event_coordinate">Error de formato numérico en coordenada &lt;event&gt;</string>

@@ -34,6 +34,8 @@
     <string name="gui_excited_state_patterns">excited state patterns</string>
     <string name="gui_transition_throws">transition throws</string>
     <string name="gui_pattern_rotations">pattern rotations</string>
+    <string name="gui_sync_use_asterisk">use '*' shorthand</string>
+    <string name="gui_sync_symmetric_only">symmetric patterns only</string>
     <string name="gui_juggler_permutations">juggler permutations</string>
     <string name="gui_connected_patterns">connected patterns</string>
     <string name="gui_symmetric_patterns">symmetric patterns</string>
@@ -183,7 +185,9 @@ where options include:
   -mc            disallow multiplex clustered throws (e.g., [33])
   -mt            require at least one multiplexed throw with no holds
 
-  -s             find synchronous siteswaps
+  -s             find synchronous patterns
+  -hsym          show only hand-symmetric sync patterns
+  -nostar        disable '*' shorthand for hand-symmetric sync patterns
 
   -j <number>    set number of jugglers
   -cp            show only connected passing patterns

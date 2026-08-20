@@ -8,8 +8,10 @@
 
 package org.jugglinglab.generator
 
+import org.jugglinglab.util.JuggleExceptionUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
@@ -122,6 +124,67 @@ class SiteswapGeneratorTest {
         val index = patternsStandard.indexOf("<3p|3p><3|3>")
         assertTrue(index >= 0)
         assertEquals("<3p 3|3p 3>", patternsGrouped[index])
+    }
+
+    @Test
+    fun `generator hsym and nostar sync flags parsing`() {
+        val configHsym = SiteswapGeneratorConfig(listOf("4", "6", "6", "-s", "-hsym"))
+        assertTrue(configHsym.hsymFlag)
+        assertTrue(!configHsym.nostarFlag)
+        assertEquals(SiteswapGeneratorConfig.SYNC, configHsym.mode)
+
+        val configNostar = SiteswapGeneratorConfig(listOf("4", "6", "6", "-s", "-nostar"))
+        assertTrue(!configNostar.hsymFlag)
+        assertTrue(configNostar.nostarFlag)
+        assertEquals(SiteswapGeneratorConfig.SYNC, configNostar.mode)
+    }
+
+    @Test
+    fun `generator hsym and nostar require sync mode`() {
+        val exHsym = assertFailsWith<JuggleExceptionUser> {
+            SiteswapGeneratorConfig(listOf("4", "6", "6", "-hsym"))
+        }
+        assertEquals(exHsym.message?.contains("-hsym"), true)
+
+        val exNostar = assertFailsWith<JuggleExceptionUser> {
+            SiteswapGeneratorConfig(listOf("4", "6", "6", "-nostar"))
+        }
+        assertEquals(exNostar.message?.contains("-nostar"), true)
+    }
+
+    @Test
+    fun `generator sync pattern symmetry and star shorthand`() = runTest {
+        val patternsDefault = runGeneratorTestCase("3 4 4 -s -f")
+        assertTrue(patternsDefault.contains("(2x,4)*"))
+        assertTrue(!patternsDefault.contains("(2x,4)(4,2x)"))
+
+        val patternsNoStar = runGeneratorTestCase("3 4 4 -s -f -nostar")
+        assertTrue(patternsNoStar.contains("(2x,4)(4,2x)"))
+        assertTrue(!patternsNoStar.contains("(2x,4)*"))
+    }
+
+    @Test
+    fun `generator sync hsym option`() = runTest {
+        val patternsHsym = runGeneratorTestCase("3 4 4 -s -f -hsym")
+        assertTrue(patternsHsym.isNotEmpty())
+        assertTrue(patternsHsym.all { it.endsWith("*") })
+
+        val patternsHsymNoStar = runGeneratorTestCase("3 4 4 -s -f -hsym -nostar")
+        assertTrue(patternsHsymNoStar.isNotEmpty())
+        assertTrue(patternsHsymNoStar.contains("(2x,4)(4,2x)"))
+        assertTrue(!patternsHsymNoStar.contains("(2x,4)*"))
+    }
+
+    @Test
+    fun `generator sync hsym pruning`() = runTest {
+        // Period 2 cannot be hand-symmetric, so -hsym should prune to 0 patterns
+        val patternsPeriod2 = runGeneratorTestCase("3 4 2 -s -f -hsym")
+        assertTrue(patternsPeriod2.isEmpty())
+
+        // Range 2-4 with -hsym should only return period 4 patterns
+        val patternsRange = runGeneratorTestCase("3 4 2-4 -s -f -hsym")
+        assertTrue(patternsRange.isNotEmpty())
+        assertTrue(patternsRange.all { it.endsWith("*") })
     }
 
     // TODO:

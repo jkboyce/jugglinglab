@@ -50,6 +50,7 @@
     <string name="error_included_excluded_clash">יש התנגשות בין הזריקות לכלול והזריקות לשלול</string>
     <string name="error_period_multiple">משך התבנית חייב להיות מכפלה של %1$d</string>
     <string name="error_juggler_permutations">חובה לכלול תחלופת ג'אגלרים כשמריצים רק תבניות ממצב התחלה וממצב נרגש</string>
+    <string name="error_option_requires_sync_mode">האפשרות &quot;%1$s&quot; זמינה רק במצב סינכרוני</string>
     <string name="error">שגיאה</string>
     <string name="error_hand_name">שם יד בלתי מזוהה</string>
     <string name="error_event_coordinate">שגיאה בפורמט מספרי בקואורדינטות &lt;event&gt;</string>
