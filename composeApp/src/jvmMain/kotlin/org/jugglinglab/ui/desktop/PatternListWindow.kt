@@ -19,6 +19,7 @@ import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.jlHandleUserException
 import org.jugglinglab.util.jlIsMacOs
+import org.jugglinglab.util.jlIsLinux
 import org.jugglinglab.util.jlJfc
 import org.jugglinglab.util.jlBaseFileDirectory
 import org.jugglinglab.util.jlSanitizeFilename
@@ -432,7 +433,10 @@ class PatternListWindow(
     companion object {
         // used for tiling the windows on the screen as they're created
         private const val NUM_TILES: Int = 8
-        private val TILE_START: Point = Point(0, 630)
+        private val TILE_START: Point = when {
+            jlIsLinux -> Point(0, 660)
+            else -> Point(0, 630)
+        }
         private val TILE_OFFSET: Point = Point(25, 25)
         private val tileLocations: List<Point> = buildList {
             val center = GraphicsEnvironment.getLocalGraphicsEnvironment().getCenterPoint()

@@ -46,8 +46,8 @@ android {
         applicationId = "com.jonglen7.jugglinglab"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 16
-        versionName = "1.7.6"
+        versionCode = 17
+        versionName = "1.7.7"
     }
     packaging {
         resources {
