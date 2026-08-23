@@ -551,3 +551,13 @@ expect fun jlPlayBounceSound(volume: Float = 1f)
 expect fun BackHandler(enabled: Boolean = true, onBack: () -> Unit)
 
 expect fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier
+
+//------------------------------------------------------------------------------
+// Helpers for UI elements
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+expect fun PatternListScrollbar(
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    modifier: Modifier = Modifier
+)

@@ -17,6 +17,7 @@ import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.jlIsWeb
+import org.jugglinglab.util.PatternListScrollbar
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -266,6 +267,11 @@ fun PatternListView(
                     )
                 }
             }
+
+            PatternListScrollbar(
+                listState = listState,
+                modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd).fillMaxHeight()
+            )
         }
 
         PatternListDialogs(

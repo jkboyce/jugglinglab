@@ -313,3 +313,14 @@ actual fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Mo
     // No-op on Android; back is initiated by back button
     return this
 }
+
+//------------------------------------------------------------------------------
+// Helpers for UI elements
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+actual fun PatternListScrollbar(
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    modifier: Modifier
+) {
+}

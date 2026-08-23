@@ -16,6 +16,7 @@ import org.jugglinglab.core.Constants
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.skia.Image
 import okio.fakefilesystem.FakeFileSystem
@@ -649,4 +650,27 @@ actual fun BackHandler(enabled: Boolean, onBack: () -> Unit) {
 
 actual fun Modifier.backGestureHandler(enabled: Boolean, onBack: () -> Unit): Modifier {
     return this
+}
+
+//------------------------------------------------------------------------------
+// Helpers for UI elements
+//------------------------------------------------------------------------------
+
+@androidx.compose.runtime.Composable
+actual fun PatternListScrollbar(
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    modifier: Modifier
+) {
+    if (!jlIsTouchInterface) {
+        val scrollbarStyle = androidx.compose.foundation.defaultScrollbarStyle().copy(
+            thickness = 16.dp,
+            unhoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+            hoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+        )
+        androidx.compose.foundation.VerticalScrollbar(
+            adapter = androidx.compose.foundation.rememberScrollbarAdapter(listState),
+            modifier = modifier,
+            style = scrollbarStyle
+        )
+    }
 }

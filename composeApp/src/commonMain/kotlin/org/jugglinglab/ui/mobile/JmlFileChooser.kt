@@ -14,6 +14,7 @@ import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
+import org.jugglinglab.util.PatternListScrollbar
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
@@ -22,6 +23,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.defaultMinSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -307,6 +309,11 @@ fun JmlFileChooser(
                     }
                 }
             }
+
+            PatternListScrollbar(
+                listState = listState,
+                modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd).fillMaxHeight()
+            )
 
             if (isBusy) {
                 Box(
