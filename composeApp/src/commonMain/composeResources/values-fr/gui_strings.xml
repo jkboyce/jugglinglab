@@ -264,6 +264,11 @@ Exemples :
       Convertit un motif au format JML, la description XML interne de
       Juggling Lab.
 
+   jlab tolayout <motif> [-prefs <préférences>] [-out <chemin>]
+      Extrait la disposition physique complète du motif au format JSON. Le taux
+      d'échantillonnage est spécifié par "fps" dans <préférences> ; la valeur
+      par défaut est fps=100. La sortie peut être enregistrée dans un fichier.
+
    jlab verify [-tojml] <fichier1.jml> <fichier2.jml> ... [-out <chemin>]
       Vérifie la validité des fichiers JML listés.
 
@@ -282,6 +287,7 @@ Préférences d'animation :
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml mon_motif_prefere.jml
    jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5
    jlab trans 5 771]]></string>

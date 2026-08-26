@@ -260,6 +260,11 @@ Exemplos:
       Converte um padrão para a notação JML, a descrição XML interna do
       Juggling Lab.
 
+   jlab tolayout <padrão> [-prefs <preferências>] [-out <caminho>]
+      Extrai o layout físico completo do padrão como JSON. A taxa de
+      amostragem é fornecida como "fps" em <preferências>; o padrão é fps=100.
+      A saída pode ser gravada em um arquivo.
+
    jlab verify [-tojml] <arquivo1.jml> <arquivo2.jml> ... [-out <caminho>]
       Verifica a validade dos arquivos JML listados.
 
@@ -278,6 +283,7 @@ Preferências de animação:
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml meu_padrao_favorito.jml
    jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5
    jlab trans 5 771]]></string>

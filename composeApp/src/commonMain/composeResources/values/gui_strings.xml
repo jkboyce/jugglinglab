@@ -261,6 +261,11 @@ Examples:
       Converts a pattern to JML notation, Juggling Lab's internal XML-based
       pattern description. This may optionally be written to a file.
 
+   jlab tolayout <pattern> [-prefs <prefs>] [-out <path>]
+      Extracts the pattern's fully resolved physical layout as JSON. The sample
+      rate is given as "fps" in <prefs>; default is fps=100. The output may
+      optionally be written to a file.
+
    jlab verify [-tojml] <file1.jml> <file2.jml> ... [-out <path>]
       Checks the validity of the listed JML files. For pattern list files, the
       validity of each line within the list is verified. The output may
@@ -290,6 +295,7 @@ around settings to avoid confusion, and single quotes on macOS/Unix.
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml my_favorite_pattern.jml
    jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5
    jlab trans 5 771]]></string>

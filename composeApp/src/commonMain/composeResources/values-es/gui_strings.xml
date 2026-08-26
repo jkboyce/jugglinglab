@@ -264,6 +264,11 @@ Ejemplos:
       Convierte un patrón a notación JML, la descripción interna de patrones
       en XML de Juggling Lab.
 
+   jlab tolayout <patrón> [-prefs <preferencias>] [-out <ruta>]
+      Extrae la disposición física completa del patrón como JSON. La frecuencia
+      de muestreo se especifica como "fps" en <preferencias>; por defecto es
+      fps=100. La salida se puede escribir en un archivo.
+
    jlab verify [-tojml] <archivo1.jml> <archivo2.jml> ... [-out <ruta>]
       Comprueba la validez de los archivos JML listados. Para archivos de lista
       de patrones, se verifica cada línea.
@@ -288,6 +293,7 @@ NOTA: Tenga cuidado al usar caracteres especiales en la consola de comandos.]]><
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml mi_patron_favorito.jml
    jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5
    jlab trans 5 771]]></string>

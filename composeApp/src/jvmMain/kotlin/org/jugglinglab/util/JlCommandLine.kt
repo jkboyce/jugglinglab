@@ -22,6 +22,8 @@ import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.ui.desktop.ApplicationWindow
 import org.jugglinglab.ui.desktop.PatternWindow
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlin.coroutines.cancellation.CancellationException
 import java.awt.Desktop
 import java.awt.desktop.AboutEvent
@@ -103,7 +105,7 @@ object JlCommandLine {
             return
         }
 
-        val showHelp = firstarg !in listOf("gen", "trans", "verify", "anim", "togif", "tojml")
+        val showHelp = firstarg !in listOf("gen", "trans", "verify", "anim", "togif", "tojml", "tolayout")
         if (showHelp) {
             doHelp(firstarg)
             return
@@ -154,6 +156,11 @@ object JlCommandLine {
 
         if (firstarg == "tojml") {
             doTojml(pat, outpath, jc)
+            return
+        }
+
+        if (firstarg == "tolayout") {
+            doTolayout(pat, outpath, jc)
             return
         }
     }
@@ -684,6 +691,36 @@ object JlCommandLine {
 
         if (jc != null) {
             println("Note: Animator prefs not used in jml output mode; ignored")
+        }
+    }
+
+    // Output the pattern's resolved physical layout (juggler, hand, and prop
+    // positions over time) as JSON.
+    //
+    // Sample rate is read from `-prefs fps=...` (other AnimationPrefs fields
+    // ignored), defaulting to fps=100 if not given.
+
+    private fun doTolayout(pat: JmlPattern, outpath: Path?, prefs: AnimationPrefs?) {
+        val fps = prefs?.fps ?: 100.0
+
+        try {
+            val export = buildLayoutExport(pat, fps)
+            val json = Json { prettyPrint = true; encodeDefaults = true }
+            val text = json.encodeToString(export)
+
+            if (outpath == null) {
+                println(text)
+            } else {
+                outpath.toFile().writeText(text)
+            }
+        } catch (jeu: JuggleExceptionUser) {
+            println("Error: ${jeu.message}")
+        } catch (jei: JuggleExceptionInternal) {
+            println("Internal Error: ${jei.message}")
+        } catch (_: IOException) {
+            println("Error: Problem writing layout data to path $outpath")
+        } catch (_: Throwable) {
+            println("General Error")
         }
     }
 }

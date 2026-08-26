@@ -244,6 +244,9 @@ Ejemplos:
    jlab tojml <musi> [-out <nasin_lipu>]
       o ante e musi tawa sitelen JML XML.
 
+   jlab tolayout <musi> [-prefs <nasin>] [-out <nasin_lipu>]
+      o pana e nasin sijelo pi musi tawa lon lipu JSON.
+
    jlab verify [-tojml] <lipu1.jml> <lipu2.jml> ... [-out <nasin_lipu>]
       o lukin e pona pi lipu JML ni.]]></string>
     <string name="gui_cli_help2"><![CDATA[Ejemplos:
@@ -251,6 +254,7 @@ Ejemplos:
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml musi_pona_mi.jml
    jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5
    jlab trans 5 771]]></string>

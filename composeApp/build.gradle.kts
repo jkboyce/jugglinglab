@@ -31,6 +31,7 @@ plugins {
     alias(libs.plugins.composeHotReload)
     alias(libs.plugins.shadowJar)
     alias(libs.plugins.antlrKotlin)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 group = "org.jugglinglab"
@@ -106,6 +107,7 @@ kotlin {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutines.swing)
             implementation(libs.google.ortools)
+            implementation(libs.kotlinx.serialization.json)
         }
         wasmJsMain.dependencies {
             implementation(libs.okio.fakefilesystem)
