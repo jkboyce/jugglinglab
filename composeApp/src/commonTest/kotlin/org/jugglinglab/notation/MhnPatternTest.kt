@@ -98,5 +98,12 @@ class MhnPatternTest {
         SiteswapPattern().fromString("pattern=3;bps=0").asJmlPattern()
         SiteswapPattern().fromString("pattern=3;bps=-1").asJmlPattern()
     }
-}
 
+    @Test
+    fun `test passing pattern multiplex invalid symmetry`() {
+        assertFailsWith<JuggleExceptionUser> {
+            val pattern = SiteswapPattern().fromString("<(4p,4p)|(4p,0p)><(4,0)|(4,4)>")
+            pattern.asJmlPattern()
+        }
+    }
+}

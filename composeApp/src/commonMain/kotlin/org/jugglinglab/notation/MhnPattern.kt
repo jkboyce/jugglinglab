@@ -974,7 +974,7 @@ abstract class MhnPattern : Pattern() {
                                             ?: throw JuggleExceptionUser(
                                                 jlGetStringResource(Res.string.error_badpattern_paths)
                                             )
-                                        if ((sst.pathNum == 0) || (sst2.pathNum == 0)) {
+                                        if (sst.pathNum <= 0 || sst2.pathNum <= 0) {
                                             throw JuggleExceptionUser(
                                                 jlGetStringResource(Res.string.error_badpattern_paths)
                                             )
@@ -1012,7 +1012,7 @@ abstract class MhnPattern : Pattern() {
                                             ?: throw JuggleExceptionUser(
                                                 jlGetStringResource(Res.string.error_badpattern_paths)
                                             )
-                                        if (sst.pathNum == 0 || sst2.pathNum == 0) {
+                                        if (sst.pathNum <= 0 || sst2.pathNum <= 0) {
                                             throw JuggleExceptionUser(
                                                 jlGetStringResource(Res.string.error_badpattern_paths)
                                             )
@@ -1036,6 +1036,12 @@ abstract class MhnPattern : Pattern() {
                     jlGetStringResource(Res.string.error_unknown_symmetry)
                 )
             }
+            if ((1..balls).any { pathmap[it] <= 0 }) {
+                throw JuggleExceptionUser(
+                    jlGetStringResource(Res.string.error_badpattern_paths)
+                )
+            }
+
             // convert path mapping to a string
             var pathmapstring = ""
             for (j in 1..<balls) {
