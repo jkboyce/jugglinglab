@@ -12,6 +12,7 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
+import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.PatternListScrollbar
@@ -310,10 +311,13 @@ fun JmlFileChooser(
                 }
             }
 
-            PatternListScrollbar(
-                listState = listState,
-                modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd).fillMaxHeight()
-            )
+            if (!jlIsTouchInterface) {
+                PatternListScrollbar(
+                    listState = listState,
+                    modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd)
+                        .fillMaxHeight()
+                )
+            }
 
             if (isBusy) {
                 Box(

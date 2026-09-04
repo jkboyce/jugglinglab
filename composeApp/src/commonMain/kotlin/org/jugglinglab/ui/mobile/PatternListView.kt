@@ -268,10 +268,13 @@ fun PatternListView(
                 }
             }
 
-            PatternListScrollbar(
-                listState = listState,
-                modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd).fillMaxHeight()
-            )
+            if (!jlIsTouchInterface) {
+                PatternListScrollbar(
+                    listState = listState,
+                    modifier = Modifier.align(androidx.compose.ui.Alignment.CenterEnd)
+                        .fillMaxHeight()
+                )
+            }
         }
 
         PatternListDialogs(

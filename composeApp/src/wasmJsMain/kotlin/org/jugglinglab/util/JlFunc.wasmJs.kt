@@ -661,16 +661,14 @@ actual fun PatternListScrollbar(
     listState: androidx.compose.foundation.lazy.LazyListState,
     modifier: Modifier
 ) {
-    if (!jlIsTouchInterface) {
-        val scrollbarStyle = androidx.compose.foundation.defaultScrollbarStyle().copy(
-            thickness = 16.dp,
-            unhoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
-            hoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
-        )
-        androidx.compose.foundation.VerticalScrollbar(
-            adapter = androidx.compose.foundation.rememberScrollbarAdapter(listState),
-            modifier = modifier,
-            style = scrollbarStyle
-        )
-    }
+    val scrollbarStyle = androidx.compose.foundation.defaultScrollbarStyle().copy(
+        thickness = 16.dp,
+        unhoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.35f),
+        hoverColor = androidx.compose.material3.MaterialTheme.colorScheme.onSurface.copy(alpha = 0.65f)
+    )
+    androidx.compose.foundation.VerticalScrollbar(
+        adapter = androidx.compose.foundation.rememberScrollbarAdapter(listState),
+        modifier = modifier,
+        style = scrollbarStyle
+    )
 }

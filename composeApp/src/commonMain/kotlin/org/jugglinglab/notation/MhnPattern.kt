@@ -820,7 +820,7 @@ abstract class MhnPattern : Pattern() {
             println(JmlPattern.fromPatternBuilder(record))
         }
 
-        // Step 10: Select the primary events, and build the pattern.
+        // Step 10: Select the primary events, and build the pattern
         record.selectPrimaryEvents()
         var result = JmlPattern.fromPatternBuilder(record)
         if (Constants.DEBUG_PATTERN_CREATION) {
@@ -899,6 +899,13 @@ abstract class MhnPattern : Pattern() {
                     result = newResult
                 }
             }
+        }
+
+        // Step 12: Reorder transitions within each event
+        result = reorderTransitions(result)
+        if (Constants.DEBUG_PATTERN_CREATION) {
+            println("After step 12:")
+            println(result)
         }
 
         if (colors != null) {
@@ -1878,6 +1885,92 @@ abstract class MhnPattern : Pattern() {
         }
     }
 
+    // Reorder transitions within each event. This has no functional impact but
+    // makes patterns look nicer in the ladder diagram.
+    // - All <holding> transitions go before non-<holding> transitions
+    // - In events with multiple <holding> transitions, order the holds to make
+    //   the path ordering the same as the transitions in the previous event for
+    //   that hand
+    // - In events with multiple <throw> transitions, order the throws to make
+    //   the path ordering the same as the transitions in the previous event for
+    //   that hand
+    // - Otherwise, ordering among the <holding> transitions, and among the
+    //   non-<holding> transitions, is preserved
+
+    protected fun reorderTransitions(pat: JmlPattern): JmlPattern {
+        // First pass: <holding> transitions before non-<holding> transitions
+        var newPattern = pat.copy(
+            events = pat.events.map { ev ->
+                if (ev.transitions.size <= 1) {
+                    ev
+                } else {
+                    val (holds, nonHolds) =
+                        ev.transitions.partition { it.type == JmlTransition.TRANS_HOLDING }
+                    ev.copy(transitions = holds + nonHolds)
+                }
+            }
+        )
+
+        // Second pass: events with multiple <holding> or <throw> transitions
+        var changed = true
+        var iterations = 0
+        val maxIterations = newPattern.events.size + 1
+        while (changed && iterations < maxIterations) {
+            changed = false
+            iterations++
+            for (i in newPattern.events.indices) {
+                val ev = newPattern.events[i]
+                val holdsCount = ev.transitions.count { it.type == JmlTransition.TRANS_HOLDING }
+                val throwsCount = ev.transitions.count { it.type == JmlTransition.TRANS_THROW }
+                if (holdsCount <= 1 && throwsCount <= 1) {
+                    continue
+                }
+
+                val prevEvent = try {
+                    newPattern.prevForHandFromEvent(ev).event
+                } catch (_: Exception) {
+                    null
+                }
+                if (prevEvent == null || prevEvent.transitions.isEmpty()) {
+                    continue
+                }
+
+                val prevPaths = prevEvent.transitions.map { it.path }
+                val (holds, nonHolds) =
+                    ev.transitions.partition { it.type == JmlTransition.TRANS_HOLDING }
+                val (throws, otherNonHolds) =
+                    nonHolds.partition { it.type == JmlTransition.TRANS_THROW }
+
+                val sortedHolds = if (holdsCount > 1) {
+                    holds.sortedBy {
+                        val idx = prevPaths.indexOf(it.path)
+                        if (idx == -1) Int.MAX_VALUE else idx
+                    }
+                } else {
+                    holds
+                }
+
+                val sortedThrows = if (throwsCount > 1) {
+                    throws.sortedBy {
+                        val idx = prevPaths.indexOf(it.path)
+                        if (idx == -1) Int.MAX_VALUE else idx
+                    }
+                } else {
+                    throws
+                }
+
+                val newTransitions = sortedHolds + sortedThrows + otherNonHolds
+                if (newTransitions != ev.transitions) {
+                    val newEvents = newPattern.events.toMutableList()
+                    newEvents[i] = ev.copy(transitions = newTransitions)
+                    newPattern = newPattern.copy(events = newEvents)
+                    changed = true
+                }
+            }
+        }
+        return newPattern
+    }
+
     companion object {
         const val BPS_DEFAULT: Double = -1.0 // calculate bps
         const val BPS_MIN: Double = 0.05
@@ -1934,36 +2027,52 @@ abstract class MhnPattern : Pattern() {
         // Maximum allowed time without events for a given hand, in seconds
         protected const val SECS_EVENT_GAP_MAX: Double = 0.5
 
-        // Helper to decide whether the catches immediately prior to the two given
-        // throws should be made in the order given, or whether they should be switched.
+        // Helper to decide whether the catches feeding into the two given
+        // throws should be made in the order given. I.e., we assume that the
+        // object for `t1` is caught before the object for `t2` – is this
+        // incorrect?
         //
-        // JKB: The following implementation isn't ideal; we would like a function that
-        // is invariant with respect to the various pattern symmetries we can apply,
-        // but I don't think this is possible with respect to the jugglers.
+        // This is only called to evaluate two throws from the same hand, so we
+        // can assume that t1 and t2 have identical jugglers / hands / indexes.
+        //
+        // JKB: The following implementation isn't ideal; we would like a
+        // function that is invariant with respect to the various pattern
+        // symmetries we can apply, but I don't think this is possible with
+        // respect to the jugglers.
 
         protected fun isCatchOrderIncorrect(t1: MhnThrow, t2: MhnThrow): Boolean {
+            require(t1.juggler == t2.juggler)
+            require(t1.hand == t2.hand)
+            require(t1.index == t2.index)
+
             // first look at the time spent in the air; catch higher throws first
-            if (t1.source!!.index > t2.source!!.index) {
-                return true
-            }
-            if (t1.source!!.index < t2.source!!.index) {
-                return false
+            if (t1.source!!.index != t2.source!!.index) {
+                return t1.source!!.index > t2.source!!.index
             }
 
-            // look at which juggler it's from; catch from "faraway" jugglers first
+            // catch from "faraway" jugglers first
             val jdiff1 = abs(t1.juggler - t1.source!!.juggler)
             val jdiff2 = abs(t2.juggler - t2.source!!.juggler)
-            if (jdiff1 < jdiff2) {
-                return true
-            }
-            if (jdiff1 > jdiff2) {
-                return false
+            if (jdiff1 != jdiff2) {
+                return jdiff1 < jdiff2
             }
 
-            // look at which hand it's from; catch from same hand first
-            val hdiff1 = abs(t1.hand - t1.source!!.hand)
-            val hdiff2 = abs(t2.hand - t2.source!!.hand)
-            return hdiff1 > hdiff2
+            // catch from same-handed throws first
+            val sameHand1 = (t1.source!!.hand == t1.hand)
+            val sameHand2 = (t2.source!!.hand == t2.hand)
+            if (sameHand1 != sameHand2) {
+                return !sameHand1
+            }
+
+            // catch from lower-numbered jugglers first (weird rule but we need
+            // a tie-breaker)
+            if (t1.source!!.juggler != t2.source!!.juggler) {
+                return t1.source!!.juggler > t2.source!!.juggler
+            }
+
+            // for equal-valued throws from the same location, catch later
+            // throw slots first so they correspond to lower throws
+            return t1.source!!.slot < t2.source!!.slot
         }
     }
 }
