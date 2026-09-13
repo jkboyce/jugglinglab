@@ -100,32 +100,38 @@ abstract class MhnPattern : Pattern() {
 
         var temp: String?
         if ((pl.removeParameter("bps").also { temp = it }) != null) {
-            try {
-                bpsSet = temp!!.toDouble()
-                if (bpsSet > 0.0 && (bpsSet !in BPS_MIN..BPS_MAX)) {
-                    val message = jlGetStringResource(
-                        Res.string.error_bps_range,
-                        jlToStringRounded(BPS_MIN, 2),
-                        BPS_MAX.toInt().toString()
-                    )
+            val trimmed = temp!!.trim()
+            if (trimmed.isNotEmpty()) {
+                try {
+                    bpsSet = trimmed.toDouble()
+                    if (bpsSet > 0.0 && (bpsSet !in BPS_MIN..BPS_MAX)) {
+                        val message = jlGetStringResource(
+                            Res.string.error_bps_range,
+                            jlToStringRounded(BPS_MIN, 2),
+                            BPS_MAX.toInt().toString()
+                        )
+                        throw JuggleExceptionUser(message)
+                    }
+                    bps = bpsSet
+                } catch (_: NumberFormatException) {
+                    val message = jlGetStringResource(Res.string.error_bps_value)
                     throw JuggleExceptionUser(message)
                 }
-                bps = bpsSet
-            } catch (_: NumberFormatException) {
-                val message = jlGetStringResource(Res.string.error_bps_value)
-                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("dwell").also { temp = it }) != null) {
-            try {
-                dwell = temp!!.toDouble()
-                if (dwell <= 0 || dwell >= 2) {
-                    val message = jlGetStringResource(Res.string.error_dwell_range)
+            val trimmed = temp!!.trim()
+            if (trimmed.isNotEmpty()) {
+                try {
+                    dwell = trimmed.toDouble()
+                    if (dwell <= 0 || dwell >= 2) {
+                        val message = jlGetStringResource(Res.string.error_dwell_range)
+                        throw JuggleExceptionUser(message)
+                    }
+                } catch (_: NumberFormatException) {
+                    val message = jlGetStringResource(Res.string.error_dwell_value)
                     throw JuggleExceptionUser(message)
                 }
-            } catch (_: NumberFormatException) {
-                val message = jlGetStringResource(Res.string.error_dwell_value)
-                throw JuggleExceptionUser(message)
             }
         }
         if ((pl.removeParameter("hands").also { temp = it }) != null) {

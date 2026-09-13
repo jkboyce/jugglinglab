@@ -131,6 +131,8 @@ class SiteswapPattern : MhnPattern() {
                 println("---------------")
             }
             throw JuggleExceptionUser(spe.message!!)
+        } catch (jeu: JuggleExceptionUser) {
+            throw jeu
         } catch (_: Throwable) {
             val message =
                 jlGetStringResource(Res.string.error_pattern_parsing, "Could not parse format")

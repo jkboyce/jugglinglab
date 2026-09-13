@@ -145,11 +145,13 @@ fun SiteswapNotationControl(
         if (propIndex != 0 && propIndex < Prop.builtinProps.size) {
             sb.append(";prop=").append(Prop.builtinProps[propIndex].lowercase())
         }
-        if (dwellBeats.isNotEmpty() && dwellBeats != "1.3") {
-            sb.append(";dwell=").append(dwellBeats)
+        val dwell = dwellBeats.trim()
+        if (dwell.isNotEmpty() && dwell != jlToStringRounded(MhnPattern.DWELL_DEFAULT, 2)) {
+            sb.append(";dwell=").append(dwell)
         }
-        if (beatsPerSecond.isNotEmpty()) {
-            sb.append(";bps=").append(beatsPerSecond)
+        val bps = beatsPerSecond.trim()
+        if (bps.isNotEmpty()) {
+            sb.append(";bps=").append(bps)
         }
         if (handParams.isNotEmpty()) {
             sb.append(";hands=").append(handParams)

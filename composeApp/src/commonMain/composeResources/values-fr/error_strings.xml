@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">Le même objet atterrit deux fois au même moment</string>
     <string name="error_right_hand">Main droite</string>
     <string name="error_left_hand">Main gauche</string>
+    <string name="error_right">droite</string>
+    <string name="error_left">gauche</string>
     <string name="error_badpattern_paths">Le nombre de trajectoires ne correspond pas au nombre d'objets</string>
     <string name="error_badpattern_delay">Le délai de passe doit être un entier non négatif</string>
     <string name="error_badpattern_switchdelay">Le délai de changement doit être un entier non négatif</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">Les accolades ne correspondent pas</string>
     <string name="error_siteswap_passing_brackets">&quot;&gt;&quot; sans &quot;&lt;&quot; correspondant</string>
     <string name="error_siteswap_jugglers">Nombre de jongleurs non valide dans siteswap</string>
+    <string name="error_siteswap_beats">Nombre de temps inégal entre les jongleurs</string>
     <string name="error_siteswap_badchar">Caractère non valide dans siteswap : &quot;%1$s&quot;</string>
     <string name="error_siteswap_bad_average">Moyenne siteswap non valide : doit être un nombre entier</string>
     <string name="error_siteswap_syntax">Erreur de syntaxe dans siteswap</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">Aucun événement pour la trajectoire %1$d</string>
     <string name="error_position_out_of_bounds">La position temporelle du jongleur %1$d est hors limites</string>
     <string name="error_positions_too_close_in_time">Les positions du jongleur %1$d sont trop rapprochées dans le temps</string>
-    <string name="error_events_too_close_in_time">Les événements du jongleur %1$d et de la main %2$d sont trop rapprochés dans le temps</string>
+    <string name="error_events_too_close_in_time">Les événements pour la main %1$s du jongleur %2$d sont trop rapprochés dans le temps</string>
     <string name="error_prop_type">Type d'accessoire &quot;%1$s&quot; non reconnu</string>
     <string name="error_token_count">Trois ou quatre valeurs requises dans la spécification des couleurs</string>
     <string name="error_missing_pattern">Motif JML attendu dans la balise line %1$d</string>

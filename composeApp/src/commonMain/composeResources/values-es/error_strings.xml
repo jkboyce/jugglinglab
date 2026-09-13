@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">Mismo objeto aterriza dos veces en el mismo tiempo</string>
     <string name="error_right_hand">Mano derecha</string>
     <string name="error_left_hand">Mano izquierda</string>
+    <string name="error_right">derecha</string>
+    <string name="error_left">izquierda</string>
     <string name="error_badpattern_paths">El número de rutas no coincide con el número de objetos</string>
     <string name="error_badpattern_delay">El retraso de pases debe ser un entero no negativo</string>
     <string name="error_badpattern_switchdelay">El retraso de cambio debe ser un entero no negativo</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">Las llaves no coinciden</string>
     <string name="error_siteswap_passing_brackets">&quot;&gt;&quot; sin su correspondiente &quot;&lt;&quot;</string>
     <string name="error_siteswap_jugglers">Número de malabaristas no válido en siteswap</string>
+    <string name="error_siteswap_beats">Número desigual de tiempos para los malabaristas</string>
     <string name="error_siteswap_badchar">Carácter no válido en siteswap: &quot;%1$s&quot;</string>
     <string name="error_siteswap_bad_average">Promedio de siteswap no válido: debe ser un número entero</string>
     <string name="error_siteswap_syntax">Error de sintaxis en siteswap</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">Sin eventos para la ruta %1$d</string>
     <string name="error_position_out_of_bounds">El tiempo de posición para el malabarista %1$d está fuera de límites</string>
     <string name="error_positions_too_close_in_time">Las posiciones para el malabarista %1$d están demasiado cercanas en el tiempo</string>
-    <string name="error_events_too_close_in_time">Los eventos para el malabarista %1$d y la mano %2$d están demasiado cercanos en el tiempo</string>
+    <string name="error_events_too_close_in_time">Los eventos para la mano %1$s del malabarista %2$d están demasiado cercanos en el tiempo</string>
     <string name="error_prop_type">Tipo de objeto &quot;%1$s&quot; no reconocido</string>
     <string name="error_token_count">Debe haber tres o cuatro valores en la especificación de color</string>
     <string name="error_missing_pattern">Se esperaba un patrón JML dentro de la etiqueta line %1$d</string>

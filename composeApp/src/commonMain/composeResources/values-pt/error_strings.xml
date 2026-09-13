@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">O mesmo objeto aterrissa duas vezes no mesmo tempo</string>
     <string name="error_right_hand">Mão direita</string>
     <string name="error_left_hand">Mão esquerda</string>
+    <string name="error_right">direita</string>
+    <string name="error_left">esquerda</string>
     <string name="error_badpattern_paths">O número de caminhos não coincide com o número de objetos</string>
     <string name="error_badpattern_delay">O atraso de passes deve ser um inteiro não negativo</string>
     <string name="error_badpattern_switchdelay">O atraso de troca deve ser um inteiro não negativo</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">As chaves não coincidem</string>
     <string name="error_siteswap_passing_brackets">&quot;&gt;&quot; sem &quot;&lt;&quot; correspondente</string>
     <string name="error_siteswap_jugglers">Número de malabaristas inválido no siteswap</string>
+    <string name="error_siteswap_beats">Número desigual de tempos para os malabaristas</string>
     <string name="error_siteswap_badchar">Caractere inválido no siteswap: &quot;%1$s&quot;</string>
     <string name="error_siteswap_bad_average">Média de siteswap inválida: deve ser um número inteiro</string>
     <string name="error_siteswap_syntax">Erro de sintaxe no siteswap</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">Nenhum evento para o caminho %1$d</string>
     <string name="error_position_out_of_bounds">A posição de tempo para o malabarista %1$d está fora dos limites</string>
     <string name="error_positions_too_close_in_time">As posições do malabarista %1$d estão muito próximas no tempo</string>
-    <string name="error_events_too_close_in_time">Os eventos do malabarista %1$d e da mão %2$d estão muito próximos no tempo</string>
+    <string name="error_events_too_close_in_time">Os eventos para a mão %1$s do malabarista %2$d estão muito próximos no tempo</string>
     <string name="error_prop_type">Tipo de objeto &quot;%1$s&quot; não reconhecido</string>
     <string name="error_token_count">Três ou quatro valores necessários na especificação de cores</string>
     <string name="error_missing_pattern">Padrão JML esperado dentro da tag line %1$d</string>

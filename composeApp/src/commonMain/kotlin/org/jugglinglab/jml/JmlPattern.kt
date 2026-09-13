@@ -320,8 +320,13 @@ data class JmlPattern(
                 val jugglerEvents = allEvents.map { it.event }.filter { it.juggler == juggler && it.hand == hand }
                 for ((i, ev) in jugglerEvents.withIndex()) {
                     if (i < jugglerEvents.size - 1 && (jugglerEvents[i + 1].t - ev.t < 0.001)) {
+                        val handStr = if (hand == JmlEvent.RIGHT_HAND) {
+                            jlGetStringResource(Res.string.error_right)
+                        } else {
+                            jlGetStringResource(Res.string.error_left)
+                        }
                         throw JuggleExceptionUser(
-                            jlGetStringResource(Res.string.error_events_too_close_in_time, juggler, hand)
+                            jlGetStringResource(Res.string.error_events_too_close_in_time, handStr, juggler)
                         )
                     }
                 }

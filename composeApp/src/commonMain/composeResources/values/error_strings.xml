@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">Pattern is not valid: too many objects landing on beat %1$d for juggler %2$d, %3$s</string>
     <string name="error_right_hand">right hand</string>
     <string name="error_left_hand">left hand</string>
+    <string name="error_right">right</string>
+    <string name="error_left">left</string>
     <string name="error_badpattern_paths">Pattern is not valid: discontinuous paths</string>
     <string name="error_badpattern_delay">Pattern is not valid: delay symmetry not valid</string>
     <string name="error_badpattern_switchdelay">Pattern is not valid: switchdelay symmetry not valid</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">Mismatched braces in pattern</string>
     <string name="error_siteswap_passing_brackets">&quot;&gt;&quot; with no corresponding &quot;&lt;&quot;</string>
     <string name="error_siteswap_jugglers">Inconsistent number of jugglers across throws</string>
+    <string name="error_siteswap_beats">Unequal number of beats for jugglers</string>
     <string name="error_siteswap_badchar">Bad character in solo pattern</string>
     <string name="error_siteswap_bad_average">Invalid pattern average</string>
     <string name="error_siteswap_syntax">Syntax error in pattern</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">No events for path %1$d</string>
     <string name="error_position_out_of_bounds">Position time for juggler %1$d is out of bounds</string>
     <string name="error_positions_too_close_in_time">Positions for juggler %1$d are too close in time</string>
-    <string name="error_events_too_close_in_time">Events for juggler %1$d and hand %2$d are too close in time</string>
+    <string name="error_events_too_close_in_time">Events for %1$s hand of juggler %2$d are too close in time</string>
     <string name="error_prop_type">Prop type &quot;%1$s&quot; not recognized</string>
     <string name="error_token_count">Must have three or four values in color specification</string>
     <string name="error_missing_pattern">JML pattern expected inside line tag %1$d</string>

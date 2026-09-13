@@ -312,13 +312,15 @@ class SiteswapNotationControlSwing : JPanel() {
                 sb.append(";prop=")
                     .append(Prop.builtinProps[cb3.getSelectedIndex()].lowercase(Locale.getDefault()))
             }
-            if (!tf2.getText().isEmpty()) {
-                if (tf2.getText() != jlToStringRounded(MhnPattern.DWELL_DEFAULT, 2)) {
-                    sb.append(";dwell=").append(tf2.getText())
+            val dwell = tf2.text.trim()
+            if (dwell.isNotEmpty()) {
+                if (dwell != jlToStringRounded(MhnPattern.DWELL_DEFAULT, 2)) {
+                    sb.append(";dwell=").append(dwell)
                 }
             }
-            if (!tf3.getText().isEmpty()) {
-                sb.append(";bps=").append(tf3.getText())
+            val bps = tf3.text.trim()
+            if (bps.isNotEmpty()) {
+                sb.append(";bps=").append(bps)
             }
             if (!tf4.getText().isEmpty()) {
                 sb.append(";hands=").append(tf4.getText())

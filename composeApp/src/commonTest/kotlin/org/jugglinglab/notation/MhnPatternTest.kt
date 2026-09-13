@@ -100,6 +100,13 @@ class MhnPatternTest {
         // verify bps = 0 (and negative values) default and do not throw
         SiteswapPattern().fromString("pattern=3;bps=0").asJmlPattern()
         SiteswapPattern().fromString("pattern=3;bps=-1").asJmlPattern()
+
+        // verify bps with only spaces or empty string defaults and does not throw
+        SiteswapPattern().fromString("pattern=3;bps=   ").asJmlPattern()
+        SiteswapPattern().fromString("pattern=3;bps=").asJmlPattern()
+
+        // verify bps with surrounding whitespace is parsed properly
+        SiteswapPattern().fromString("pattern=3;bps=  4.5  ").asJmlPattern()
     }
 
     @Test

@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">אותו חפץ נוחת פעמיים באותו הזמן</string>
     <string name="error_right_hand">יד ימין</string>
     <string name="error_left_hand">יד שמאל</string>
+    <string name="error_right">ימין</string>
+    <string name="error_left">שמאל</string>
     <string name="error_badpattern_paths">התבנית לא חוקית (מסלול מקוטע)</string>
     <string name="error_badpattern_delay">התבנית לא חוקית (העיכוב בסימטריה לא חוקית)</string>
     <string name="error_badpattern_switchdelay">התבנית לא חוקית (החלפת העיכוב בסימטריה לא חוקית)</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">סוגריים בלתי מתאימים בתבנית</string>
     <string name="error_siteswap_passing_brackets">'&gt;' ללא  '&lt;'</string>
     <string name="error_siteswap_jugglers">מספר בלתי עקבי של ג'אגלרים בזריקות</string>
+    <string name="error_siteswap_beats">מספר פעימות לא שווה בין הג'אגלרים</string>
     <string name="error_siteswap_badchar">תו בלתי חוקי לתבנית סולו</string>
     <string name="error_siteswap_bad_average">ממוצע תבנית בלתי חוקי</string>
     <string name="error_siteswap_syntax">שגיאת תחביר בתבנית</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">אין אירועים למסלול %1$d</string>
     <string name="error_position_out_of_bounds">מיקום הזמן של ג'אגלר %1$d מחוץ לגבולות</string>
     <string name="error_positions_too_close_in_time">מיקומי ג'אגלר %1$d קרובים מדי בזמן</string>
-    <string name="error_events_too_close_in_time">אירועי ג'אגלר %1$d ויד %2$d קרובים מדי בזמן</string>
+    <string name="error_events_too_close_in_time">אירועים ליד %1$s של ג'אגלר %2$d קרובים מדי בזמן</string>
     <string name="error_prop_type">אביזר מסוג  &quot;%1$s&quot; בלתי מזוהה</string>
     <string name="error_token_count">חובה לציין שלושה ערכים בהגדרות הצבע</string>
     <string name="error_missing_pattern">צפויה תבנית JML בתוך תג שורה %1$d</string>

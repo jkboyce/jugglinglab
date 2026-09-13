@@ -11,6 +11,7 @@ package org.jugglinglab.notation.ssparser
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.notation.ssparser.generated.JlSiteswapLexer
 import org.jugglinglab.notation.ssparser.generated.JlSiteswapParser
+import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.jlGetStringResource
 import org.antlr.v4.kotlinruntime.BaseErrorListener
 import org.antlr.v4.kotlinruntime.CharStreams
@@ -21,7 +22,7 @@ import org.antlr.v4.kotlinruntime.Token
 import org.antlr.v4.kotlinruntime.atn.PredictionMode
 
 object SiteswapParser {
-    @Throws(SiteswapParseException::class)
+    @Throws(SiteswapParseException::class, JuggleExceptionUser::class)
     fun parsePattern(pattern: String): SiteswapTreeItem {
         val stream = CharStreams.fromString(pattern)
         val lexer = JlSiteswapLexer(stream)

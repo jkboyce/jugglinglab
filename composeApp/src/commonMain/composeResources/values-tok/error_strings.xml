@@ -99,6 +99,8 @@
     <string name="error_badpattern_landings">ijo 1 li anpa tu lon tenpo 1</string>
     <string name="error_right_hand">luka sama</string>
     <string name="error_left_hand">luka poka</string>
+    <string name="error_right">sama</string>
+    <string name="error_left">poka</string>
     <string name="error_badpattern_paths">nanpa nasin li sama ala nanpa ijo</string>
     <string name="error_badpattern_delay">tenpo awen pi pana jan li wile nanpa pona</string>
     <string name="error_badpattern_switchdelay">tenpo awen ante li wile nanpa pona</string>
@@ -124,6 +126,7 @@
     <string name="error_siteswap_braces_mismatched">sitelen {} li sama ala</string>
     <string name="error_siteswap_passing_brackets">&quot;&gt;&quot; li jo ala e &quot;&lt;&quot;</string>
     <string name="error_siteswap_jugglers">nanpa jan musi li pakala lon siteswap</string>
+    <string name="error_siteswap_beats">nanpa tenpo li sama ala tawa jan musi</string>
     <string name="error_siteswap_badchar">sitelen pakala lon siteswap: &quot;%1$s&quot;</string>
     <string name="error_siteswap_bad_average">nanpa meso pi siteswap li pakala</string>
     <string name="error_siteswap_syntax">pakala sitelen lon siteswap</string>
@@ -171,7 +174,7 @@
     <string name="error_path_missing_events">tawa ala lon nasin %1$d</string>
     <string name="error_position_out_of_bounds">tenpo ma pi jan %1$d li suli pakala</string>
     <string name="error_positions_too_close_in_time">ma pi jan %1$d li poka pakala lon tenpo</string>
-    <string name="error_events_too_close_in_time">tawa pi jan %1$d lon luka %2$d li poka pakala lon tenpo</string>
+    <string name="error_events_too_close_in_time">tawa lon luka %1$s pi jan %2$d li poka pakala lon tenpo</string>
     <string name="error_prop_type">nasin ijo &quot;%1$s&quot; li sona ala</string>
     <string name="error_token_count">nanpa 3 anu 4 li wile lon kule</string>
     <string name="error_missing_pattern">musi JML li wile lon linja %1$d</string>

@@ -151,6 +151,24 @@ class SiteswapPatternTest {
         assertEquals(jlGetStringResource(Res.string.error_siteswap_bad_average), exception.message)
     }
 
+    @Test
+    fun `passing pattern with unequal beats throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("<3|42>")
+        }
+        assertEquals(jlGetStringResource(Res.string.error_siteswap_beats), exception.message)
+        assertEquals("Unequal number of beats for jugglers", exception.message)
+    }
+
+    @Test
+    fun `passing pattern with inconsistent jugglers throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("<3|3><3|3|3>")
+        }
+        assertEquals(jlGetStringResource(Res.string.error_siteswap_jugglers), exception.message)
+        assertEquals("Inconsistent number of jugglers across throws", exception.message)
+    }
+
     private fun assertPatternLayout(patternString: String, jugglers: Int, paths: Int) {
         val pattern = SiteswapPattern().fromString(patternString)
         pattern.asJmlPattern().layout
