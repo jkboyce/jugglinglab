@@ -9,7 +9,6 @@ package org.jugglinglab.jml
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.Permutation
 
-@Suppress("EmptyRange")
 class EventImages(
     val pattern: JmlPattern,
     val primaryEvent: JmlEvent
@@ -306,7 +305,7 @@ class EventImages(
                             // System.out.println("newj = "+newj+", newk = "+newk+", newl = "+newl);
                             // check for consistency
                             if (ea[newj][newk][newl] != null) {
-                                if (!p.equals(ea[newj][newk][newl])) {
+                                if (p != ea[newj][newk][newl]) {
                                     throw JuggleExceptionUser("Symmetries inconsistent")
                                 }
                             } else {

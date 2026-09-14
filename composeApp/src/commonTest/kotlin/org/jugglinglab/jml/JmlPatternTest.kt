@@ -15,6 +15,7 @@ import org.jugglinglab.util.jlGetStringResource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertTrue
 
 class JmlPatternTest {
     @Test
@@ -50,5 +51,32 @@ class JmlPatternTest {
         )
         assertEquals(expectedLeft, exLeft.message)
         assertEquals("Events for left hand of juggler 1 are too close in time", exLeft.message)
+    }
+
+    @Test
+    fun `loopEvents excludes events belonging to next loop iteration`() {
+        val patterns = listOf(
+            "(4,4)",
+            "(2,6B)([8xB2],2)*",
+            "[42][44][11][33]3"
+        )
+        for (patternStr in patterns) {
+            val pat = SiteswapPattern().fromString(patternStr).asJmlPattern()
+            for (ei in pat.loopEvents) {
+                assertTrue(
+                    ei.event.t >= pat.loopStartTime,
+                    "Pattern $patternStr has loop event before loopStartTime: ${ei.event.t} < ${pat.loopStartTime}"
+                )
+                assertTrue(
+                    ei.event.t < pat.loopEndTime,
+                    "Pattern $patternStr has loop event at or after loopEndTime: ${ei.event.t} >= ${pat.loopEndTime}"
+                )
+            }
+        }
+
+        // Specifically verify (4,4) has exactly 4 events (throws at t=0 and catches at t~0.2059)
+        // and does not include the 2 throws from the next loop at t=loopEndTime (~0.5882)
+        val patSync = SiteswapPattern().fromString("(4,4)").asJmlPattern()
+        assertEquals(4, patSync.loopEvents.size)
     }
 }

@@ -96,7 +96,7 @@ data class JmlPattern(
     // just the events inside the animation loop
 
     val loopEvents: List<EventImage> by lazy {
-        allEvents.filter { it.event.truncatedTime in loopStartTime..<loopEndTime }
+        allEvents.filter { it.event.t in loopStartTime..<loopEndTime }
     }
 
     val numberOfProps: Int = props.size
