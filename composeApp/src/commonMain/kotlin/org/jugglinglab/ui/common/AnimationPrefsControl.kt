@@ -42,7 +42,7 @@ fun AnimationPrefsControl(
 ) {
     val paramsWithUi = if (jlIsDesktop) {
         listOf(
-            "width", "height", "fps", "slowdown", "border",
+            "width", "height", "fps", "slowdown",
             "showground", "avatar", "startpaused", "mousepause", "stereo",
             "catchsound", "bouncesound"
         )
@@ -73,7 +73,6 @@ fun AnimationPrefsControl(
     var height by remember { mutableStateOf(initialPrefs.height.toString()) }
     var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
-    var border by remember { mutableStateOf(initialPrefs.borderPixels.toString()) }
     var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
     var avatar by remember { mutableStateOf(initialPrefs.avatar) }
     var startPaused by remember { mutableStateOf(initialPrefs.startPaused) }
@@ -89,7 +88,6 @@ fun AnimationPrefsControl(
         height = prefs.height.toString()
         fps = jlToStringRounded(prefs.fps, 2)
         slowdown = jlToStringRounded(prefs.slowdown, 2)
-        border = prefs.borderPixels.toString()
         showGround = prefs.showGround
         avatar = prefs.avatar
         startPaused = prefs.startPaused
@@ -119,7 +117,6 @@ fun AnimationPrefsControl(
                 height = parseInt(height, "height"),
                 fps = parseDouble(fps, "fps"),
                 slowdown = parseDouble(slowdown, "slowdown"),
-                borderPixels = parseInt(border, "border"),
                 showGround = showGround,
                 startPaused = startPaused,
                 mousePause = mousePause,
@@ -172,9 +169,6 @@ fun AnimationPrefsControl(
         }
         if ("slowdown" in paramsWithUi) {
             JlPrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
-        }
-        if ("border" in paramsWithUi) {
-            JlPrefsInputRow(border, { border = it }, stringResource(Res.string.gui_border__pixels_))
         }
 
         if ("showground" in paramsWithUi) {

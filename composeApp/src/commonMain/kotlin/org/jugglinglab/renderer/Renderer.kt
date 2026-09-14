@@ -105,11 +105,17 @@ class Renderer {
     fun initDisplay(w: Int, h: Int, border: Int, overallMax: Coordinate, overallMin: Coordinate) {
         width = w
         height = h
+
+        val maxBorderX = (width - MIN_SCREEN_WIDTH_PX) / 2
+        val maxBorderY = (height - MIN_SCREEN_HEIGHT_PX) / 2
+        val maxBorder = max(0, min(maxBorderX, maxBorderY))
+        val coercedBorder = border.coerceIn(0, maxBorder)
+
         viewport = Rect(
-            border.toFloat(),
-            border.toFloat(),
-            (width - border).toFloat(),
-            (height - border).toFloat()
+            coercedBorder.toFloat(),
+            coercedBorder.toFloat(),
+            (width - coercedBorder).toFloat(),
+            (height - coercedBorder).toFloat()
         )
 
         val adjustedMax = overallMax.copy()
@@ -821,5 +827,9 @@ class Renderer {
 
     companion object {
         const val USE_ORIGINAL_ZOOM = true
+
+        // minimum animation dimensions on-screen
+        const val MIN_SCREEN_WIDTH_PX: Int = 20
+        const val MIN_SCREEN_HEIGHT_PX: Int = 20
     }
 }
