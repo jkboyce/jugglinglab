@@ -27,6 +27,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.key.*
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.stringResource
 
@@ -40,6 +41,7 @@ fun AnimationPrefsControl(
     initialPrefs: AnimationPrefs,
     onConfirm: (AnimationPrefs) -> Unit
 ) {
+    val focusManager = LocalFocusManager.current
     val paramsWithUi = if (jlIsDesktop) {
         listOf(
             "width", "height", "fps", "slowdown",
@@ -149,8 +151,10 @@ fun AnimationPrefsControl(
             .width(IntrinsicSize.Max) // Fit width to content
             .verticalScroll(rememberScrollState())
             .onPreviewKeyEvent {
-                if (it.key == Key.Enter && it.type == KeyEventType.KeyDown) {
-                    tryCreatePrefs()
+                if (it.key == Key.Enter) {
+                    if (it.type == KeyEventType.KeyDown) {
+                        tryCreatePrefs()
+                    }
                     true
                 } else {
                     false
@@ -378,7 +382,10 @@ fun AnimationPrefsControl(
                 Text(stringResource(Res.string.gui_defaults))
             }
             Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = { tryCreatePrefs() }) {
+            Button(onClick = {
+                focusManager.clearFocus(force = true)
+                tryCreatePrefs()
+            }) {
                 Text(stringResource(Res.string.gui_ok))
             }
         }

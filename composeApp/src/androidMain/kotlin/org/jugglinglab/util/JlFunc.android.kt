@@ -324,3 +324,5 @@ actual fun PatternListScrollbar(
     modifier: Modifier
 ) {
 }
+
+internal actual fun jlRequestFocusPlatform() {}

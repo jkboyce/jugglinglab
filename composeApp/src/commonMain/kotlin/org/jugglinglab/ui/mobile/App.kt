@@ -64,6 +64,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.retain.retain
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.boundsInRoot
@@ -323,10 +324,12 @@ fun App(
                                         containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent,
                                         contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface
                                     ),
-                                    modifier = Modifier.walkthroughTarget(
-                                        key = if (viewName == "Info") "nav_info" else "nav_favorites",
-                                        condition = viewName == "Info" || viewName == "Favorites"
-                                    )
+                                    modifier = Modifier
+                                        .focusProperties { canFocus = false }
+                                        .walkthroughTarget(
+                                            key = if (viewName == "Info") "nav_info" else "nav_favorites",
+                                            condition = viewName == "Info" || viewName == "Favorites"
+                                        )
                                 ) {
                                     Icon(
                                         imageVector = icon,

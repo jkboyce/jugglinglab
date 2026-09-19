@@ -672,3 +672,67 @@ actual fun PatternListScrollbar(
         style = scrollbarStyle
     )
 }
+
+// In Compose for Web, keystrokes (such as the Spacebar shortcut) are only
+// delivered to Compose if the host HTML <canvas> element has browser focus.
+// When dialogs or text fields are active, browser focus moves to temporary hidden
+// DOM inputs; when dismissed, focus defaults to document.body rather than returning
+// to the canvas. This explicitly restores browser focus to the <canvas> element.
+
+@JsFun(
+    """() => {
+        function focusCanvas() {
+            try {
+                const holder = document.getElementById('compose-holder');
+                let canvas = null;
+                let activeEl = null;
+                if (holder && holder.shadowRoot) {
+                    canvas = holder.shadowRoot.querySelector('canvas');
+                    activeEl = holder.shadowRoot.activeElement;
+                }
+                if (!canvas) {
+                    const all = document.querySelectorAll('*');
+                    for (let i = 0; i < all.length; i++) {
+                        const sr = all[i].shadowRoot;
+                        if (sr) {
+                            const c = sr.querySelector('canvas');
+                            if (c) {
+                                canvas = c;
+                                activeEl = sr.activeElement;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!canvas) {
+                    canvas = document.querySelector('canvas');
+                    activeEl = document.activeElement;
+                }
+                if (activeEl && activeEl !== canvas && typeof activeEl.blur === 'function') {
+                    activeEl.blur();
+                }
+                if (canvas) {
+                    if (canvas.tabIndex < 0) {
+                        canvas.tabIndex = 0;
+                    }
+                    canvas.focus();
+                }
+            } catch (e) {}
+        }
+        focusCanvas();
+        if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+            window.requestAnimationFrame(focusCanvas);
+        }
+        if (typeof setTimeout !== 'undefined') {
+            setTimeout(focusCanvas, 50);
+        }
+    }"""
+)
+private external fun jsFocusCanvas()
+
+internal actual fun jlRequestFocusPlatform() {
+    try {
+        jsFocusCanvas()
+    } catch (_: Throwable) {
+    }
+}

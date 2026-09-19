@@ -12,6 +12,7 @@ package org.jugglinglab.util
 
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlPattern
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.resources.StringResource
@@ -561,3 +562,12 @@ expect fun PatternListScrollbar(
     listState: androidx.compose.foundation.lazy.LazyListState,
     modifier: Modifier = Modifier
 )
+
+// Request (physical) keyboard focus; if no keyboard is attached this has no effect.
+
+fun jlRequestFocus(focusRequester: FocusRequester? = null) {
+    runCatching { focusRequester?.requestFocus() }
+    jlRequestFocusPlatform()  // platform-specific code, if needed
+}
+
+internal expect fun jlRequestFocusPlatform()

@@ -20,9 +20,11 @@ import org.jugglinglab.ui.common.*
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.jlIsLandscape
 import org.jugglinglab.util.jlIsWeb
+import org.jugglinglab.util.jlRequestFocus
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -53,19 +55,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.input.key.*
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.boundsInRoot
-import androidx.compose.ui.geometry.Rect
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.roundToInt
+import kotlin.time.Duration.Companion.milliseconds
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -99,6 +107,15 @@ fun AnimationViewCombined(
     var ladderZoom by remember { mutableFloatStateOf(1f) }
     val ladderScrollState = rememberScrollState()
     var savedScrollProportion by remember { mutableStateOf<Float?>(null) }
+    val focusRequester = remember { FocusRequester() }
+
+    LaunchedEffect(activeAnimationDialog, ladderController.uiState.activeDialog) {
+        if (activeAnimationDialog == null && ladderController.uiState.activeDialog == null) {
+            // regain focus for space bar after a dialog closes
+            delay(100.milliseconds)
+            jlRequestFocus(focusRequester)
+        }
+    }
 
     // Onboarding walkthrough observer effects
     val animCenter = remember { mutableStateOf<Rect?>(null) }
@@ -145,7 +162,23 @@ fun AnimationViewCombined(
         }
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+    BoxWithConstraints(
+        modifier = Modifier
+            .fillMaxSize()
+            .focusRequester(focusRequester)
+            .focusable()
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown && event.key == Key.Spacebar) {
+                    if (!event.isCtrlPressed && !event.isAltPressed && !event.isMetaPressed) {
+                        if (activeAnimationDialog == null && ladderController.uiState.activeDialog == null) {
+                            state.update(isPaused = !state.isPaused)
+                            return@onPreviewKeyEvent true
+                        }
+                    }
+                }
+                false
+            }
+    ) {
         val boxWidth = maxWidth
         val isLandscape = jlIsLandscape()
 
@@ -193,7 +226,10 @@ fun AnimationViewCombined(
                     AnimationView(
                         state = state,
                         colorScheme = colorScheme,
-                        onPress = animationController::handlePress,
+                        onPress = {
+                            jlRequestFocus(focusRequester)
+                            animationController.handlePress(it)
+                        },
                         onDrag = animationController::handleDrag,
                         onRelease = animationController::handleRelease,
                         onLayoutUpdate = animationController::updateLayout,
@@ -213,10 +249,12 @@ fun AnimationViewCombined(
                                     ladderScrollState.value.toFloat() / ladderScrollState.maxValue
                             }
                             isLadderExpanded = !isLadderExpanded
+                            jlRequestFocus(focusRequester)
                         },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(12.dp)
+                            .focusProperties { canFocus = false }
                             .walkthroughTarget("anim_ladder_toggle")
                     ) {
                         if (isLadderExpanded) {
@@ -241,6 +279,7 @@ fun AnimationViewCombined(
                         onShare = onShare,
                         onExport = onExport,
                         onBusy = onBusy,
+                        onFocusRestore = { jlRequestFocus(focusRequester) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 16.dp, end = 12.dp),
@@ -262,7 +301,10 @@ fun AnimationViewCombined(
                     LadderDiagramView(
                         state = state,
                         colorScheme = colorScheme,
-                        onPress = ladderController::handlePress,
+                        onPress = { pos, isShiftDown, isAltDown, rawPos ->
+                            jlRequestFocus(focusRequester)
+                            ladderController.handlePress(pos, isShiftDown, isAltDown, rawPos)
+                        },
                         onDrag = ladderController::handleDrag,
                         onRelease = ladderController::handleRelease,
                         onLayoutUpdate = ladderController::onLayoutUpdate,
@@ -287,7 +329,10 @@ fun AnimationViewCombined(
                     AnimationView(
                         state = state,
                         colorScheme = colorScheme,
-                        onPress = animationController::handlePress,
+                        onPress = {
+                            jlRequestFocus(focusRequester)
+                            animationController.handlePress(it)
+                        },
                         onDrag = animationController::handleDrag,
                         onRelease = animationController::handleRelease,
                         onLayoutUpdate = animationController::updateLayout,
@@ -307,10 +352,12 @@ fun AnimationViewCombined(
                                     ladderScrollState.value.toFloat() / ladderScrollState.maxValue
                             }
                             isLadderExpanded = !isLadderExpanded
+                            jlRequestFocus(focusRequester)
                         },
                         modifier = Modifier
                             .align(Alignment.BottomEnd)
                             .padding(12.dp)
+                            .focusProperties { canFocus = false }
                             .walkthroughTarget("anim_ladder_toggle")
                     ) {
                         if (isLadderExpanded) {
@@ -335,6 +382,7 @@ fun AnimationViewCombined(
                         onShare = onShare,
                         onExport = onExport,
                         onBusy = onBusy,
+                        onFocusRestore = { jlRequestFocus(focusRequester) },
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                             .padding(top = 16.dp, end = 12.dp),
@@ -350,7 +398,10 @@ fun AnimationViewCombined(
                     LadderDiagramView(
                         state = state,
                         colorScheme = colorScheme,
-                        onPress = ladderController::handlePress,
+                        onPress = { pos, isShiftDown, isAltDown, rawPos ->
+                            jlRequestFocus(focusRequester)
+                            ladderController.handlePress(pos, isShiftDown, isAltDown, rawPos)
+                        },
                         onDrag = ladderController::handleDrag,
                         onRelease = ladderController::handleRelease,
                         onLayoutUpdate = ladderController::onLayoutUpdate,
@@ -367,9 +418,13 @@ fun AnimationViewCombined(
 
     AnimationViewDialogs(
         activeDialog = activeAnimationDialog,
-        onDismissRequest = { activeAnimationDialog = null },
+        onDismissRequest = {
+            activeAnimationDialog = null
+            jlRequestFocus(focusRequester)
+        },
         onConfirmPrefs = { newPrefs ->
             activeAnimationDialog = null
+            jlRequestFocus(focusRequester)
             onBusy(true)
             try {
                 animationController.restartJuggle(prefs = newPrefs)
@@ -381,6 +436,7 @@ fun AnimationViewCombined(
         },
         onConfirmTiming = { scale ->
             activeAnimationDialog = null
+            jlRequestFocus(focusRequester)
             coroutineScope.launch {
                 onBusy(true)
                 try {
@@ -400,6 +456,7 @@ fun AnimationViewCombined(
         },
         onConfirmTitle = { newTitle ->
             activeAnimationDialog = null
+            jlRequestFocus(focusRequester)
             coroutineScope.launch {
                 onBusy(true)
                 try {
@@ -423,7 +480,10 @@ fun AnimationViewCombined(
 
     LadderDiagramDialogs(
         controller = ladderController,
-        onDismissRequest = ladderController::onDismissDialog
+        onDismissRequest = {
+            ladderController.onDismissDialog()
+            jlRequestFocus()
+        }
     )
 }
 
@@ -442,6 +502,7 @@ private fun AnimationViewMenus(
     onExport: () -> Unit,
     modifier: Modifier = Modifier,
     onBusy: (Boolean) -> Unit = {},
+    onFocusRestore: () -> Unit = {},
     onMenuPositioned: ((Rect) -> Unit)? = null,
     onError: (Throwable) -> Unit = {}
 ) {
@@ -449,6 +510,12 @@ private fun AnimationViewMenus(
     val state = animationController.state
     var isMenuExpanded by remember { mutableStateOf(false) }
     var isColorPropsMenuExpanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(isMenuExpanded) {
+        if (!isMenuExpanded) {
+            onFocusRestore()
+        }
+    }
 
     var inFavorites by remember { mutableStateOf(false) }
     LaunchedEffect(state.pattern, state.prefs, favoritesHashCodes) {
@@ -463,9 +530,11 @@ private fun AnimationViewMenus(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             IconButton(
                 onClick = { isMenuExpanded = true },
-                modifier = Modifier.onGloballyPositioned { coords ->
-                    onMenuPositioned?.invoke(coords.boundsInRoot())
-                }
+                modifier = Modifier
+                    .focusProperties { canFocus = false }
+                    .onGloballyPositioned { coords ->
+                        onMenuPositioned?.invoke(coords.boundsInRoot())
+                    }
             ) {
                 Icon(
                     Icons.Default.MoreVert,
@@ -474,7 +543,10 @@ private fun AnimationViewMenus(
             }
 
             if (inFavorites) {
-                IconButton(onClick = { /* onRemoveFromFavorites(state.pattern, state.prefs) */ }) {
+                IconButton(
+                    onClick = { /* onRemoveFromFavorites(state.pattern, state.prefs) */ },
+                    modifier = Modifier.focusProperties { canFocus = false }
+                ) {
                     Icon(
                         Icons.Default.Star,
                         contentDescription = stringResource(Res.string.gui_mobile_remove_from_favorites),
@@ -490,7 +562,13 @@ private fun AnimationViewMenus(
                             (layout.eventPoints.isNotEmpty() || layout.posPoints.isNotEmpty())))
 
             if (showRestart) {
-                IconButton(onClick = { animationController.restartJuggle() }) {
+                IconButton(
+                    onClick = {
+                        animationController.restartJuggle()
+                        onFocusRestore()
+                    },
+                    modifier = Modifier.focusProperties { canFocus = false }
+                ) {
                     Icon(
                         Icons.Default.ZoomOutMap,
                         contentDescription = stringResource(Res.string.gui_restart)
@@ -501,7 +579,10 @@ private fun AnimationViewMenus(
 
         DropdownMenu(
             expanded = isMenuExpanded,
-            onDismissRequest = { isMenuExpanded = false }
+            onDismissRequest = {
+                isMenuExpanded = false
+                onFocusRestore()
+            }
         ) {
             Text(
                 text = state.pattern.title ?: stringResource(Res.string.gui_pattern),
