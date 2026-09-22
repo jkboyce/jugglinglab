@@ -911,7 +911,7 @@ class SiteswapGenerator(arg: String) : Generator() {
     private suspend fun isPatternValid(patternString: String): Boolean {
         // check #1: test against exclusions.
         for (regex in config.exclude) {
-            if (patternString.matches(regex)) {
+            if (regex.containsMatchIn(patternString)) {
                 if (Constants.DEBUG_GENERATOR_DETAILED) {
                     println("   pattern invalid: matches exclusion")
                 }
@@ -921,7 +921,7 @@ class SiteswapGenerator(arg: String) : Generator() {
 
         // check #2: verify against inclusions.
         for (regex in config.include) {
-            if (!patternString.matches(regex)) {
+            if (!regex.containsMatchIn(patternString)) {
                 if (Constants.DEBUG_GENERATOR_DETAILED) {
                     println("   pattern invalid: missing inclusion")
                 }

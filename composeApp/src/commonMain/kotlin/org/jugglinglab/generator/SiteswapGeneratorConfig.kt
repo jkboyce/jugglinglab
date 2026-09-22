@@ -169,10 +169,7 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
                     ++i
                     while (i < args.size && args[i][0] != '-') {
                         try {
-                            var re: String = makeStandardRegex(args[i])
-                            if (!re.contains("^")) {
-                                re = ".*$re.*"
-                            }
+                            val re: String = makeStandardRegex(args[i])
                             if (Constants.DEBUG_GENERATOR_DETAILED) {
                                 println("adding exclusion $re")
                             }
@@ -190,13 +187,7 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
                     ++i
                     while (i < args.size && args[i][0] != '-') {
                         try {
-                            var re: String = makeStandardRegex(args[i])
-                            if (!re.contains("^")) {
-                                re = ".*$re"
-                            }
-                            if (!re.contains("$")) {
-                                re = "$re.*"
-                            }
+                            val re: String = makeStandardRegex(args[i])
                             include.add(Regex(re))
                         } catch (_: IllegalArgumentException) {
                             val message = jlGetStringResource(Res.string.error_included_throws)
@@ -448,15 +439,15 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
 
             if (jugglers == 1) {
                 if (mode == ASYNC) {
-                    includeRe = ".*\\[[^2]*\\].*"
+                    includeRe = """\[[^2]*\]"""
                 } else if (mode == SYNC) {
-                    includeRe = ".*\\[([^2\\]]*2x)*[^2\\]]*\\].*"
+                    includeRe = """\[([^2\]]*2x)*[^2\]]*\]"""
                 }
             } else {
                 if (mode == ASYNC) {
-                    includeRe = ".*\\[([^2\\]]*(2p|.p2|2p.))*[^2\\]]*\\].*"
+                    includeRe = """\[([^2\]]*(2p|.p2|2p.))*[^2\]]*\]"""
                 } else if (mode == SYNC) {
-                    includeRe = ".*\\[([^2\\]]*(2p|.p2|2p.|2x|2xp|.xp2|2xp.))*[^2\\]]*\\].*"
+                    includeRe = """\[([^2\]]*(2p|.p2|2p.|2x|2xp|.xp2|2xp.))*[^2\]]*\]"""
                 }
             }
 
@@ -502,24 +493,23 @@ class SiteswapGeneratorConfig @Throws(JuggleExceptionUser::class) constructor(ar
         // with siteswap notation: []()|
 
         private fun makeStandardRegex(term: String): String {
-            var res = term.replace("\\[", "@")
-            res = res.replace("[", "\\[")
-            res = res.replace("@", "[")
-            res = res.replace("\\]", "@")
-            res = res.replace("]", "\\]")
-            res = res.replace("@", "]")
-
-            res = res.replace("\\(", "@")
-            res = res.replace("(", "\\(")
-            res = res.replace("@", "(")
-            res = res.replace("\\)", "@")
-            res = res.replace(")", "\\)")
-            res = res.replace("@", ")")
-
-            res = res.replace("\\|", "@")
-            res = res.replace("|", "\\|")
-            res = res.replace("@", "|")
-            return res
+            val sb = StringBuilder(term.length + 8)
+            var i = 0
+            while (i < term.length) {
+                val c = term[i]
+                if (c == '\\' && i + 1 < term.length && term[i + 1] in "[]()|") {
+                    sb.append(term[i + 1])
+                    i += 2
+                    continue
+                }
+                if (c in "[]()|") {
+                    sb.append('\\').append(c)
+                } else {
+                    sb.append(c)
+                }
+                i++
+            }
+            return sb.toString()
         }
     }
 }

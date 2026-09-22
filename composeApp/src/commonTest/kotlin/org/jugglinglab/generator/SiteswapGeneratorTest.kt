@@ -12,6 +12,7 @@ import org.jugglinglab.util.JuggleExceptionUser
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import kotlinx.coroutines.test.runTest
 
@@ -87,6 +88,29 @@ class SiteswapGeneratorTest {
         val patterns2 = runGeneratorTestCase("5 7 4 -m 2 -f -x [")
         assertEquals(patterns1.size, patterns2.size)
         assertEquals(17, patterns1.size)
+    }
+
+    @Test
+    fun `generator regex negated character class`() = runTest {
+        // Negated character class \[^x\] should match '2' throws not followed by 'x'
+        val patterns = runGeneratorTestCase("5 7 4 -s -g -i 2\\[^x\\]")
+        assertEquals(listOf("(6,6)(6,2)", "(6x,6x)(6,2)"), patterns)
+    }
+
+    @Test
+    fun `generator regex anchored include and exclude`() = runTest {
+        // Start-anchored include
+        val startAnchored = runGeneratorTestCase("5 7 4 -s -g -i ^(4x")
+        assertEquals(listOf("(4x,6)(4,6x)", "(4x,6)*"), startAnchored)
+
+        // End-anchored include
+        val endAnchored = runGeneratorTestCase("5 7 4 -s -g -i 2)$")
+        assertEquals(listOf("(6,6)(6,2)", "(6x,6x)(6,2)"), endAnchored)
+
+        // Start-anchored exclude
+        val startExclude = runGeneratorTestCase("5 7 4 -s -g -x ^(4x")
+        assertEquals(6, startExclude.size)
+        assertFalse(startExclude.any { it.startsWith("(4x") })
     }
 
     @Test
