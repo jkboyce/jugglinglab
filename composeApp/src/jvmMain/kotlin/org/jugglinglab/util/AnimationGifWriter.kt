@@ -13,6 +13,8 @@ package org.jugglinglab.util
 import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.core.PatternAnimationState
 import org.jugglinglab.ui.common.AnimationView
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.use
@@ -136,9 +138,15 @@ class AnimationGifWriter(
             // start AnimationView paused so it doesn't start its internal timer
             gifState.update(isPaused = true, message = "")
 
+            val colorScheme = lightColorScheme(
+                background = Color.White,
+                surface = Color.White
+            )
+
             scene.setContent {
                 AnimationView(
                     state = gifState,
+                    colorScheme = colorScheme,
                     isAntiAlias = false,
                     onError = { jlHandleFatalException(it) }
                 )
