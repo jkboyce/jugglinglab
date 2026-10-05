@@ -43,6 +43,26 @@ object SiteswapParser {
         val tree = parser.pattern()
         logger.throwIfErrors()
 
+        // Ensure we matched to the entire input string
+        while (tokens.LA(1) == JlSiteswapParser.Tokens.SPC) {
+            tokens.consume()
+        }
+        logger.throwIfErrors()
+
+        if (tokens.LA(1) != Token.EOF) {
+            val token = tokens.LT(1)
+            val message = if (token?.text == null) {
+                jlGetStringResource(Res.string.error_pattern_parsing, "")
+            } else {
+                jlGetStringResource(
+                    Res.string.error_pattern_syntax,
+                    token.text,
+                    token.charPositionInLine + 1
+                )
+            }
+            throw SiteswapParseException(message)
+        }
+
         return SiteswapAstVisitor().visit(tree)
     }
 }

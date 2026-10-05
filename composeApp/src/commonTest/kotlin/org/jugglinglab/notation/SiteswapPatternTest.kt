@@ -169,6 +169,47 @@ class SiteswapPatternTest {
         assertEquals("Inconsistent number of jugglers across throws", exception.message)
     }
 
+    @Test
+    fun `pattern parsing unconsumed input with extra closing parenthesis throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("(6,4x)(4x,0)(4x,0)(2,4x))(2x,4)*")
+        }
+        val expected = jlGetStringResource(Res.string.error_pattern_syntax, ")", 25)
+        assertEquals(expected, exception.message)
+    }
+
+    @Test
+    fun `pattern parsing unconsumed input trailing characters throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("531)")
+        }
+        val expected = jlGetStringResource(Res.string.error_pattern_syntax, ")", 4)
+        assertEquals(expected, exception.message)
+    }
+
+    @Test
+    fun `pattern parsing unconsumed input after switchreverse throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("3*x")
+        }
+        val expected = jlGetStringResource(Res.string.error_pattern_syntax, "x", 3)
+        assertEquals(expected, exception.message)
+    }
+
+    @Test
+    fun `pattern parsing unconsumed exclamation mark after vanilla throw throws user error`() {
+        val exception = assertFailsWith<JuggleExceptionUser> {
+            SiteswapPattern().fromString("3!")
+        }
+        val expected = jlGetStringResource(Res.string.error_pattern_syntax, "!", 2)
+        assertEquals(expected, exception.message)
+    }
+
+    @Test
+    fun `pattern parsing switchreverse with trailing space succeeds`() {
+        assertPatternLayout("3* ", jugglers = 1, paths = 3)
+    }
+
     private fun assertPatternLayout(patternString: String, jugglers: Int, paths: Int) {
         val pattern = SiteswapPattern().fromString(patternString)
         pattern.asJmlPattern().layout
