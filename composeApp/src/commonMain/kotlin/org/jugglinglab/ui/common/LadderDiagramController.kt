@@ -379,17 +379,24 @@ class LadderDiagramController(
             .filter { it.primary != item.primary }
             .filter { it.event.transitions.any { tr -> tr.isThrowOrCatch && tr.path in evPaths } }
             .forEach {
-                if (it.event.t < item.event.t - MIN_EVENT_SEP_TIME) {
-                    tMin = max(tMin, it.event.t + MIN_THROW_SEP_TIME)
-                } else if (it.event.t > item.event.t + MIN_THROW_SEP_TIME) {
-                    tMax = min(tMax, it.event.t - MIN_THROW_SEP_TIME)
+                if (it.event.t < item.event.t) {
+                    val gap = item.event.t - it.event.t
+                    val sep = max(MIN_SEP_ABSOLUTE, min(MIN_THROW_SEP_TIME, 0.45 * gap))
+                    tMin = max(tMin, it.event.t + sep)
+                } else if (it.event.t > item.event.t) {
+                    val gap = it.event.t - item.event.t
+                    val sep = max(MIN_SEP_ABSOLUTE, min(MIN_THROW_SEP_TIME, 0.45 * gap))
+                    tMax = min(tMax, it.event.t - sep)
                 }
             }
 
+        tMin = min(tMin, item.event.t)
+        tMax = max(tMax, item.event.t)
+
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (layout.height - 2 * layout.borderTop).toDouble()
-        deltaYMin = ((tMin - item.event.t) / scale).toInt()
-        deltaYMax = ((tMax - item.event.t) / scale).toInt()
+        deltaYMin = min(0, ((tMin - item.event.t) / scale).toInt())
+        deltaYMax = max(0, ((tMax - item.event.t) / scale).toInt())
     }
 
     private fun getClippedEventTime(item: LadderEventItem, my: Int): Int {
@@ -399,34 +406,45 @@ class LadderDiagramController(
             (layout.height - 2 * layout.borderTop).toDouble()
         val newT = startT + dy * scale  // unclipped new event time
 
+        val otherEvents = state.pattern.allEvents
+            .filter { it.primary != item.primary }
+            .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
+            .sortedBy { it.event.t }
+
+        val exclusionIntervals = otherEvents.indices.map { i ->
+            val img = otherEvents[i]
+            val desiredSep = if (
+                img.event.hasThrow && item.event.hasThrowOrCatch ||
+                img.event.hasThrowOrCatch && item.event.hasThrow
+            ) {
+                MIN_THROW_SEP_TIME
+            } else {
+                MIN_EVENT_SEP_TIME
+            }
+            val prevGap = if (i > 0) (img.event.t - otherEvents[i - 1].event.t) else Double.MAX_VALUE
+            val nextGap = if (i < otherEvents.size - 1) (otherEvents[i + 1].event.t - img.event.t) else Double.MAX_VALUE
+
+            val sepLeft = max(MIN_SEP_ABSOLUTE, min(desiredSep, 0.45 * prevGap))
+            val sepRight = max(MIN_SEP_ABSOLUTE, min(desiredSep, 0.45 * nextGap))
+
+            (img.event.t - sepLeft)..(img.event.t + sepRight)
+        }
+
         var tExclMin = newT
         var tExclMax = newT
 
         while (true) {
             var changed = false
-            state.pattern.allEvents
-                .filter { it.primary != item.primary }
-                .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
-                .forEach {
-                    val sep = if (it.event.hasThrow && item.event.hasThrowOrCatch
-                        || it.event.hasThrowOrCatch && item.event.hasThrow
-                    ) {
-                        MIN_THROW_SEP_TIME
-                    } else {
-                        MIN_EVENT_SEP_TIME
-                    }
-                    val evExclMin = it.event.t - sep
-                    val evExclMax = it.event.t + sep
-
-                    if (tExclMin > evExclMin && tExclMin <= evExclMax) {
-                        tExclMin = evExclMin
-                        changed = true
-                    }
-                    if (tExclMax in evExclMin..<evExclMax) {
-                        tExclMax = evExclMax
-                        changed = true
-                    }
+            for (interval in exclusionIntervals) {
+                if (tExclMin > interval.start && tExclMin <= interval.endInclusive) {
+                    tExclMin = interval.start
+                    changed = true
                 }
+                if (tExclMax in interval.start..<interval.endInclusive) {
+                    tExclMax = interval.endInclusive
+                    changed = true
+                }
+            }
             if (!changed) break
         }
 
@@ -443,7 +461,7 @@ class LadderDiagramController(
         } else if (feasibleMax) {
             exclDyMax
         } else {
-            dy
+            0
         }
     }
 
@@ -487,6 +505,12 @@ class LadderDiagramController(
 
         record.selectPrimaryEvents()
         val newPattern = JmlPattern.fromPatternBuilder(record)
+        try {
+            newPattern.assertValid()
+        } catch (_: JuggleExceptionUser) {
+            return
+        }
+
         val selectedImage = newPattern.loopEvents
             .filter { it.event.juggler == item.event.juggler && it.event.hand == item.event.hand }
             .minByOrNull { abs(it.event.t - newT) }
@@ -505,8 +529,8 @@ class LadderDiagramController(
         val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
             (layout.height - 2 * layout.borderTop).toDouble()
 
-        deltaYMin = ((tmin - item.position.t) / scale).toInt()
-        deltaYMax = ((tmax - item.position.t) / scale).toInt()
+        deltaYMin = min(0, ((tmin - item.position.t) / scale).toInt())
+        deltaYMax = max(0, ((tmax - item.position.t) / scale).toInt())
     }
 
     private fun getClippedPositionTime(my: Int, position: JmlPosition): Int {
@@ -514,53 +538,71 @@ class LadderDiagramController(
         var dy = my - startY
         dy = min(max(dy, deltaYMin), deltaYMax)
 
-        val scale = (state.pattern.loopEndTime - state.pattern.loopStartTime) /
-            (layout.height - 2 * layout.borderTop).toDouble()
+        val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
+        val scale = loopDuration / (layout.height - 2 * layout.borderTop).toDouble()
         val shift = dy * scale
         val newT = startT + shift  // unclipped new event time
 
+        val otherPositions = state.pattern.positions
+            .filter { it != position && it.juggler == position.juggler }
+            .sortedBy { it.t }
+
+        val exclusionIntervals = otherPositions.indices.map { i ->
+            val pos = otherPositions[i]
+            val prevGap = if (i > 0) {
+                pos.t - otherPositions[i - 1].t
+            } else if (otherPositions.size > 1) {
+                pos.t - (otherPositions.last().t - loopDuration)
+            } else {
+                Double.MAX_VALUE
+            }
+            val nextGap = if (i < otherPositions.size - 1) {
+                otherPositions[i + 1].t - pos.t
+            } else if (otherPositions.size > 1) {
+                (otherPositions.first().t + loopDuration) - pos.t
+            } else {
+                Double.MAX_VALUE
+            }
+
+            val sepLeft = max(MIN_SEP_ABSOLUTE, min(MIN_POSITION_SEP_TIME, 0.45 * prevGap))
+            val sepRight = max(MIN_SEP_ABSOLUTE, min(MIN_POSITION_SEP_TIME, 0.45 * nextGap))
+
+            (pos.t - sepLeft)..(pos.t + sepRight)
+        }
+
         var tExclMin = newT
         var tExclMax = newT
-        var changed: Boolean
 
-        do {
-            changed = false
-
-            for (pos in state.pattern.positions) {
-                if (pos != position && pos.juggler == position.juggler) {
-                    val posExclMin: Double = pos.t - MIN_POSITION_SEP_TIME
-                    val posExclMax: Double = pos.t + MIN_POSITION_SEP_TIME
-
-                    if (tExclMax in posExclMin..<posExclMax) {
-                        tExclMax = posExclMax
-                        changed = true
-                    }
-
-                    if (posExclMin < tExclMin && posExclMax >= tExclMin) {
-                        tExclMin = posExclMin
-                        changed = true
-                    }
+        while (true) {
+            var changed = false
+            for (interval in exclusionIntervals) {
+                if (tExclMin > interval.start && tExclMin <= interval.endInclusive) {
+                    tExclMin = interval.start
+                    changed = true
+                }
+                if (tExclMax in interval.start..<interval.endInclusive) {
+                    tExclMax = interval.endInclusive
+                    changed = true
                 }
             }
-        } while (changed)
+            if (!changed) break
+        }
 
         val exclDyMin = floor((tExclMin - startT) / scale).toInt()
         val exclDyMax = ceil((tExclMax - startT) / scale).toInt()
         val feasibleMin = (exclDyMin in deltaYMin..deltaYMax)
         val feasibleMax = (exclDyMax in deltaYMin..deltaYMax)
 
-        var resultDy = dy
-
-        if (feasibleMin && feasibleMax) {
+        return if (feasibleMin && feasibleMax) {
             val tMidpoint = 0.5 * (tExclMin + tExclMax)
-            resultDy = (if (newT <= tMidpoint) exclDyMin else exclDyMax)
+            if (newT <= tMidpoint) exclDyMin else exclDyMax
         } else if (feasibleMin) {
-            resultDy = exclDyMin
+            exclDyMin
         } else if (feasibleMax) {
-            resultDy = exclDyMax
+            exclDyMax
+        } else {
+            0
         }
-
-        return resultDy
     }
 
     private fun movePositionInPattern(item: LadderPositionItem) {
@@ -581,8 +623,15 @@ class LadderDiagramController(
         if (index < 0) throw JuggleExceptionInternal("Error in LDC.movePositionInPattern()")
         val newPosition = pos.copy(t = newT)
         rec.positions[index] = newPosition
+        val newPattern = JmlPattern.fromPatternBuilder(rec)
+        try {
+            newPattern.assertValid()
+        } catch (_: JuggleExceptionUser) {
+            return
+        }
+
         state.update(
-            pattern = JmlPattern.fromPatternBuilder(rec),
+            pattern = newPattern,
             selectedItemHashCode = newPosition.jlHashCode
         )
     }
@@ -1094,6 +1143,9 @@ class LadderDiagramController(
     companion object {
         // geometric constants in pixels
         const val PATH_SLOP_DP: Int = 5
+
+        // absolute minimum separation time (seconds) to satisfy JmlPattern.assertValid()
+        private const val MIN_SEP_ABSOLUTE: Double = 0.0011
 
         // minimum time (seconds) between a throw and another event with transitions
         private const val MIN_THROW_SEP_TIME: Double = 0.03
