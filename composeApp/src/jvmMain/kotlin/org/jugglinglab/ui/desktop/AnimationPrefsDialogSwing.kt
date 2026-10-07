@@ -27,9 +27,6 @@ import java.util.Locale
 import javax.swing.*
 
 class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) {
-    private lateinit var tfWidth: JTextField
-    private lateinit var tfHeight: JTextField
-    private lateinit var tfFps: JTextField
     private lateinit var tfSlowdown: JTextField
     private lateinit var comboShowground: JComboBox<String>
     private lateinit var comboAvatar: JComboBox<String>
@@ -61,9 +58,6 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
 
     override fun getPrefs(oldPrefs: AnimationPrefs): AnimationPrefs {
         // Fill in UI elements with current prefs
-        tfWidth.text = oldPrefs.width.toString()
-        tfHeight.text = oldPrefs.height.toString()
-        tfFps.text = jlToStringRounded(oldPrefs.fps, 2)
         tfSlowdown.text = jlToStringRounded(oldPrefs.slowdown, 2)
         comboShowground.setSelectedIndex(oldPrefs.showGround)
         val isSingleAvatar = oldPrefs.avatar.lowercase() in Avatar.builtinAvatars
@@ -113,9 +107,6 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             // manual settings box
             val pl = ParameterList(oldPrefs.toString())
             val paramsRemove = mutableListOf(
-                "width",
-                "height",
-                "fps",
                 "slowdown",
                 "showground",
                 "stereo",
@@ -146,18 +137,6 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
 
     private fun createContents() {
         // panel of text boxes at the top
-        val lab1 = JLabel(jlGetStringResource(Res.string.gui_width))
-        tfWidth = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab2 = JLabel(jlGetStringResource(Res.string.gui_height))
-        tfHeight = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
-        val lab3 = JLabel(jlGetStringResource(Res.string.gui_frames_per_second))
-        tfFps = JTextField(4).apply {
-            setHorizontalAlignment(JTextField.CENTER)
-        }
         val lab4 = JLabel(jlGetStringResource(Res.string.gui_slowdown_factor))
         tfSlowdown = JTextField(4).apply {
             setHorizontalAlignment(JTextField.CENTER)
@@ -192,12 +171,6 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
 
         val p1 = JPanel().apply {
             setLayout(gb)
-            add(lab1)
-            add(tfWidth)
-            add(lab2)
-            add(tfHeight)
-            add(lab3)
-            add(tfFps)
             add(lab4)
             add(tfSlowdown)
             add(lab5)
@@ -206,42 +179,24 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             add(comboAvatar)
         }
         gb.setConstraints(
-            lab1, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
+            lab4, constraints(GridBagConstraints.LINE_START, 1, 0, Insets(0, 3, 0, 0))
         )
         gb.setConstraints(
-            tfWidth, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
+            tfSlowdown, constraints(GridBagConstraints.LINE_START, 0, 0, Insets(0, 0, 0, 0))
         )
         gb.setConstraints(
-            lab2, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfHeight, constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab3, constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfFps, constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab4, constraints(GridBagConstraints.LINE_START, 1, 3, Insets(0, 3, 0, 0))
-        )
-        gb.setConstraints(
-            tfSlowdown, constraints(GridBagConstraints.LINE_START, 0, 3, Insets(0, 0, 0, 0))
-        )
-        gb.setConstraints(
-            lab5, constraints(GridBagConstraints.LINE_START, 1, 4, Insets(0, 3, 0, 0))
+            lab5, constraints(GridBagConstraints.LINE_START, 1, 1, Insets(0, 3, 0, 0))
         )
         gb.setConstraints(
             comboShowground,
-            constraints(GridBagConstraints.LINE_START, 0, 4, Insets(0, 0, 0, 0))
+            constraints(GridBagConstraints.LINE_START, 0, 1, Insets(0, 0, 0, 0))
         )
         gb.setConstraints(
-            lab6, constraints(GridBagConstraints.LINE_START, 1, 5, Insets(0, 3, 0, 0))
+            lab6, constraints(GridBagConstraints.LINE_START, 1, 2, Insets(0, 3, 0, 0))
         )
         gb.setConstraints(
             comboAvatar,
-            constraints(GridBagConstraints.LINE_START, 0, 5, Insets(0, 0, 0, 0))
+            constraints(GridBagConstraints.LINE_START, 0, 2, Insets(0, 0, 0, 0))
         )
 
         val p2 = JPanel().apply {
@@ -317,37 +272,9 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
     // Read prefs out of UI elements.
 
     private fun readDialogBox(): AnimationPrefs {
-        var tempint: Int
         var tempdouble: Double
         var newjc = AnimationPrefs()
 
-        try {
-            tempint = tfWidth.getText().toInt()
-            if (tempint >= 0) {
-                newjc = newjc.copy(width = tempint)
-            }
-        } catch (_: NumberFormatException) {
-            val message = jlGetStringResource(Res.string.error_number_format, "width")
-            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
-        }
-        try {
-            tempint = tfHeight.getText().toInt()
-            if (tempint >= 0) {
-                newjc = newjc.copy(height = tempint)
-            }
-        } catch (_: NumberFormatException) {
-            val message = jlGetStringResource(Res.string.error_number_format, "height")
-            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
-        }
-        try {
-            tempdouble = tfFps.getText().toDouble()
-            if (tempdouble > 0.0) {
-                newjc = newjc.copy(fps = tempdouble)
-            }
-        } catch (_: NumberFormatException) {
-            val message = jlGetStringResource(Res.string.error_number_format, "fps")
-            jlHandleUserException(this@AnimationPrefsDialogSwing, message)
-        }
         try {
             tempdouble = tfSlowdown.getText().toDouble()
             if (tempdouble > 0.0) {
@@ -373,7 +300,7 @@ class AnimationPrefsDialogSwing(parent: JFrame?) : AnimationPrefsDialog(parent) 
             bounceSound = cbBouncesounds.isSelected
         )
 
-        if (!tfOther.getText().trim { it <= ' ' }.isEmpty()) {
+        if (tfOther.getText().trim { it <= ' ' }.isNotEmpty()) {
             try {
                 newjc = AnimationPrefs.fromString("$newjc;" + tfOther.getText())
             } catch (jeu: JuggleExceptionUser) {

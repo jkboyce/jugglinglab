@@ -104,7 +104,7 @@
     <string name="gui_solid_3d_display">Exibição 3D sólida</string>
     <string name="gui_width">Largura</string>
     <string name="gui_height">Altura</string>
-    <string name="gui_frames_per_second">Quadros por segundo (GIF)</string>
+    <string name="gui_frames_per_second">Quadros por segundo</string>
     <string name="gui_slowdown_factor">Fator de desaceleração</string>
     <string name="gui_border__pixels_">Beira (pixels)</string>
     <string name="gui_double_buffered_animation">Animação com buffer duplo</string>
@@ -137,6 +137,7 @@
     <string name="gui_too_many_jugglers">Muitos malabaristas para edição visual</string>
     <string name="gui_too_many_paths">Muitos caminhos para edição visual</string>
     <string name="gui_saving_animated_gif">Salvando GIF animado</string>
+    <string name="gui_animated_gif_settings">Configurações de GIF animado</string>
     <string name="gui_message_gifsave_color_map">Criando mapa de cores</string>
     <string name="gui_message_gifsave_writing_frame">Gravando quadro %1$d de %2$d</string>
     <string name="gui_patternview_compile_button">Compilar</string>
@@ -282,7 +283,7 @@ Preferências de animação:
    jlab anim '(6x,4)*'
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml meu_padrao_favorito.jml
-   jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab anim 771 -prefs 'stereo=true;slowdown=1.5'
    jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5

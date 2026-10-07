@@ -75,6 +75,7 @@ class PatternWindow(
         private set
     private var lastJmlFilepath: Path? = null
     private val coroutineScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    private var lastSingleAnimationSize = Dimension(View.DEFAULT_ANIMATION_WIDTH, View.DEFAULT_ANIMATION_HEIGHT)
 
     init {
         createMenus()
@@ -152,10 +153,10 @@ class PatternWindow(
         }
 
         view = when (mode) {
-            AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this)
-            AnimationPrefs.VIEW_EDIT -> EditView(state, this)
-            AnimationPrefs.VIEW_PATTERN -> PatternView(state, this)
-            AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this)
+            AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this, lastSingleAnimationSize)
+            AnimationPrefs.VIEW_EDIT -> EditView(state, this, lastSingleAnimationSize)
+            AnimationPrefs.VIEW_PATTERN -> PatternView(state, this, lastSingleAnimationSize)
+            AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this, lastSingleAnimationSize)
             else -> throw JuggleExceptionInternal("createInitialView: problem creating view")
         }.apply {
             setOpaque(true)
@@ -184,6 +185,11 @@ class PatternWindow(
             // `mode` is one of the View.VIEW_X constants.
             viewMenu.getItem(mode - 1).setSelected(true)
 
+            val currentSize = view.animationPanelSize
+            if (!isWindowMaximized && view !is SelectionView && currentSize != null && currentSize.width > 0 && currentSize.height > 0) {
+                lastSingleAnimationSize = currentSize
+            }
+
             // move the state from the old view to the new
             val state = view.state.apply {
                 removeAllListeners()
@@ -193,10 +199,10 @@ class PatternWindow(
             }
 
             val newView = when (mode) {
-                AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this)
-                AnimationPrefs.VIEW_EDIT -> EditView(state, this)
-                AnimationPrefs.VIEW_PATTERN -> PatternView(state, this)
-                AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this)
+                AnimationPrefs.VIEW_SIMPLE -> SimpleView(state, this, lastSingleAnimationSize)
+                AnimationPrefs.VIEW_EDIT -> EditView(state, this, lastSingleAnimationSize)
+                AnimationPrefs.VIEW_PATTERN -> PatternView(state, this, lastSingleAnimationSize)
+                AnimationPrefs.VIEW_SELECTION -> SelectionView(state, this, lastSingleAnimationSize)
                 else -> throw JuggleExceptionInternal("setViewMode: problem creating view")
             }.apply {
                 setOpaque(true)
@@ -207,7 +213,6 @@ class PatternWindow(
             if (isWindowMaximized) validate() else pack()
 
             newView.restartView(state.pattern, state.prefs)
-            view.disposeView()
             view = newView
         }
 
@@ -223,7 +228,20 @@ class PatternWindow(
 
     // For determining if the current window is maximized in the UI.
     val isWindowMaximized: Boolean
-        get() = ((extendedState and MAXIMIZED_BOTH) != 0)
+        get() {
+            if (!jlIsMacOs) {
+                return (extendedState and MAXIMIZED_BOTH) != 0
+            }
+            // On macOS, native fullscreen and zoom/maximize do not set
+            // MAXIMIZED_BOTH in extendedState. Check if the window bounds cover
+            // the usable area of the screen it is currently on.
+            val gc = graphicsConfiguration ?: return false
+            val screenBounds = gc.bounds
+            val insets = Toolkit.getDefaultToolkit().getScreenInsets(gc)
+            val maxUsableWidth = screenBounds.width - insets.left - insets.right
+            val maxUsableHeight = screenBounds.height - insets.top - insets.bottom
+            return width >= maxUsableWidth - 4 && height >= maxUsableHeight - 4
+        }
 
     fun setJmlFilepath(fpath: Path?) {
         lastJmlFilepath = fpath
@@ -362,7 +380,7 @@ class PatternWindow(
 
         for (i in 0..<viewMenu.itemCount) {
             val jmi = viewMenu.getItem(i)
-            if (jmi == null || jmi.getActionCommand() == null) {
+            if (jmi?.getActionCommand() == null) {
                 continue
             }
 
@@ -574,6 +592,13 @@ class PatternWindow(
             }
 
             MenuCommand.FILE_SAVEGIF -> {
+                val dialog = SaveGifDialogSwing(this)
+                val currentWidth = view.animationPanelSize?.width ?: View.DEFAULT_ANIMATION_WIDTH
+                val currentHeight = view.animationPanelSize?.height ?: View.DEFAULT_ANIMATION_HEIGHT
+                val settings =
+                    dialog.getSettings(currentWidth, currentHeight, View.DEFAULT_GIF_FPS)
+                        ?: return
+
                 val truncatedTitle = title?.take(40) ?: "pattern"
                 val sanitizedFileName = jlSanitizeFilename("${truncatedTitle}.gif")
                 val fpath = lastJmlFilepath?.let {
@@ -594,7 +619,7 @@ class PatternWindow(
                 jlErrorIfNotSanitized(f.getName())
 
                 setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR))
-                view.writeGif(f)
+                view.writeGif(f, settings.width, settings.height, settings.fps)
                 setCursor(Cursor.getDefaultCursor())
             }
 
@@ -700,10 +725,6 @@ class PatternWindow(
 
                 if (newjc != jc) {
                     view.restartView(null, newjc)
-
-                    if (newjc.width != jc.width || newjc.height != jc.height) {
-                        if (isWindowMaximized) validate() else pack()
-                    }
                 }
             }
 
@@ -829,7 +850,6 @@ class PatternWindow(
 
     override fun dispose() {
         super.dispose()
-        view.disposeView()
         SwingUtilities.invokeLater { ApplicationWindow.updateWindowMenus() }
     }
 

@@ -46,6 +46,9 @@ import kotlin.math.max
 class AnimationGifWriter(
     val gifState: PatternAnimationState,
     val file: File,
+    val width: Int,
+    val height: Int,
+    val fps: Double,
     val parent: Component? = null,
     val cleanup: Runnable? = null
 ) : Thread() {
@@ -106,7 +109,7 @@ class AnimationGifWriter(
         // The GIF header specifies the delay time between frames in terms of
         // hundredths of a second. This is an integer quantity, so only `fps`
         // values like 50, 33 1/3, 25, 20, ... are precisely achievable.
-        val frameDurationHundredths = max((100.0 / gifState.prefs.fps).roundToInt(), 1)
+        val frameDurationHundredths = max((100.0 / fps).roundToInt(), 1)
         val frameDurationString = frameDurationHundredths.toString()
 
         // adjust inter-frame sim time so that an exact number of frames fit
@@ -131,8 +134,8 @@ class AnimationGifWriter(
 
         // render the animation frames offscreen
         ImageComposeScene(
-            width = gifState.prefs.width,
-            height = gifState.prefs.height,
+            width = width,
+            height = height,
             density = Density(1f)
         ).use { scene ->
             // start AnimationView paused so it doesn't start its internal timer
@@ -154,15 +157,9 @@ class AnimationGifWriter(
 
             // need to convert Skia Image into bitmap with color type BGRA_8888
             // that AWT expects; Skia images by default have color type RGBA_8888
+            val info = ImageInfo(width, height, ColorType.BGRA_8888, ColorAlphaType.PREMUL)
             val bitmap = Bitmap().apply {
-                allocPixels(
-                    ImageInfo(
-                        gifState.prefs.width,
-                        gifState.prefs.height,
-                        ColorType.BGRA_8888,
-                        ColorAlphaType.PREMUL
-                    )
-                )
+                allocPixels(info)
             }
 
             for (currentFrame in 0..<totalFrames) {

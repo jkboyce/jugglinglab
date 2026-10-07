@@ -30,7 +30,8 @@ import javax.swing.event.DocumentListener
 
 class PatternView(
     state: PatternAnimationState,
-    patternWindow: PatternWindow
+    patternWindow: PatternWindow,
+    initialAnimationSize: Dimension
 ) : View(state, patternWindow), DocumentListener {
     private val ja = AnimationPanel(state, onZoom = onViewZoomChange)
     private lateinit var jsp: JSplitPane
@@ -44,7 +45,7 @@ class PatternView(
     private var textEdited: Boolean = false
 
     init {
-        makePanel(Dimension(state.prefs.width, state.prefs.height))
+        makePanel(initialAnimationSize)
         updateButtons()
     }
 
@@ -231,15 +232,7 @@ class PatternView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
-        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
-
         ja.restartJuggle(pattern, prefs, coldRestart)
-        if (sizeChanged) {
-            setAnimationPanelPreferredSize(
-                Dimension(state.prefs.width, state.prefs.height)
-            )
-            jsp.resetToPreferredSizes()
-        }
         if (pattern != null) {
             val notation = pattern.basePatternNotation
             val message = if (notation != null) {
@@ -266,14 +259,6 @@ class PatternView(
 
     override val animationPanelSize: Dimension?
         get() = ja.getSize(Dimension())
-
-    override fun setAnimationPanelPreferredSize(d: Dimension) {
-        ja.preferredSize = d
-    }
-
-    override fun disposeView() {
-        ja.disposeAnimation()
-    }
 
     //--------------------------------------------------------------------------
     // javax.swing.event.DocumentListener methods

@@ -8,21 +8,17 @@
 // or:
 //   https://jugglinglab.org/anim?jml=<base64-encoded gzip-compressed XML>;setting2=...
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 2025-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.util
 
 import org.jugglinglab.core.AnimationPrefs
-import org.jugglinglab.core.AnimationPrefs.Companion.FPS_DEF
-import org.jugglinglab.core.AnimationPrefs.Companion.HEIGHT_DEF
 import org.jugglinglab.core.AnimationPrefs.Companion.MOUSEPAUSE_DEF
 import org.jugglinglab.core.AnimationPrefs.Companion.VIEW_DEF
-import org.jugglinglab.core.AnimationPrefs.Companion.WIDTH_DEF
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.notation.SiteswapPattern
 import kotlin.io.encoding.Base64
-import kotlin.io.encoding.ExperimentalEncodingApi
 import kotlin.text.iterator
 
 private const val SHARE_BASE_URL = "https://jugglinglab.org/anim"
@@ -30,13 +26,9 @@ private const val SHARE_BASE_URL = "https://jugglinglab.org/anim"
 // Build a shareable URL for the given pattern. If the pattern is in JML format,
 // gzip-compress before base64 encoding to keep the URL short.
 
-@OptIn(ExperimentalEncodingApi::class)
 suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
     // disable desktop-specific prefs
     val prefsConfig = prefs.copy(
-        width = WIDTH_DEF,
-        height = HEIGHT_DEF,
-        fps = FPS_DEF,
         defaultView = VIEW_DEF,
         mousePause = MOUSEPAUSE_DEF
     ).toString()
@@ -70,7 +62,6 @@ suspend fun buildShareUrl(pattern: JmlPattern, prefs: AnimationPrefs): String {
 // Decode a share URL back to a JmlPattern. Any exceptions during decoding
 // will be thrown back to the caller.
 
-@OptIn(ExperimentalEncodingApi::class)
 suspend fun decodeShareUrl(url: String): Pair<JmlPattern, AnimationPrefs?> {
     var config = urlDecode(url.substringAfter("?"))
     if ('=' !in config) {

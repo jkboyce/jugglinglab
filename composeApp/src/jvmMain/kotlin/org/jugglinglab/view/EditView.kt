@@ -27,7 +27,8 @@ import javax.swing.border.EmptyBorder
 
 class EditView(
     state: PatternAnimationState,
-    patternWindow: PatternWindow
+    patternWindow: PatternWindow,
+    initialAnimationSize: Dimension
 ) : View(state, patternWindow) {
     private val ap = AnimationPanel(state, onZoom = onViewZoomChange)
     private val ladder = LadderDiagramPanel(state, patternWindow)
@@ -39,7 +40,7 @@ class EditView(
             // will expand the animator dimensions to fit
             Dimension(patternWindow.width / 4, 50)
         } else {
-            Dimension(state.prefs.width, state.prefs.height)
+            initialAnimationSize
         }
         ap.minimumSize = Dimension(50, 50)
 
@@ -65,22 +66,7 @@ class EditView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
-        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
-
         ap.restartJuggle(pattern, prefs, coldRestart)
-        if (sizeChanged) {
-            // The containing window will do a layout (validate() or pack()) in
-            // PatternWindow.doMenuCommand(MenuCommand.VIEW_ANIMPREFS). Before
-            // that, here we set the panels' preferred sizes so the layout
-            // manager will allocate the right amount of space.
-            setAnimationPanelPreferredSize(
-                Dimension(state.prefs.width, state.prefs.height)
-            )
-            ladder.preferredSize = Dimension(ladder.size.width, state.prefs.height)
-
-            // This makes the JSplitPane divider reset during layout
-            jsp.resetToPreferredSizes()
-        }
         if (pattern != null) {
             patternWindow.setTitle(pattern.title)
             patternWindow.updateColorsMenu()
@@ -89,12 +75,4 @@ class EditView(
 
     override val animationPanelSize: Dimension?
         get() = ap.getSize(Dimension())
-
-    override fun setAnimationPanelPreferredSize(d: Dimension) {
-        ap.preferredSize = d
-    }
-
-    override fun disposeView() {
-        ap.disposeAnimation()
-    }
 }

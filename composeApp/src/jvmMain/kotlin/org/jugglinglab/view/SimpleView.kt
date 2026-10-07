@@ -18,12 +18,13 @@ import java.awt.Dimension
 
 class SimpleView(
     state: PatternAnimationState,
-    patternWindow: PatternWindow
+    patternWindow: PatternWindow,
+    initialAnimationSize: Dimension
 ) : View(state, patternWindow) {
     private val ja = AnimationPanel(state, onZoom = onViewZoomChange)
 
     init {
-        ja.preferredSize = Dimension(state.prefs.width, state.prefs.height)
+        ja.preferredSize = initialAnimationSize
         ja.minimumSize = Dimension(50, 50)
         setLayout(BorderLayout())
         add(ja, BorderLayout.CENTER)
@@ -35,14 +36,7 @@ class SimpleView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
-        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
-
         ja.restartJuggle(pattern, prefs, coldRestart)
-        if (sizeChanged) {
-            setAnimationPanelPreferredSize(
-                Dimension(state.prefs.width, state.prefs.height)
-            )
-        }
         if (pattern != null) {
             patternWindow.setTitle(pattern.title)
             patternWindow.updateColorsMenu()
@@ -51,12 +45,4 @@ class SimpleView(
 
     override val animationPanelSize: Dimension?
         get() = ja.getSize(Dimension())
-
-    override fun setAnimationPanelPreferredSize(d: Dimension) {
-        ja.preferredSize = d
-    }
-
-    override fun disposeView() {
-        ja.disposeAnimation()
-    }
 }

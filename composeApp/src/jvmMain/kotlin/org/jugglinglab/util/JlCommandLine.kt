@@ -21,6 +21,7 @@ import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
 import org.jugglinglab.ui.desktop.ApplicationWindow
 import org.jugglinglab.ui.desktop.PatternWindow
+import org.jugglinglab.view.View
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -113,20 +114,20 @@ object JlCommandLine {
 
         // Try to parse an optional output path and/or animation preferences
         val outpath = parseOutpath()
-        val jc = parseAnimprefs()
+        val rawPrefs = parsePrefsArg()
 
         if (firstarg == "gen") {
-            doGen(outpath, jc)
+            doGen(outpath, parseStandardAnimprefs(rawPrefs))
             return
         }
 
         if (firstarg == "trans") {
-            doTrans(outpath, jc)
+            doTrans(outpath, parseStandardAnimprefs(rawPrefs))
             return
         }
 
         if (firstarg == "verify") {
-            doVerify(outpath, jc)
+            doVerify(outpath, parseStandardAnimprefs(rawPrefs))
             return
         }
 
@@ -142,7 +143,7 @@ object JlCommandLine {
         }
 
         if (firstarg == "anim") {
-            doAnim(pat, jc)
+            doAnim(pat, parseStandardAnimprefs(rawPrefs))
             return
         }
 
@@ -150,17 +151,18 @@ object JlCommandLine {
         System.setProperty("java.awt.headless", "true")
 
         if (firstarg == "togif") {
-            doTogif(pat, outpath, jc)
+            val gifParams = parseTogifPrefs(rawPrefs)
+            doTogif(pat, outpath, gifParams.prefs, gifParams.width, gifParams.height, gifParams.fps)
             return
         }
 
         if (firstarg == "tojml") {
-            doTojml(pat, outpath, jc)
+            doTojml(pat, outpath, parseStandardAnimprefs(rawPrefs))
             return
         }
 
         if (firstarg == "tolayout") {
-            doTolayout(pat, outpath, jc)
+            doTolayout(pat, outpath, parseTolayoutFps(rawPrefs))
             return
         }
     }
@@ -320,11 +322,17 @@ object JlCommandLine {
         return null
     }
 
-    // Look in `jlargs` to see if animator preferences are supplied, and if so
-    // then parse them and return an AnimationPrefs object. Otherwise (or on
-    // error) return null.
+    private data class GifCliParams(
+        val prefs: AnimationPrefs?,
+        val width: Int,
+        val height: Int,
+        val fps: Double
+    )
 
-    private fun parseAnimprefs(): AnimationPrefs? {
+    // Look in `jlargs` for an optional `-prefs` parameter and return its string
+    // value, removing `-prefs` and the value from `jlargs`.
+
+    private fun parsePrefsArg(): String? {
         for (i in jlargs.indices) {
             if (jlargs[i].equals("-prefs", ignoreCase = true)) {
                 jlargs.removeAt(i)
@@ -334,18 +342,85 @@ object JlCommandLine {
                     return null
                 }
 
-                try {
-                    val pl = ParameterList(jlargs.removeAt(i))
-                    val jc = AnimationPrefs.fromParameters(pl)
-                    pl.errorIfParametersLeft()
-                    return jc
-                } catch (jeu: JuggleExceptionUser) {
-                    println("Error in animator prefs: ${jeu.message}; ignoring")
-                    return null
-                }
+                return jlargs.removeAt(i)
             }
         }
         return null
+    }
+
+    private fun parseStandardAnimprefs(rawPrefs: String?): AnimationPrefs? {
+        if (rawPrefs == null) {
+            return null
+        }
+        return try {
+            val pl = ParameterList(rawPrefs)
+            val jc = AnimationPrefs.fromParameters(pl)
+            pl.errorIfParametersLeft()
+            jc
+        } catch (jeu: JuggleExceptionUser) {
+            println("Error in animator prefs: ${jeu.message}; ignoring")
+            null
+        }
+    }
+
+    private fun parseTogifPrefs(rawPrefs: String?): GifCliParams {
+        if (rawPrefs == null) {
+            return GifCliParams(
+                null,
+                View.DEFAULT_ANIMATION_WIDTH,
+                View.DEFAULT_ANIMATION_HEIGHT,
+                View.DEFAULT_GIF_FPS
+            )
+        }
+        return try {
+            val pl = ParameterList(rawPrefs)
+            var width = View.DEFAULT_ANIMATION_WIDTH
+            var height = View.DEFAULT_ANIMATION_HEIGHT
+            var fps = View.DEFAULT_GIF_FPS
+
+            pl.removeParameter("width")?.let {
+                width = it.toIntOrNull()?.takeIf { w -> w > 0 }
+                    ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_number_format, "width"))
+            }
+            pl.removeParameter("height")?.let {
+                height = it.toIntOrNull()?.takeIf { h -> h > 0 }
+                    ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_number_format, "height"))
+            }
+            pl.removeParameter("fps")?.let {
+                fps = it.toDoubleOrNull()?.takeIf { f -> f > 0.0 && f.isFinite() }
+                    ?: throw JuggleExceptionUser(jlGetStringResource(Res.string.error_number_format, "fps"))
+            }
+            val jc = AnimationPrefs.fromParameters(pl)
+            pl.errorIfParametersLeft()
+            GifCliParams(jc, width, height, fps)
+        } catch (jeu: JuggleExceptionUser) {
+            println("Error in animator prefs: ${jeu.message}; ignoring")
+            GifCliParams(
+                null,
+                View.DEFAULT_ANIMATION_WIDTH,
+                View.DEFAULT_ANIMATION_HEIGHT,
+                View.DEFAULT_GIF_FPS
+            )
+        }
+    }
+
+    private fun parseTolayoutFps(rawPrefs: String?): Double {
+        if (rawPrefs == null) {
+            return 100.0
+        }
+        return try {
+            val pl = ParameterList(rawPrefs)
+            val fps = pl.removeParameter("fps")?.let {
+                it.toDoubleOrNull()?.takeIf { f -> f > 0.0 && f.isFinite() }
+                    ?: run {
+                        println("Error in animator prefs: invalid fps; using default")
+                        100.0
+                    }
+            } ?: 100.0
+            fps
+        } catch (_: Exception) {
+            100.0
+        }
     }
 
     // Run the siteswap generator.
@@ -645,24 +720,28 @@ object JlCommandLine {
 
     // Output an animated GIF of the pattern.
 
-    private fun doTogif(pat: JmlPattern, outpath: Path?, prefs: AnimationPrefs?) {
+    private fun doTogif(
+        pat: JmlPattern,
+        outpath: Path?,
+        prefs: AnimationPrefs?,
+        width: Int,
+        height: Int,
+        fps: Double
+    ) {
         if (outpath == null) {
             println("Error: No output path specified for animated GIF")
             return
         }
 
         try {
-            val jc = if (prefs == null) {
-                AnimationPrefs(fps = 33.3)
-                // Note the GIF header specifies inter-frame delay in terms of
-                // hundredths of a second, so only `fps` values like 50, 33 1/3,
-                // 25, 20, ... are precisely achievable.
-            } else if (prefs.fps == AnimationPrefs.FPS_DEF) {
-                prefs.copy(fps = 33.3)
-            } else {
-                prefs
-            }
-            AnimationGifWriter(PatternAnimationState(pat, jc), outpath.toFile())
+            val jc = prefs ?: AnimationPrefs()
+            AnimationGifWriter(
+                gifState = PatternAnimationState(pat, jc),
+                file = outpath.toFile(),
+                width = width,
+                height = height,
+                fps = fps
+            )
         } catch (jeu: JuggleExceptionUser) {
             println("Error: ${jeu.message}")
         } catch (jei: JuggleExceptionInternal) {
@@ -700,9 +779,7 @@ object JlCommandLine {
     // Sample rate is read from `-prefs fps=...` (other AnimationPrefs fields
     // ignored), defaulting to fps=100 if not given.
 
-    private fun doTolayout(pat: JmlPattern, outpath: Path?, prefs: AnimationPrefs?) {
-        val fps = prefs?.fps ?: 100.0
-
+    private fun doTolayout(pat: JmlPattern, outpath: Path?, fps: Double) {
         try {
             val export = buildLayoutExport(pat, fps)
             val json = Json { prettyPrint = true; encodeDefaults = true }

@@ -91,8 +91,6 @@ abstract class View(
     // size of just the juggler animation, not any extra elements
     abstract val animationPanelSize: Dimension?
 
-    abstract fun setAnimationPanelPreferredSize(d: Dimension)
-
     // control zoom at the View level because of SelectionView
     open var zoom: Double
         get() = state.zoom
@@ -103,24 +101,34 @@ abstract class View(
         zoom = (zoom * zoomFactor).coerceIn(MIN_ZOOM, MAX_ZOOM)
     }
 
-    abstract fun disposeView()
+    companion object {
+        const val DEFAULT_ANIMATION_WIDTH: Int = 400
+        const val DEFAULT_ANIMATION_HEIGHT: Int = 450
+        const val DEFAULT_GIF_FPS: Double = 33.3
+    }
 
     //--------------------------------------------------------------------------
     // Saving animated GIFs
     //--------------------------------------------------------------------------
 
-    fun writeGif(f: File) {
-        var prefs = state.prefs
-        if (prefs.fps == AnimationPrefs.FPS_DEF) {
-            prefs = prefs.copy(fps = 33.3)  // default frames per sec for GIFs
-            // Note the GIF header specifies inter-frame delay in terms of
-            // hundredths of a second, so only `fps` values like 50, 33 1/3,
-            // 25, 20, ... are precisely achievable.
-        }
-        val gifState = PatternAnimationState(state.pattern, prefs).apply {
+    fun writeGif(
+        file: File,
+        width: Int,
+        height: Int,
+        fps: Double
+    ) {
+        val gifState = PatternAnimationState(state.pattern, state.prefs).apply {
             cameraAngle = state.cameraAngle
             zoom = state.zoom
         }
-        AnimationGifWriter(gifState, f, patternWindow, null)
+        AnimationGifWriter(
+            gifState = gifState,
+            file = file,
+            width = width,
+            height = height,
+            fps = fps,
+            parent = patternWindow,
+            cleanup = null
+        )
     }
 }

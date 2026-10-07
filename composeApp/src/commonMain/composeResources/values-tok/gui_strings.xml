@@ -104,7 +104,7 @@
     <string name="gui_solid_3d_display">lukin 3D suli</string>
     <string name="gui_width">suli poka</string>
     <string name="gui_height">suli sewi</string>
-    <string name="gui_frames_per_second">FPS (GIF)</string>
+    <string name="gui_frames_per_second">FPS</string>
     <string name="gui_slowdown_factor">mute tenpo lili</string>
     <string name="gui_border__pixels_">selo (sitelen)</string>
     <string name="gui_double_buffered_animation">lukin musi wawa</string>
@@ -137,6 +137,7 @@
     <string name="gui_too_many_jugglers">jan musi li mute pakala</string>
     <string name="gui_too_many_paths">nasin tawa li mute pakala</string>
     <string name="gui_saving_animated_gif">awen e sitelen GIF</string>
+    <string name="gui_animated_gif_settings">nasin pi sitelen tawa GIF</string>
     <string name="gui_message_gifsave_color_map">pali e kule ali</string>
     <string name="gui_message_gifsave_writing_frame">sitelen e nanpa %1$d pi %2$d</string>
     <string name="gui_patternview_compile_button">o pali e musi</string>
@@ -253,7 +254,7 @@ Ejemplos:
    jlab anim '(6x,4)*'
    jlab togif 'pattern=3;dwell=1.0;bps=4.0;hands=(-30)(2.5).(30)(-2.5).(-30)(0).' -out mills.gif
    jlab anim -jml musi_pona_mi.jml
-   jlab anim 771 -prefs 'stereo=true;width=800;height=600'
+   jlab anim 771 -prefs 'stereo=true;slowdown=1.5'
    jlab tolayout 868671 -prefs 'fps=10' -out layout.json
    jlab anim 5B -prefs 'bouncesound=true'
    jlab gen 5 7 5

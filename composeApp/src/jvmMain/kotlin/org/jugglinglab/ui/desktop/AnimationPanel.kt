@@ -20,7 +20,6 @@ import org.jugglinglab.util.jlHandleFatalException
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import java.awt.BorderLayout
-import java.awt.event.*
 import javax.swing.JPanel
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.ui.awt.ComposePanel
@@ -58,8 +57,6 @@ class AnimationPanel(
                 onError = { jlHandleFatalException(it) }
             )
         }
-
-        initHandlers()
     }
 
     //--------------------------------------------------------------------------
@@ -74,29 +71,6 @@ class AnimationPanel(
     ) {
         controller.restartJuggle(pattern, prefs, coldRestart)
     }
-
-    //--------------------------------------------------------------------------
-    // Setup / disposal
-    //--------------------------------------------------------------------------
-
-    @Throws(JuggleExceptionInternal::class)
-    private fun initHandlers() {
-        addComponentListener(
-            object : ComponentAdapter() {
-                override fun componentResized(e: ComponentEvent?) {
-                    try {
-                        if (state.prefs.width != size.width || state.prefs.height != size.height) {
-                            val newPrefs = state.prefs.copy(width = size.width, height = size.height)
-                            state.update(prefs = newPrefs)
-                        }
-                    } catch (e: Exception) {
-                        jlHandleFatalException(JuggleExceptionInternal(e, state.pattern))
-                    }
-                }
-            })
-    }
-
-    fun disposeAnimation() {}
 
     //--------------------------------------------------------------------------
     // Mouse interaction callbacks

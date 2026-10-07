@@ -90,6 +90,10 @@ fun jlHandleUserMessage(parent: Any?, title: String?, msg: String?) {
 // Show a message dialog for a recoverable user error.
 
 fun jlHandleUserException(parent: Any?, msg: String?) {
+    if (GraphicsEnvironment.isHeadless()) {
+        System.err.println(msg)
+        return
+    }
     SwingUtilities.invokeLater {
         JOptionPane.showMessageDialog(
             parent as Component?,
@@ -106,6 +110,14 @@ fun jlHandleUserException(parent: Any?, msg: String?) {
 // information.
 
 fun jlHandleFatalException(t: Throwable) {
+    if (GraphicsEnvironment.isHeadless()) {
+        if (t is JuggleExceptionInternal && t.wrapped != null) {
+            t.wrapped?.printStackTrace()
+        } else {
+            t.printStackTrace()
+        }
+        return
+    }
     SwingUtilities.invokeLater { showInternalErrorWindow(t) }
 }
 

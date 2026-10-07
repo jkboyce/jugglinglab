@@ -23,7 +23,8 @@ import kotlin.math.min
 
 class SelectionView(
     state: PatternAnimationState,
-    patternWindow: PatternWindow
+    patternWindow: PatternWindow,
+    initialAnimationSize: Dimension
 ) : View(state, patternWindow) {
     private val ja = List(COUNT) {
         AnimationPanel(
@@ -39,7 +40,7 @@ class SelectionView(
         // JLayeredPane on the left so we can show a grid of animations with an
         // overlay drawn on top
         layered = makeLayeredPane(
-            Dimension(state.prefs.width, state.prefs.height),
+            initialAnimationSize,
             makeAnimationGrid(),
             makeOverlay()
         )
@@ -146,6 +147,16 @@ class SelectionView(
                 }
             })
 
+        val prefSize = calculateLayeredPreferredSize(d)
+        layered.preferredSize = prefSize
+        // set initial positions of children, since there is no layout manager
+        // see https://docs.oracle.com/javase/tutorial/uiswing/layout/none.html
+        grid.setBounds(0, 0, prefSize.width, prefSize.height)
+        overlay.setBounds(0, 0, prefSize.width, prefSize.height)
+        return layered
+    }
+
+    private fun calculateLayeredPreferredSize(d: Dimension): Dimension {
         // ensure the entire grid fits on the screen, rescaling if needed
         var prefWidth: Int = COLUMNS * d.width
         var prefHeight: Int = ROWS * d.height
@@ -161,12 +172,7 @@ class SelectionView(
             prefWidth = (scale * prefWidth).toInt()
             prefHeight = (scale * prefHeight).toInt()
         }
-        layered.preferredSize = Dimension(prefWidth, prefHeight)
-        // set initial positions of children, since there is no layout manager
-        // see https://docs.oracle.com/javase/tutorial/uiswing/layout/none.html
-        grid.setBounds(0, 0, prefWidth, prefHeight)
-        overlay.setBounds(0, 0, prefWidth, prefHeight)
-        return layered
+        return Dimension(prefWidth, prefHeight)
     }
 
     //--------------------------------------------------------------------------
@@ -175,8 +181,6 @@ class SelectionView(
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
     override fun restartView(pattern: JmlPattern?, prefs: AnimationPrefs?, coldRestart: Boolean) {
-        val sizeChanged = (prefs != null && (prefs.width != state.prefs.width || prefs.height != state.prefs.height))
-
         var newPrefs: AnimationPrefs? = null
         if (prefs != null) {
             savedPrefs = prefs
@@ -192,11 +196,6 @@ class SelectionView(
             }
         }
 
-        if (sizeChanged) {
-            setAnimationPanelPreferredSize(
-                Dimension(state.prefs.width, state.prefs.height)
-            )
-        }
         if (pattern != null) {
             patternWindow.setTitle(pattern.title)
             patternWindow.updateColorsMenu()
@@ -206,17 +205,6 @@ class SelectionView(
     override val animationPanelSize: Dimension?
         get() = ja[CENTER].getSize(Dimension())
 
-    override fun setAnimationPanelPreferredSize(d: Dimension) {
-        // This works differently for this view since the JLayeredPane has no
-        // layout manager, so preferred size info can't propagate up from the
-        // individual animation panels. So we go the other direction: set a
-        // preferred size for the overall JLayeredPane, which gets propagated to
-        // the grid (and the individual animations) by the ComponentListener above.
-        val width: Int = COLUMNS * d.width
-        val height: Int = ROWS * d.height
-        layered.preferredSize = Dimension(width, height)
-    }
-
     override var zoom: Double
         get() = ja[CENTER].state.zoom
         set(z) {
@@ -224,12 +212,6 @@ class SelectionView(
                 ap.state.update(zoom = z)
             }
         }
-
-    override fun disposeView() {
-        for (ap in ja) {
-            ap.disposeAnimation()
-        }
-    }
 
     companion object {
         private const val ROWS: Int = 3

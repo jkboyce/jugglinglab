@@ -92,7 +92,7 @@ pattern=(6xB,6xB);hands=(33)(33,0,12).(33,0,12)(33).;colors=mixed;title=(6xB,6xB
 <line display=""/>
 <line display="Passing - max 2 balls"/>
 
-<line display="2 columns" notation="siteswap" animprefs="width=600;height=350;showground=true;camangle=(180.0,0.0);view=simple">
+<line display="2 columns" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
 pattern=&lt;(0,2xpB)|(0,2xpB)&gt;&lt;(2xpB,0)|(2xpB,0)&gt;;colors=mixed
 </line>
 
@@ -150,7 +150,7 @@ pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12).(12)(24).(12)(24).(24)(12
 pattern=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt;;hands=(24)(12).(12)(24). |(24)(12).(12)(24).;colors=mixed;title=&lt;(2xpB,2xpB)|(2xpB,2xpB)&gt; custom
 </line>
 
-<line display="1 loop" notation="siteswap" animprefs="width=600;height=350;showground=true;camangle=(180.0,0.0);view=simple">
+<line display="1 loop" notation="siteswap" animprefs="showground=true;camangle=(180.0,0.0);view=simple">
 pattern=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt;;hands=(12)(12).(12)(12). |(12)(12).(12)(12).;colors=mixed;title=&lt;(4xB,4xpB)|(4xB,4xpB)&gt;&lt;(0,0)|(0,0)&gt; custom
 </line>
 

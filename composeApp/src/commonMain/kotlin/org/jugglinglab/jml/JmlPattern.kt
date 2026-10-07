@@ -154,17 +154,13 @@ data class JmlPattern(
         (basePatternNotation != null && basePatternConfig != null)
 
     val isBasePatternEdited: Boolean by lazy {
-        if (!isBasePattern && hasBasePattern) {
-            try {
-                fromBasePattern(
-                    basePatternNotation!!,
-                    basePatternConfig!!
-                ).jlHashCode != jlHashCode
-            } catch (_: JuggleException) {
-                true
-            }
-        } else {
-            false
+        !isBasePattern && hasBasePattern && try {
+            fromBasePattern(
+                basePatternNotation!!,
+                basePatternConfig!!
+            ).jlHashCode != jlHashCode
+        } catch (_: JuggleException) {
+            true
         }
     }
 
@@ -449,7 +445,7 @@ data class JmlPattern(
         if (writeTitle && title != null) {
             wr.append("<title>${JmlNode.xmlescape(title)}</title>\n")
         }
-        if (writeInfo && (info != null || !tags.isEmpty())) {
+        if (writeInfo && (info != null || tags.isNotEmpty())) {
             val tagstr = tags.joinToString(",")
             if (info != null) {
                 if (tagstr.isEmpty()) {
@@ -1029,7 +1025,7 @@ data class PatternBuilder(
     }
 
     fun setInfoString(t: String?) {
-        info = if (t != null && !t.trim().isBlank()) t.trim() else null
+        info = if (t != null && t.trim().isNotBlank()) t.trim() else null
     }
 
     // For any primary events that have an image earlier in time but t>=0,

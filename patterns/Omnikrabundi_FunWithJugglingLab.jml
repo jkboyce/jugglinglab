@@ -17,7 +17,7 @@
 <line display=""/>
 
 <line display="Juggling Jugglers"
-      animprefs="camangle=(0,90);width=400;height=600;slowdown=0.9;view=simple"
+      animprefs="camangle=(0,90);slowdown=0.9;view=simple"
       notation="siteswap">
 pattern=
 &lt;0 0 0 0 0 | 0 0 0 0 0 | 0 0 0 0 0 |
@@ -61,7 +61,7 @@ title=Juggling Jugglers
 </line>
 
 <line display="Jumping Jack"
-      animprefs="camangle=0;width=500;height=400;slowdown=1.5;view=simple"
+      animprefs="camangle=0;slowdown=1.5;view=simple"
       notation="siteswap">
 pattern=
 &lt;(0,0) (4p7,4)|(0,0) (0,0)|(0,0) (0,0)|(0,0) (4,4p7)|
@@ -139,7 +139,7 @@ title=Angel &amp; Headbounces
 </line>
 
 <line display="Table Tennis"
-      animprefs="width=600;height=450;camangle=(5,95);slowdown=1;view=simple"
+      animprefs="camangle=(5,95);slowdown=1;view=simple"
       notation="siteswap">
 pattern=&lt; 3p2B 0 0 0 0 0 | 0 0 0 3p1B 0 0 | 0 0 0 0 0 0 | 0 0 0 0 0 0 | 0 0 0 0 0 0 | 0 0 0 0 0 0 | 0 0 0 0 0 0 &gt;;
 body=
@@ -259,7 +259,7 @@ title=Face Animation
 </line>
 
 <line display="* Big Rainbowy-Thing (1001 balls)"
-      animprefs="camangle=0;slowdown=0.5;showground=false;bouncesound=false;view=simple;width=600;height=350;"
+      animprefs="camangle=0;slowdown=0.5;showground=false;bouncesound=false;view=simple"
       notation="jml">
 <pattern>
 <title>1001</title>

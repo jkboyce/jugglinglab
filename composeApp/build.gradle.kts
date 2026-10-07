@@ -253,7 +253,7 @@ val unpackOrtNatives by tasks.registering(Copy::class) {
 }
 
 //------------------------------------------------------------------------------
-// Task dependencies
+// Task dependencies and config
 //------------------------------------------------------------------------------
 
 // Ensure we copy strings for packaging before bundling resources for distribution
@@ -313,4 +313,9 @@ tasks.withType<AbstractTestTask> {
         // Include this if you also want to see println() output from your actual tests
         showStandardStreams = true
     }
+}
+
+// Run JVM tests in headless mode so Swing components don't spawn a macOS Dock icon
+tasks.withType<Test>().configureEach {
+    systemProperty("java.awt.headless", "true")
 }

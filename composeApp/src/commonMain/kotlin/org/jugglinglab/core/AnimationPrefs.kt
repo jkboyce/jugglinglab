@@ -16,9 +16,6 @@ import org.jugglinglab.util.jlGetStringResource
 import org.jugglinglab.util.jlToStringRounded
 
 data class AnimationPrefs(
-    val width: Int = WIDTH_DEF,
-    val height: Int = HEIGHT_DEF,
-    val fps: Double = FPS_DEF,
     val slowdown: Double = SLOWDOWN_DEF,
     val borderPixels: Int = BORDERPIXELS_DEF,
     val showGround: Int = SHOWGROUND_DEF,
@@ -34,15 +31,6 @@ data class AnimationPrefs(
 ) {
     override fun toString(): String {
         val sb = StringBuilder()
-        if (width != WIDTH_DEF) {
-            sb.append("width=$width;")
-        }
-        if (height != HEIGHT_DEF) {
-            sb.append("height=$height;")
-        }
-        if (fps != FPS_DEF) {
-            sb.append("fps=").append(jlToStringRounded(fps, 2)).append(";")
-        }
         if (slowdown != SLOWDOWN_DEF) {
             sb.append("slowdown=").append(jlToStringRounded(slowdown, 2)).append(";")
         }
@@ -123,10 +111,7 @@ data class AnimationPrefs(
             "selection_editor",
         )
 
-        // default values of all AnimationPrefs items
-        const val WIDTH_DEF: Int = 400
-        const val HEIGHT_DEF: Int = 450
-        const val FPS_DEF: Double = 33.3
+        // default values of AnimationPrefs items
         const val SLOWDOWN_DEF: Double = 2.0
         const val BORDERPIXELS_DEF: Int = 0
         const val SHOWGROUND_DEF: Int = GROUND_AUTO
@@ -146,34 +131,6 @@ data class AnimationPrefs(
             var tempint: Int
             var tempdouble: Double
             var value: String? = null
-
-            if ((pl.removeParameter("width").also { value = it }) != null) {
-                try {
-                    tempint = value!!.toInt()
-                    result = result.copy(width = tempint)
-                } catch (_: NumberFormatException) {
-                    val message = jlGetStringResource(Res.string.error_number_format, "width")
-                    throw JuggleExceptionUser(message)
-                }
-            }
-            if ((pl.removeParameter("height").also { value = it }) != null) {
-                try {
-                    tempint = value!!.toInt()
-                    result = result.copy(height = tempint)
-                } catch (_: NumberFormatException) {
-                    val message = jlGetStringResource(Res.string.error_number_format, "height")
-                    throw JuggleExceptionUser(message)
-                }
-            }
-            if ((pl.removeParameter("fps").also { value = it }) != null) {
-                try {
-                    tempdouble = value!!.toDouble()
-                    result = result.copy(fps = tempdouble)
-                } catch (_: NumberFormatException) {
-                    val message = jlGetStringResource(Res.string.error_number_format, "fps")
-                    throw JuggleExceptionUser(message)
-                }
-            }
             if ((pl.removeParameter("slowdown").also { value = it }) != null) {
                 try {
                     tempdouble = value!!.toDouble()
@@ -294,6 +251,12 @@ data class AnimationPrefs(
                     avatar = if (ids.isEmpty()) AVATAR_DEF else ids.joinToString(",")
                 )
             }
+
+            // Silently consume deprecated parameters
+            pl.removeParameter("width")
+            pl.removeParameter("height")
+            pl.removeParameter("fps")
+
             return result
         }
 

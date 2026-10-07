@@ -44,9 +44,8 @@ fun AnimationPrefsControl(
     val focusManager = LocalFocusManager.current
     val paramsWithUi = if (jlIsDesktop) {
         listOf(
-            "width", "height", "fps", "slowdown",
-            "showground", "avatar", "startpaused", "mousepause", "stereo",
-            "catchsound", "bouncesound"
+            "slowdown", "showground", "avatar", "startpaused", "mousepause",
+            "stereo", "catchsound", "bouncesound"
         )
     } else {
         listOf(
@@ -71,9 +70,6 @@ fun AnimationPrefsControl(
     }
 
     // State holders
-    var width by remember { mutableStateOf(initialPrefs.width.toString()) }
-    var height by remember { mutableStateOf(initialPrefs.height.toString()) }
-    var fps by remember { mutableStateOf(jlToStringRounded(initialPrefs.fps, 2)) }
     var slowdown by remember { mutableStateOf(jlToStringRounded(initialPrefs.slowdown, 2)) }
     var showGround by remember { mutableIntStateOf(initialPrefs.showGround) }
     var avatar by remember { mutableStateOf(initialPrefs.avatar) }
@@ -86,9 +82,6 @@ fun AnimationPrefsControl(
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     fun fillStateFromPrefs(prefs: AnimationPrefs, manualStr: String = "") {
-        width = prefs.width.toString()
-        height = prefs.height.toString()
-        fps = jlToStringRounded(prefs.fps, 2)
         slowdown = jlToStringRounded(prefs.slowdown, 2)
         showGround = prefs.showGround
         avatar = prefs.avatar
@@ -108,16 +101,8 @@ fun AnimationPrefsControl(
                 ?: throw NumberFormatException(name)
         }
 
-        fun parseInt(valStr: String, name: String): Int {
-            return valStr.toIntOrNull()?.takeIf { it >= 0 }
-                ?: throw NumberFormatException(name)
-        }
-
         var newPrefs = try {
             AnimationPrefs(
-                width = parseInt(width, "width"),
-                height = parseInt(height, "height"),
-                fps = parseDouble(fps, "fps"),
                 slowdown = parseDouble(slowdown, "slowdown"),
                 showGround = showGround,
                 startPaused = startPaused,
@@ -162,15 +147,6 @@ fun AnimationPrefsControl(
             }
     ) {
         // Number inputs section
-        if ("width" in paramsWithUi) {
-            JlPrefsInputRow(width, { width = it }, stringResource(Res.string.gui_width))
-        }
-        if ("height" in paramsWithUi) {
-            JlPrefsInputRow(height, { height = it }, stringResource(Res.string.gui_height))
-        }
-        if ("fps" in paramsWithUi) {
-            JlPrefsInputRow(fps, { fps = it }, stringResource(Res.string.gui_frames_per_second))
-        }
         if ("slowdown" in paramsWithUi) {
             JlPrefsInputRow(slowdown, { slowdown = it }, stringResource(Res.string.gui_slowdown_factor))
         }
