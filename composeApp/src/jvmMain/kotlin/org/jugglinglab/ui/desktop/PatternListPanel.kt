@@ -1,6 +1,9 @@
 //
 // PatternListPanel.kt
 //
+// JPanel representation of a JmlPatternList, supporting drag and drop and other
+// edit operations.
+//
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
@@ -98,6 +101,18 @@ class PatternListPanel(
                     }
                 }
             })
+
+        // Enter key to open currently-selected pattern
+        list.addKeyListener(
+            object : KeyAdapter() {
+                override fun keyPressed(ke: KeyEvent) {
+                    if (ke.keyCode == KeyEvent.VK_ENTER) {
+                        launchAnimation()
+                        checkSelection()
+                    }
+                }
+            }
+        )
 
         setLayout(BorderLayout())
         add(pane, BorderLayout.CENTER)
@@ -488,23 +503,22 @@ class PatternListPanel(
 
     internal class PatternCellRenderer : JLabel(), ListCellRenderer<PatternRecord?> {
         override fun getListCellRendererComponent(
-            list: JList<out PatternRecord?>,  // the list
-            rec: PatternRecord?,  // value to display
-            index: Int,  // cell index
-            isSelected: Boolean,  // is the cell selected
+            list: JList<out PatternRecord?>,
+            value: PatternRecord?,
+            index: Int,
+            isSelected: Boolean,
             cellHasFocus: Boolean
-        ): Component // does the cell have focus
-        {
-            if (rec == null) return this
-            setFont(if (rec.anim == null && rec.patnode == null) FONT_NOPATTERN else FONT_PATTERN)
-            setText(if (!rec.display.isEmpty()) rec.display else " ")
+        ): Component {
+            if (value == null) return this
+            setFont(if (value.anim == null && value.patnode == null) FONT_NOPATTERN else FONT_PATTERN)
+            setText(value.display.ifEmpty { " " })
 
             if (isSelected) {
                 setBackground(list.selectionBackground)
                 setForeground(list.selectionForeground)
             } else {
-                setBackground(list.getBackground())
-                setForeground(list.getForeground())
+                setBackground(list.background)
+                setForeground(list.foreground)
             }
             setEnabled(list.isEnabled)
             setOpaque(true)

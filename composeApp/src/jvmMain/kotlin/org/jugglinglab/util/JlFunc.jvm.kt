@@ -15,6 +15,7 @@ import org.jugglinglab.core.Constants
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.toComposeImageBitmap
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.skia.Image
 import com.fleeksoft.ksoup.Ksoup
@@ -630,6 +631,16 @@ actual fun PatternListScrollbar(
     listState: androidx.compose.foundation.lazy.LazyListState,
     modifier: Modifier
 ) {
+    val scrollbarStyle = androidx.compose.foundation.defaultScrollbarStyle().copy(
+        thickness = 12.dp,
+        unhoverColor = androidx.compose.ui.graphics.Color(0xFFB0B0B0),
+        hoverColor = androidx.compose.ui.graphics.Color(0xFF707070)
+    )
+    androidx.compose.foundation.VerticalScrollbar(
+        adapter = androidx.compose.foundation.rememberScrollbarAdapter(listState),
+        modifier = modifier,
+        style = scrollbarStyle
+    )
 }
 
 internal actual fun jlRequestFocusPlatform() {}

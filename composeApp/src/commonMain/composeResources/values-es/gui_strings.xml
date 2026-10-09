@@ -14,6 +14,7 @@
     <string name="gui_manual_settings">Ajustes manuales</string>
     <string name="gui_transitions">Transiciones</string>
     <string name="gui_generator">Generador</string>
+    <string name="gui_library">Biblioteca</string>
     <string name="gui_run">Comenzar</string>
     <string name="gui_from_pattern">Patrón de origen</string>
     <string name="gui_to_pattern">Patrón de destino</string>

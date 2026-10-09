@@ -14,6 +14,7 @@
     <string name="gui_manual_settings">Manual settings</string>
     <string name="gui_transitions">Transitions</string>
     <string name="gui_generator">Generator</string>
+    <string name="gui_library">Library</string>
     <string name="gui_run">Run</string>
     <string name="gui_from_pattern">From pattern</string>
     <string name="gui_to_pattern">To pattern</string>

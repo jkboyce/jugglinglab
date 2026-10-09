@@ -39,9 +39,10 @@ import java.awt.event.ActionListener
 import javax.swing.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
-import androidx.compose.ui.awt.ComposePanel
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.awt.ComposePanel
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.*
@@ -97,14 +98,15 @@ open class ApplicationPanel(
 
             setContent {
                 MaterialTheme {
-                    Surface(color = MaterialTheme.colors.surface) {
+                    Surface(color = Color.White) {
                         // state variable for tabbed interface
                         var selectedTabIndex by remember { mutableStateOf(0) }
 
                         val tabs = listOf(
                             stringResource(Res.string.gui_pattern_entry),
                             stringResource(Res.string.gui_transitions),
-                            stringResource(Res.string.gui_generator)
+                            stringResource(Res.string.gui_generator),
+                            stringResource(Res.string.gui_library)
                         )
 
                         Column(modifier = Modifier.fillMaxSize()) {
@@ -118,30 +120,56 @@ open class ApplicationPanel(
                                 }
                             }
 
-                            Column(
-                                modifier = Modifier.fillMaxSize().padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                when (selectedTabIndex) {
-                                    0 -> SiteswapNotationControl(
+                            when (selectedTabIndex) {
+                                0 -> Column(
+                                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    SiteswapNotationControl(
                                         initialParams = "pattern=3",
                                         onConfirm = onRunPatternEntry()
                                     )
+                                }
 
-                                    1 -> SiteswapTransitionerControl(
+                                1 -> Column(
+                                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    SiteswapTransitionerControl(
                                         onConfirm = onRunTransitioner(
                                             notationName,
                                             pl
                                         )
                                     )
+                                }
 
-                                    2 -> SiteswapGeneratorControl(
+                                2 -> Column(
+                                    modifier = Modifier.fillMaxSize().padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    SiteswapGeneratorControl(
                                         onConfirm = onRunGenerator(
                                             notationName,
                                             pl
                                         )
                                     )
                                 }
+
+                                3 -> LibraryFileChooser(
+                                    onPatternLoaded = { pat ->
+                                        if (!PatternWindow.bringToFront(pat.jlHashCode)) {
+                                            PatternWindow(pat.title, pat, AnimationPrefs())
+                                        }
+                                    },
+                                    onPatternListLoaded = { loadedPl ->
+                                        if (!PatternListWindow.bringToFront(loadedPl.jlHashCode)) {
+                                            PatternListWindow(patternList = loadedPl)
+                                        }
+                                    },
+                                    onError = { t ->
+                                        jlHandleUserException(this@ApplicationPanel, t.message)
+                                    }
+                                )
                             }
                         }
                     }
@@ -151,18 +179,10 @@ open class ApplicationPanel(
 
         layout = BorderLayout()
         add(composePanel, BorderLayout.CENTER)
-
-        /*
-        if (pl != null) {
-            jtp!!.addTab(guistrings.getString("Pattern_list_tab"), pl)
-            if (patlist != null) {
-                jtp!!.setSelectedComponent(pl) // if we loaded from a file
-            }
-        }*/
     }
 
-    // Return the callback function to invoke when the user clicks
-    // "Run" on the pattern entry control.
+    // Return the callback function to invoke when the user clicks "Run" on the
+    // pattern entry control.
 
     private fun onRunPatternEntry(): (String) -> Unit {
         return { parameterString ->

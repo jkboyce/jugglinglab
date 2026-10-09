@@ -37,7 +37,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.LocalLibrary
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.FileOpen
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -55,7 +54,6 @@ import androidx.compose.ui.layout.ContentScale
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun InfoView(
     themeSetting: ThemeSetting = ThemeSetting.SYSTEM,
@@ -253,7 +251,6 @@ private fun NavButton(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ThemeSelector(
     themeSetting: ThemeSetting,

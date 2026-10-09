@@ -3,7 +3,7 @@
 //
 // View for selecting and loading a JML file.
 //
-// Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
+// Copyright 2025-2026 Jack Boyce and the Juggling Lab contributors
 //
 
 package org.jugglinglab.ui.mobile
@@ -12,11 +12,11 @@ import org.jugglinglab.composeapp.generated.resources.*
 import org.jugglinglab.jml.JmlParser
 import org.jugglinglab.jml.JmlPattern
 import org.jugglinglab.jml.JmlPatternList
+import org.jugglinglab.ui.common.BuiltinPatternLists
 import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.JuggleExceptionInternal
 import org.jugglinglab.util.JuggleExceptionUser
 import org.jugglinglab.util.PatternListScrollbar
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
@@ -55,11 +55,9 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import okio.Path
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun JmlFileChooser(
     onPatternLoaded: (JmlPattern) -> Unit,
@@ -87,36 +85,8 @@ fun JmlFileChooser(
         list.sortedBy { it.name.lowercase() }
     }
 
-    val staticFilesBasic = remember {
-        listOf(
-            "basic_how to.jml" to "How to Juggle",
-            "basic_solo.jml" to "Solo Patterns",
-            "basic_passing.jml" to "Passing Patterns",
-            "basic_siteswaps.jml" to "Common Siteswaps",
-        )
-    }
-
-    val staticFilesOther = remember {
-        listOf(
-            "Alanz_3BallBounce V 2Edit.jml" to "Alan's 3 Ball Bounce",
-            "Alanz_Multiplex etcetera.jml" to "Alan's Multiplex Etcetera",
-            "Alanz_Some Patterns Without 3's.jml" to "Alan's Patterns Without 3's",
-            "Alanz_Synchronous Favorites.jml" to "Alan's Synchronous Favorites",
-            "Roeland_7-Cascade Step by Step.jml" to "Roeland's 7-Cascade Step by Step",
-            "Roeland_Rolling Patterns.jml" to "Roeland's Rolling Patterns",
-            "hss_2JugglersAsymmetric.jml" to "HSS: 2 Jugglers Asymmetric",
-            "hss_2JugglersSymmetric.jml" to "HSS: 2 Jugglers Symmetric",
-            "hss_2UnequalPassers.jml" to "HSS: 2 Unequal Passers",
-            "hss_3JugglersAsymmetric.jml" to "HSS: 3 Jugglers Asymmetric",
-            "hss_3JugglersSymmetric.jml" to "HSS: 3 Jugglers Symmetric",
-            "hss_PrechacWeaves.jml" to "HSS: Prechac Weaves",
-            "hss_TwoHandedPatterns.jml" to "HSS: Two Handed Patterns",
-            "Are you God.jml" to "Are you God?",
-            "Omnikrabundi_FunWithJugglingLab.jml" to "Fun with Juggling Lab",
-            "arham_stupid jugging lab patterns.jml" to "Arham: Stupid Juggling Lab Patterns",
-            "jboyce_Juggling Lab demo.jml" to "Juggling Lab Demo",
-        )
-    }
+    val staticFilesBasic = remember { BuiltinPatternLists.basic }
+    val staticFilesOther = remember { BuiltinPatternLists.other }
 
     Column(modifier = modifier.fillMaxSize()) {
         Spacer(modifier = Modifier.height(14.dp))
@@ -332,7 +302,7 @@ fun JmlFileChooser(
 }
 
 @Composable
-private fun FileChooserHeader(
+internal fun FileChooserHeader(
     text: String,
     modifier: Modifier = Modifier,
     showDividerAbove: Boolean = false
@@ -358,9 +328,8 @@ private fun FileChooserHeader(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun FileChooserItem(
+internal fun FileChooserItem(
     displayName: String,
     modifier: Modifier = Modifier,
     isFavorites: Boolean = false,

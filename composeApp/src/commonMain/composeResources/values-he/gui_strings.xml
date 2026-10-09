@@ -14,6 +14,7 @@
     <string name="gui_manual_settings">הגדרות ידנות</string>
     <string name="gui_transitions">זריקות מעבר</string>
     <string name="gui_generator">מחולל תבניות</string>
+    <string name="gui_library">ספרייה</string>
     <string name="gui_run">מצא</string>
     <string name="gui_from_pattern">מתבנית מקור</string>
     <string name="gui_to_pattern">לתבנית יעד</string>

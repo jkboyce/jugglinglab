@@ -18,7 +18,6 @@ import org.jugglinglab.jml.JmlPatternList.PatternRecord
 import org.jugglinglab.util.jlIsTouchInterface
 import org.jugglinglab.util.jlIsWeb
 import org.jugglinglab.util.PatternListScrollbar
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
@@ -307,7 +306,6 @@ fun PatternListView(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun PatternListItem(
     index: Int,

@@ -14,6 +14,7 @@
     <string name="gui_manual_settings">Paramètres manuels</string>
     <string name="gui_transitions">Transitions</string>
     <string name="gui_generator">Générateur</string>
+    <string name="gui_library">Bibliothèque</string>
     <string name="gui_run">Générer</string>
     <string name="gui_from_pattern">Depuis figure</string>
     <string name="gui_to_pattern">Vers figure</string>

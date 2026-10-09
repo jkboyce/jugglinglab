@@ -77,6 +77,7 @@ class ApplicationPanelSwing(
         if (Generator.isGeneratorSupported(notationName)) {
             addGeneratorControl(notationName, pl)
         }
+        addLibraryControl()
         if (pl != null) {
             jtp!!.addTab(jlGetStringResource(Res.string.gui_pattern_list_tab), pl)
             if (patlist != null) {
@@ -345,6 +346,11 @@ class ApplicationPanelSwing(
         jtp!!.addTab(jlGetStringResource(Res.string.gui_generator), p1)
     }
 
+    private fun addLibraryControl() {
+        val libControl = LibraryFileChooserSwing(coroutineScope)
+        jtp!!.addTab(jlGetStringResource(Res.string.gui_library), libControl)
+    }
+
     private val defaultButton: JButton?
         get() {
             if (jtp == null) {
@@ -353,7 +359,8 @@ class ApplicationPanelSwing(
             return when (jtp!!.selectedIndex) {
                 0 -> juggleButton
                 1 -> transButton
-                else -> genButton
+                2 -> genButton
+                else -> null
             }
         }
 }
