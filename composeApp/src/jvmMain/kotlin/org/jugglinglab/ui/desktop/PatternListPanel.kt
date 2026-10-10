@@ -29,6 +29,7 @@ import java.awt.datatransfer.Transferable
 import java.awt.event.*
 import javax.swing.*
 import javax.swing.border.BevelBorder
+import javax.swing.border.EmptyBorder
 import javax.swing.event.PopupMenuEvent
 import javax.swing.event.PopupMenuListener
 
@@ -63,14 +64,31 @@ class PatternListPanel(
 
     private fun makePanel() {
         listModel = PatternListModel()
-        list = JList(listModel)
+        list = object : JList<PatternRecord>(listModel) {
+            override fun getScrollableTracksViewportWidth(): Boolean = true
+        }
         list.selectionModel.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.setCellRenderer(PatternCellRenderer())
 
         list.setDragEnabled(true)
         list.setTransferHandler(PatternTransferHandler())
 
-        val pane = JScrollPane(list)
+        list.addComponentListener(object : ComponentAdapter() {
+            private var lastWidth = -1
+            override fun componentResized(e: ComponentEvent) {
+                val w = list.width
+                if (w != lastWidth) {
+                    lastWidth = w
+                    // Invalidate BasicListUI's cached row heights so cells re-measure
+                    list.fixedCellHeight = 0
+                    list.fixedCellHeight = -1
+                }
+            }
+        })
+
+        val pane = JScrollPane(list).apply {
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        }
         list.addMouseListener(
             object : MouseAdapter() {
                 override fun mousePressed(me: MouseEvent) {
@@ -501,7 +519,14 @@ class PatternListPanel(
     // Class to support rendering of list items
     //--------------------------------------------------------------------------
 
-    internal class PatternCellRenderer : JLabel(), ListCellRenderer<PatternRecord?> {
+    internal class PatternCellRenderer : JTextArea(), ListCellRenderer<PatternRecord?> {
+        init {
+            lineWrap = true
+            wrapStyleWord = true
+            isOpaque = true
+            border = EmptyBorder(2, 4, 2, 4)
+        }
+
         override fun getListCellRendererComponent(
             list: JList<out PatternRecord?>,
             value: PatternRecord?,
@@ -510,18 +535,21 @@ class PatternListPanel(
             cellHasFocus: Boolean
         ): Component {
             if (value == null) return this
-            setFont(if (value.anim == null && value.patnode == null) FONT_NOPATTERN else FONT_PATTERN)
-            setText(value.display.ifEmpty { " " })
+            font = if (value.anim == null && value.patnode == null) FONT_NOPATTERN else FONT_PATTERN
+            text = value.display.ifEmpty { " " }
+
+            val availableWidth = (list.width - list.insets.left - list.insets.right)
+                .takeIf { it > 50 } ?: 280
+            setSize(availableWidth, Short.MAX_VALUE.toInt())
 
             if (isSelected) {
-                setBackground(list.selectionBackground)
-                setForeground(list.selectionForeground)
+                background = list.selectionBackground
+                foreground = list.selectionForeground
             } else {
-                setBackground(list.background)
-                setForeground(list.foreground)
+                background = list.background
+                foreground = list.foreground
             }
-            setEnabled(list.isEnabled)
-            setOpaque(true)
+            isEnabled = list.isEnabled
             return this
         }
     }
@@ -569,7 +597,7 @@ class PatternListPanel(
     }
 
     companion object {
-        val FONT_NOPATTERN: Font = Font("SanSerif", Font.BOLD or Font.ITALIC, 14)
+        val FONT_NOPATTERN: Font = Font(Font.SANS_SERIF, Font.BOLD or Font.ITALIC, 14)
         val FONT_PATTERN: Font = Font("Monospaced", Font.PLAIN, 14)
         val FONT_PATTERN_POPUP: Font = Font("Monospaced", Font.ITALIC, 14)
 
