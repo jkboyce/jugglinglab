@@ -4,11 +4,10 @@
 <patternlist>
 <title>Roeland&apos;s 7-Cascade Step By Step</title>
 
-<line display="Learn the 5-Cascade first before"/>
-<line display="starting this list."/>
+<line display="Learn the 5-Cascade first before starting this list."/>
 
 <line display=""/>
-<line display="🔮🔮🔮"/>
+<line display="3 Balls"/>
 
 <line display="7070700" notation="siteswap">
 pattern=7070700;colors=mixed
@@ -19,7 +18,7 @@ pattern=7770000;colors=mixed
 </line>
 
 <line display=""/>
-<line display="🔮🔮🔮 🔮"/>
+<line display="4 Balls"/>
 
 <line display="71" notation="siteswap">
 pattern=71;colors=mixed
@@ -42,7 +41,7 @@ pattern=7777000;colors=mixed
 </line>
 
 <line display=""/>
-<line display="🔮🔮🔮 🔮🔮"/>
+<line display="5 Balls"/>
 
 <line display="777720" notation="siteswap">
 pattern=777720;colors=mixed
@@ -69,7 +68,7 @@ pattern=7777700;colors=mixed
 </line>
 
 <line display=""/>
-<line display="🔮🔮🔮 🔮🔮🔮"/>
+<line display="6 Balls"/>
 
 <line display="75" notation="siteswap">
 pattern=75;hands=(5)(35).;colors=mixed
@@ -96,7 +95,7 @@ pattern=7777770;colors=mixed
 </line>
 
 <line display=""/>
-<line display="🔮🔮🔮 🔮🔮🔮 🔮"/>
+<line display="7 Balls"/>
 
 <line display="7-Cascade Flash" notation="siteswap">
 pattern=[7222][722][722][72][72]7722[22][22][222][222][2222][222];colors=mixed
