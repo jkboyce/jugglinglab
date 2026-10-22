@@ -7,7 +7,9 @@
 // - `./gradlew run` to build and run the desktop app
 // - `./gradlew run -PJLcompose` to build and run with a Compose UI
 // - `./gradlew run -Duser.language=fr` to run with a given language
-// - `./gradlew jvmTest` to run JVM test cases
+// - `./gradlew jvmTest` to run standard JVM test cases
+// - `./gradlew jvmExtendedTest` to run extended JVM test cases
+// - `./gradlew jvmAllTest` to run all JVM test cases (standard + extended)
 // - `./gradlew check` to run test cases and quality checks for all targets
 // - `./gradlew desktopBuild` to build bin/JugglingLab.jar
 // - `./gradlew androidBuild` to build Android Debug APKs
@@ -318,4 +320,28 @@ tasks.withType<AbstractTestTask> {
 // Run JVM tests in headless mode so Swing components don't spawn a macOS Dock icon
 tasks.withType<Test>().configureEach {
     systemProperty("java.awt.headless", "true")
+}
+
+// Standard JVM tests exclude extended tests
+tasks.named<Test>("jvmTest") {
+    exclude("**/*ExtendedTest*")
+}
+
+// Runs extended JVM tests on demand
+tasks.register<Test>("jvmExtendedTest") {
+    group = "verification"
+    description = "Runs extended JVM tests"
+
+    val jvmTestTask = tasks.named<Test>("jvmTest")
+    testClassesDirs = jvmTestTask.get().testClassesDirs
+    classpath = jvmTestTask.get().classpath
+
+    include("**/*ExtendedTest*")
+}
+
+// Convenience task to run all tests (standard + extended)
+tasks.register("jvmAllTest") {
+    group = "verification"
+    description = "Runs all JVM tests (standard and extended)"
+    dependsOn("jvmTest", "jvmExtendedTest")
 }

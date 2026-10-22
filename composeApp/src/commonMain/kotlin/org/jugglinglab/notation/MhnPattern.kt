@@ -18,7 +18,7 @@
 // Copyright 2002-2026 Jack Boyce and the Juggling Lab contributors
 //
 
-@file:Suppress("KotlinConstantConditions", "EmptyRange")
+@file:Suppress("KotlinConstantConditions", "EmptyRange", "DestructuringDeclaration")
 
 package org.jugglinglab.notation
 
@@ -422,11 +422,7 @@ abstract class MhnPattern : Pattern() {
 
                     val target =
                         th[sst2.targetJuggler - 1][sst2.targetHand][sst2.targetIndex][targetslot]
-                    itworks = if (target == null) {
-                        false
-                    } else {
-                        itworks and canFillTarget(sst2, target)
-                    }
+                    itworks = target != null && itworks and canFillTarget(sst2, target)
                 }
 
                 if (itworks) {
@@ -1111,6 +1107,10 @@ abstract class MhnPattern : Pattern() {
                             // else
                             sst2.throwTime = k.toDouble() / bps
                         }
+
+                        if (abs(sst2.throwTime) < 1e-12) {
+                            sst2.throwTime = 0.0
+                        }
                     }
 
                     var numCatches = 0
@@ -1206,6 +1206,9 @@ abstract class MhnPattern : Pattern() {
                         }
 
                         catchtime = min(catchtime, sst.throwTime - BEATS_CATCH_THROW_MIN / bps)
+                        if (abs(catchtime) < 1e-12) {
+                            catchtime = 0.0
+                        }
 
                         sst2.catchTime = catchtime
                         if (Constants.DEBUG_PATTERN_CREATION) {

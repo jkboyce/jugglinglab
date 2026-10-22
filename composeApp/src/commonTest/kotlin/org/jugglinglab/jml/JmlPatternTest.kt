@@ -15,6 +15,7 @@ import org.jugglinglab.util.jlGetStringResource
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
 class JmlPatternTest {
@@ -78,5 +79,12 @@ class JmlPatternTest {
         // and does not include the 2 throws from the next loop at t=loopEndTime (~0.5882)
         val patSync = SiteswapPattern().fromString("(4,4)").asJmlPattern()
         assertEquals(4, patSync.loopEvents.size)
+    }
+
+    @Test
+    fun `test squeeze catch at loop boundary is included in loopEvents without error`() {
+        val pat = SiteswapPattern().fromString("pattern=[9bdfh][11111];hands=(25)(12.5).(12.5)(25).").asJmlPattern()
+        assertNotNull(pat)
+        assertEquals(12, pat.loopEvents.size)
     }
 }
