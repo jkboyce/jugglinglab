@@ -17,7 +17,7 @@ plugins {
 tasks.register("desktopBuild") {
     group = "custom builds"
     description = "Builds only the JVM Desktop artifacts"
-    dependsOn(":composeApp:shadowJar", ":composeApp:jvmTest")
+    dependsOn(":composeApp:shadowJar", ":composeApp:jvmAllTest")
 }
 
 tasks.register("androidBuild") {

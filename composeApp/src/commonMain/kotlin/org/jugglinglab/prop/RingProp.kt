@@ -186,21 +186,21 @@ class RingProp : Prop() {
 
     override fun getProp2DSize(zoom: Double, camangle: DoubleArray): IntSize {
         if (size == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
-            createImage(zoom, lastcamangle)
+            createImage(zoom, camangle)
         }
         return size ?: IntSize(0, 0)
     }
 
     override fun getProp2DCenter(zoom: Double, camangle: DoubleArray): IntSize {
         if (center == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
-            createImage(zoom, lastcamangle)
+            createImage(zoom, camangle)
         }
         return center ?: IntSize(0, 0)
     }
 
     override fun getProp2DGrip(zoom: Double, camangle: DoubleArray): IntSize {
         if (grip == null || zoom != lastzoom || !camangle.contentEquals(lastcamangle)) {
-            createImage(zoom, lastcamangle)
+            createImage(zoom, camangle)
         }
         return grip ?: IntSize(0, 0)
     }
@@ -214,6 +214,7 @@ class RingProp : Prop() {
 
         val c0 = cos(camangle[0])
         val s0 = sin(camangle[0])
+        val c1 = cos(camangle[1])
         val s1 = sin(camangle[1])
 
         val width = max(2, (outsidePixelDiam * abs(s0 * s1)).toInt())
@@ -230,11 +231,7 @@ class RingProp : Prop() {
         }
 
         // The angle of rotation of the ring.
-        val term1 = sqrt(c0 * c0 / (1 - s0 * s0 * s1 * s1))
-        var angle = if (term1 < 1) acos(term1) else 0.0
-        if (c0 * s0 > 0) {
-            angle = -angle
-        }
+        val angle = atan2(-s0 * c1, c0)
         val sa = sin(angle)
         val ca = cos(angle)
 
@@ -311,14 +308,8 @@ class RingProp : Prop() {
         image = resultImage
         center = IntSize(bbwidth / 2, bbheight / 2)
 
-        val gripx = if (s0 < 0) (bbwidth - 1) else 0
-        val bbw = sa * sa + ca * ca * abs(s0 * s1)
-        val dsq = s0 * s0 * s1 * s1 * ca * ca + sa * sa - bbw * bbw
-        var d = if (dsq > 0) sqrt(dsq) else 0.0
-        if (c0 > 0) {
-            d = -d
-        }
-        val gripy = (outsidePixelDiam.toDouble() * d).toInt() + bbheight / 2
+        val gripx = ((bbwidth / 2) - (0.5 * outsidePixelDiam * s0).roundToInt()).coerceIn(0, bbwidth - 1)
+        val gripy = ((bbheight / 2) - (0.5 * outsidePixelDiam * c1 * c0).roundToInt()).coerceIn(0, bbheight - 1)
         grip = IntSize(gripx, gripy)
 
         lastzoom = zoom
