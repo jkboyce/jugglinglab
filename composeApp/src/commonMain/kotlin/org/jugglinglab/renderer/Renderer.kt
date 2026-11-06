@@ -19,6 +19,7 @@ package org.jugglinglab.renderer
 
 import org.jugglinglab.core.Constants
 import org.jugglinglab.jml.JmlPattern
+import org.jugglinglab.jml.JmlEvent
 import org.jugglinglab.renderer.DrawObject2D.Type
 import org.jugglinglab.util.Coordinate
 import androidx.compose.ui.geometry.Offset
@@ -69,6 +70,7 @@ class Renderer {
     private var originX: Int = 0
     private var originZ: Int = 0
 
+    private var heldPropMotion: HeldPropLayout.Motion? = null
     private var objectPool: DrawObjectPool = DrawObjectPool()
     private var sortedObjects: MutableList<DrawObject2D> = mutableListOf()
     private var tempc: Coordinate = Coordinate()
@@ -95,6 +97,7 @@ class Renderer {
 
     fun setPattern(pat: JmlPattern) {
         pattern = pat
+        heldPropMotion = HeldPropLayout.Motion(pat)
         objectPool = DrawObjectPool()
     }
 
@@ -412,6 +415,28 @@ class Renderer {
             avatarFor(i).addObjectsToPool(i, pattern, time, objectPool)
         }
 
+        // Only held props are fanned out; flight coordinates and physics stay native.
+        val heldOffsets = mutableMapOf<Int, Offset>()
+        for (hand in heldPropMotion?.frame(time).orEmpty()) {
+            if (hand.offsets.isEmpty()) continue
+            val diameter = hand.offsets.keys.maxOf { path ->
+                val size = pattern.getProp(propNumForPath[path - 1]).getProp2DSize(zoom, cameraAngle)
+                max(size.width, size.height).toFloat()
+            }
+            pattern.layout.getHandCoordinate(hand.juggler, hand.hand, time, tempc)
+            JlVector.fromCoordinate(tempc, tempv1)
+            getXYZ(tempv1, tempv2)
+            val handX = tempv2.x
+            val other = if (hand.hand == JmlEvent.RIGHT_HAND) JmlEvent.LEFT_HAND else JmlEvent.RIGHT_HAND
+            pattern.layout.getHandCoordinate(hand.juggler, other, time, tempc)
+            JlVector.fromCoordinate(tempc, tempv1)
+            getXYZ(tempv1, tempv2)
+            val direction = if (handX < tempv2.x) -1f else 1f
+            hand.offsets.forEach { (path, offset) ->
+                heldOffsets[path] = Offset(offset.x * diameter * direction, offset.y * diameter)
+            }
+        }
+
         // Project 3D to 2D screen coordinates and compute bounds
         for ((idx, ob) in objectPool.withIndex()) {
             ob.sequenceNumber = idx + 1
@@ -421,6 +446,10 @@ class Renderer {
             }
 
             if (ob.type == Type.PROP) {
+                heldOffsets[ob.number]?.let { offset ->
+                    ob.coords2D[0].x += offset.x.toDouble()
+                    ob.coords2D[0].y += offset.y.toDouble()
+                }
                 val x = ob.coords2D[0].x.roundToInt()
                 val y = ob.coords2D[0].y.roundToInt()
                 val pr = pattern.getProp(propNumForPath[ob.number - 1])

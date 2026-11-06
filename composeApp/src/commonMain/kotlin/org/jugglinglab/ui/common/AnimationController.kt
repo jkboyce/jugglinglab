@@ -454,7 +454,7 @@ class AnimationController(
         if (!cancel && !draggingCamera && !dragging) {
             // if `draggingCamera` and `dragging` are both false then
             // mouseDraggedLogic() was never called
-            state.update(isPaused = !state.isPaused)
+            state.togglePlayback()
             onSimpleMouseClick?.invoke()
         }
 

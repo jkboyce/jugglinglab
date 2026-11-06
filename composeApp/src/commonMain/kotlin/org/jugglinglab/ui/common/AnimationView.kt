@@ -245,7 +245,12 @@ fun AnimationView(
                         val deltaSimSecs = deltaRealSecs / state.prefs.slowdown
                         var newTime = state.time + deltaSimSecs
 
-                        if (newTime >= state.pattern.loopEndTime) {
+                        val preview = state.previewWindow
+                        if (preview != null && newTime >= preview.end) {
+                            newTime = preview.end
+                            state.update(isPaused = true)
+                        }
+                        if (preview == null && newTime >= state.pattern.loopEndTime) {
                             val overflow = newTime - state.pattern.loopEndTime
                             val loopDuration = state.pattern.loopEndTime - state.pattern.loopStartTime
                             newTime = state.pattern.loopStartTime + (overflow % loopDuration)

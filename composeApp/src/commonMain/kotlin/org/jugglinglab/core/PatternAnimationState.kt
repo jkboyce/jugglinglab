@@ -27,6 +27,8 @@ class PatternAnimationState(
     // State variables
     //--------------------------------------------------------------------------
 
+    var previewWindow: org.jugglinglab.notation.PreviewWindow? by mutableStateOf(null)
+
     var pattern: JmlPattern by mutableStateOf(initialPattern)
     var prefs: AnimationPrefs by mutableStateOf(initialPrefs)
     var time: Double by mutableDoubleStateOf(initialPattern.loopStartTime)
@@ -62,7 +64,17 @@ class PatternAnimationState(
         draggingPositionAngle: Boolean? = null,
         message: String? = null,
     ) {
-        if (pattern != null) this.pattern = pattern
+        if (pattern != null) {
+            val oldWindow = previewWindow
+            val sameBase = pattern.basePatternConfig == this.pattern.basePatternConfig &&
+                pattern.numberOfPaths == this.pattern.numberOfPaths && pattern.numberOfJugglers == this.pattern.numberOfJugglers
+            val scale = pattern.loopEndTime / this.pattern.loopEndTime
+            this.pattern = pattern
+            previewWindow = if (sameBase && oldWindow != null) oldWindow.copy(
+                start = oldWindow.start * scale, end = oldWindow.end * scale,
+                secondsPerBeat = oldWindow.secondsPerBeat * scale
+            ) else null
+        }
         if (prefs != null) this.prefs = prefs
         if (time != null) this.time = time
         if (isPaused != null) this.isPaused = isPaused
@@ -119,6 +131,14 @@ class PatternAnimationState(
         if (message != null) {
             onMessageChange.forEach { it() }
         }
+    }
+
+    fun togglePlayback() {
+        val preview = previewWindow
+        if (isPaused && preview != null && time >= preview.end - 0.00001) {
+            update(time = preview.start, propForPath = pattern.initialPropForPath)
+        }
+        update(isPaused = !isPaused, message = "")
     }
 
     // callbacks

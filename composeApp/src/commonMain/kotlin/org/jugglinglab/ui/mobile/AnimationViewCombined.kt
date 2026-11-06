@@ -162,16 +162,17 @@ fun AnimationViewCombined(
         }
     }
 
+    Column(modifier = Modifier.fillMaxSize()) {
     BoxWithConstraints(
         modifier = Modifier
-            .fillMaxSize()
+            .weight(1f)
             .focusRequester(focusRequester)
             .focusable()
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown && event.key == Key.Spacebar) {
                     if (!event.isCtrlPressed && !event.isAltPressed && !event.isMetaPressed) {
                         if (activeAnimationDialog == null && ladderController.uiState.activeDialog == null) {
-                            state.update(isPaused = !state.isPaused)
+                            state.togglePlayback()
                             return@onPreviewKeyEvent true
                         }
                     }
@@ -416,6 +417,9 @@ fun AnimationViewCombined(
         }
     }
 
+    PlaybackTimeline(state)
+    }
+
     AnimationViewDialogs(
         activeDialog = activeAnimationDialog,
         onDismissRequest = {
@@ -648,7 +652,7 @@ private fun AnimationViewMenus(
                 },
                 onClick = {
                     isMenuExpanded = false
-                    state.update(isPaused = !state.isPaused)
+                    state.togglePlayback()
                 }
             )
             DropdownMenuItem(

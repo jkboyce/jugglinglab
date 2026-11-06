@@ -97,6 +97,21 @@ class SiteswapPattern : MhnPattern() {
         return this
     }
 
+    /** Parse throw destinations without requiring a closed, valid loop.
+     * Inspection results are intended for finite preview and diagnostics, not asJmlPattern().
+     */
+    fun inspectThrows(config: String, finite: Boolean = true): SiteswapThrowInspection {
+        val pl = ParameterList(if ('=' in config) config else "pattern=$config")
+        super.fromParameters(pl)
+        pl.errorIfParametersLeft()
+        parseSiteswapNotation(inspection = true, finite = finite)
+        val throws = mutableListOf<MhnThrow>()
+        for (j in 0 until numberOfJugglers) for (h in 0..1) for (i in 0 until period) {
+            for (slot in 0 until maxOccupancy) th[j][h][i][slot]?.let { throws.add(it) }
+        }
+        return SiteswapThrowInspection(period, numberOfJugglers, throws.sortedWith(compareBy({ it.index }, { it.juggler }, { it.hand }, { it.slot })), if (bpsSet > 0) bpsSet else calcBps(), dwell)
+    }
+
     // Only works after parseSiteswapNotation() is called
     private val norepPeriod: Int
         get() = if (oddperiod) period / 2 else period
@@ -106,7 +121,7 @@ class SiteswapPattern : MhnPattern() {
     //--------------------------------------------------------------------------
 
     @Throws(JuggleExceptionUser::class, JuggleExceptionInternal::class)
-    private fun parseSiteswapNotation() {
+    private fun parseSiteswapNotation(inspection: Boolean = false, finite: Boolean = false) {
         if (Constants.DEBUG_SITESWAP_PARSING) {
             println("Parsing pattern \"$pattern\"")
         }
@@ -151,10 +166,22 @@ class SiteswapPattern : MhnPattern() {
             println("Starting first pass...")
         }
 
+        if (inspection) {
+            fun checkSize(node: SiteswapTreeItem, multiplier: Long = 1): Long {
+                val m = multiplier * maxOf(1, node.repeats) * (if (node.switchrepeat) 2 else 1)
+                if (m > 480 || node.value !in 0..200) throw JuggleExceptionUser("Preview pattern is too large.")
+                var total = m
+                for (child in node.children) total += checkSize(child, m)
+                if (total > 100000) throw JuggleExceptionUser("Preview pattern is too large.")
+                return total
+            }
+            if (pattern!!.length > 3000) throw JuggleExceptionUser("Preview notation is too long.")
+            checkSize(tree)
+        }
         tree.beatNum = 0
         doFirstPass(tree)
 
-        if (!tree.switchrepeat && tree.isVanillaAsync && tree.beats % 2 == 1) {
+        if (!finite && !tree.switchrepeat && tree.isVanillaAsync && tree.beats % 2 == 1) {
             tree.switchrepeat = true
             tree.beats *= 2
             tree.throwSum *= 2
@@ -166,7 +193,10 @@ class SiteswapPattern : MhnPattern() {
         }
 
         period = tree.beats
-        if (tree.throwSum % tree.beats != 0) {
+        if (inspection && (period !in 1..240 || numberOfJugglers !in 1..6 || maxThrow !in 0..200 || maxOccupancy > 8)) {
+            throw JuggleExceptionUser("Preview supports 1–240 beats, 1–6 jugglers, throw heights 0–200, and up to 8 throws per hand.")
+        }
+        if (!inspection && tree.throwSum % tree.beats != 0) {
             val message = jlGetStringResource(Res.string.error_siteswap_bad_average)
             throw JuggleExceptionUser(message)
         }
@@ -653,3 +683,6 @@ class SiteswapPattern : MhnPattern() {
         }
     }
 }
+
+/** Discrete throws before periodic path assignment and loop validation. */
+data class SiteswapThrowInspection(val beats: Int, val jugglers: Int, val throws: List<MhnThrow>, val beatsPerSecond: Double, val dwellBeats: Double)
